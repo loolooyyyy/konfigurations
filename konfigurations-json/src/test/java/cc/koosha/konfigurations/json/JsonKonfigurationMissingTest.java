@@ -1,16 +1,11 @@
 package cc.koosha.konfigurations.json;
 
 import cc.koosha.konfigurations.core.KonfigurationMissingKeyException;
-import lombok.val;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-
-import java.io.IOException;
-import java.util.Scanner;
 
 
 @SuppressWarnings("SpellCheckingInspection")
-public class JsonKonfigurationMissingPrimitiveTest {
+public class JsonKonfigurationMissingTest extends JsonKonfigurationBaseTest{
 
     @Test(expectedExceptions = KonfigurationMissingKeyException.class)
     public void test_stringLevel0() throws Exception {
@@ -61,27 +56,28 @@ public class JsonKonfigurationMissingPrimitiveTest {
         konfiguration.int_("obj.nonExisting");
     }
 
+    @Test(expectedExceptions = KonfigurationMissingKeyException.class)
+    public void test_listL0() throws Exception {
 
-    // -------------------------------------------------------------------------
+        konfiguration.list("i.do.not.exist", Object.class);
+    }
 
-    private static final String dummyFile = "/cc/koosha/konfigurations/json/dummyConfig.json";
-    private JsonKonfiguration konfiguration;
+    @Test(expectedExceptions = KonfigurationMissingKeyException.class)
+    public void test_listL1() throws Exception {
 
-    @BeforeClass
-    public void setUp() throws Exception {
+        konfiguration.list("obj.nonExisting", Object.class);
+    }
 
-        final String content;
+    @Test(expectedExceptions = KonfigurationMissingKeyException.class)
+    public void test_map0() throws Exception {
 
-        try (val is = this.getClass().getResourceAsStream(dummyFile)) {
-            content = new Scanner(is, "UTF-8")
-                    .useDelimiter("\\A")
-                    .next();
-        }
-        catch (final IOException e) {
-            throw new RuntimeException(e);
-        }
+        konfiguration.map("i.do.not.exist", Object.class);
+    }
 
-        this.konfiguration = new JsonKonfiguration(content);
+    @Test(expectedExceptions = KonfigurationMissingKeyException.class)
+    public void test_map1() throws Exception {
+
+        konfiguration.map("obj.nonExisting", Object.class);
     }
 
 }

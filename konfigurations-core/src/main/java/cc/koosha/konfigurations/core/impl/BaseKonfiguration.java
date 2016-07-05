@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 
+// TODO: support parametrized type for list and map.
 public abstract class BaseKonfiguration implements Konfiguration {
 
     private final KonfigKeyObservers observers;

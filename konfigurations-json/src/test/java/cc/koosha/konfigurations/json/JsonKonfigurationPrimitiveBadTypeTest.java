@@ -1,25 +1,24 @@
 package cc.koosha.konfigurations.json;
 
 import cc.koosha.konfigurations.core.KonfigurationBadTypeException;
-import lombok.val;
-import org.testng.annotations.BeforeClass;
+import lombok.extern.slf4j.Slf4j;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Scanner;
 
 
+@Slf4j
 @SuppressWarnings("SpellCheckingInspection")
-public class JsonKonfigurationPrimitiveBadTypeTest {
+public class JsonKonfigurationPrimitiveBadTypeTest extends JsonKonfigurationBaseTest{
 
     @Test(expectedExceptions = KonfigurationBadTypeException.class,
           dataProvider = "strings")
     public void test_string(final String key) throws Exception {
 
         konfiguration.string(key);
+        log.error("=> {}", key);
     }
 
     @Test(expectedExceptions = KonfigurationBadTypeException.class,
@@ -143,29 +142,6 @@ public class JsonKonfigurationPrimitiveBadTypeTest {
             args[i] = new Object[]{keys.get(i)};
 
         return args;
-    }
-
-
-    // -------------------------------------------------------------------------
-
-    private static final String dummyFile = "/cc/koosha/konfigurations/json/dummyConfig.json";
-    private JsonKonfiguration konfiguration;
-
-    @BeforeClass
-    public void setUp() throws Exception {
-
-        final String content;
-
-        try (val is = this.getClass().getResourceAsStream(dummyFile)) {
-            content = new Scanner(is, "UTF-8")
-                    .useDelimiter("\\A")
-                    .next();
-        }
-        catch (final IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        this.konfiguration = new JsonKonfiguration(content);
     }
 
 }

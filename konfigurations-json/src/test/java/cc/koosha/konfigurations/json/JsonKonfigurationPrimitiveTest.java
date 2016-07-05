@@ -1,20 +1,15 @@
 package cc.koosha.konfigurations.json;
 
 import cc.koosha.konfigurations.core.KonfigV;
-import lombok.val;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Scanner;
 
 import static org.testng.Assert.assertEquals;
 
 
 @SuppressWarnings("SpellCheckingInspection")
-public class JsonKonfigurationPrimitiveTest {
+public class JsonKonfigurationPrimitiveTest extends JsonKonfigurationBaseTest {
 
     @Test
     public void test_string() throws Exception {
@@ -80,41 +75,13 @@ public class JsonKonfigurationPrimitiveTest {
     }
 
 
+    @Test
+    public void test_splitString() throws Exception {
 
-    // -------------------------------------------------------------------------
+        final String expected = "this is one sentence split over multiple lines.";
+        final String actual = konfiguration.string("splitStr").v();
 
-    private static final String dummyFile = "/cc/koosha/konfigurations/json/dummyConfig.json";
-    private JsonKonfiguration konfiguration;
-
-    @BeforeClass
-    public void setUp() throws Exception {
-
-        final String content;
-
-        try (val is = this.getClass().getResourceAsStream(dummyFile)) {
-            content = new Scanner(is, "UTF-8")
-                    .useDelimiter("\\A")
-                    .next();
-        }
-        catch (final IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        this.konfiguration = new JsonKonfiguration(content);
-    }
-
-    @SuppressWarnings("unchecked")
-    public static <T> Map<String, T> map(final String k0, final T v0, final Object... os) {
-
-        assertEquals(os.length % 2, 0);
-
-        final Map<String, T> m = new HashMap<>();
-        m.put(k0, v0);
-
-        for (int i = 0; i < os.length; i+=2)
-            m.put(((String) os[i]), ((T) os[i + 1]));
-
-        return m;
+        assertEquals(actual, expected);
     }
 
 }

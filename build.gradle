@@ -27,6 +27,9 @@ allprojects {
     dependencies {
         compile 'org.projectlombok:lombok:1.16.8'
         testCompile 'org.testng:testng:6.9.10'
+
+        testCompile 'org.slf4j:slf4j-api:1.7.21'
+        testCompile 'org.slf4j:slf4j-simple:1.7.21'
     }
 
 
