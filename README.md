@@ -7,17 +7,20 @@ little exteranl dependencies as possible.
 Example usage:
 
 ```java
+
 // Plain 'ol constructor, create a new konfiguration:
-String json = "...";
-Konfiguration konfig = new JsonKonfiguration(json);
+Konfiguration konfig = new JsonKonfiguration("{...JSON STRING...}");
 
 // Get the value, notice the .v()
-bool b = konfig.bool("some.konfig.key.deeply.nested").v()
+bool   b = konfig.bool   ("some.konfig.key.deeply.nested").v()
+int    i = konfig.int_   ("some.int").v()
+long   l = konfig.long_  ("some.long").v()
+String s = konfig.string ("aString").v()
 
-// Also:
-// konfig.int_(...), konfig.long_, konfig.string, konfig.list, konfig.map
+List<String>         list = konfig.list("a.nice.string.list", String.class).v()
+Map<String, Integer> map  = konfig.map ("my.map", int.class).v()
+
 ```
-
 
 ### Live updates
 
@@ -63,5 +66,9 @@ todo
 todo
 
 ### Custom types:
+
+todo
+
+### Multiple sources:
 
 todo
