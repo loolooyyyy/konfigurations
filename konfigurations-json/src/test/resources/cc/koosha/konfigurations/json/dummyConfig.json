@@ -1,0 +1,33 @@
+{
+  "something": 0,
+  "meaning of life": 42,
+
+  "someArr" : [
+    1, 2, 3, 4
+  ],
+
+  "obj": {
+    "a": 3,
+    "n": 5
+  },
+
+  "X": null,
+
+  "hahaTmp": {
+    "ahah": {
+      "hoho": "you got me!"
+    },
+    "blabla": 22
+  },
+
+  "aa": {
+    "bb": true
+  },
+
+  "dd": false,
+
+  "veryInt": 2147483647,
+  "veryLong": 9223372036854775807,
+
+  "veryString": "I'm string"
+}

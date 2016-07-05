@@ -1,0 +1,47 @@
+allprojects {
+
+    apply plugin: 'java'
+
+    group 'cc.koosha'
+    version '1.0-SNAPSHOT'
+
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+
+
+    repositories {
+        mavenCentral()
+        mavenLocal()
+    }
+
+
+    compileJava {
+        options.compilerArgs << '-Xlint:unchecked'
+    }
+
+    test {
+        useTestNG()
+    }
+
+
+    dependencies {
+        compile 'org.projectlombok:lombok:1.16.8'
+        testCompile 'org.testng:testng:6.9.10'
+    }
+
+
+    task sourcesJar(type: Jar, dependsOn: classes) {
+        classifier = 'sources'
+        from sourceSets.main.allSource
+    }
+
+    task javadocJar(type: Jar, dependsOn: javadoc) {
+        classifier = 'javadoc'
+        from javadoc.destinationDir
+    }
+
+    artifacts {
+        archives sourcesJar
+        archives javadocJar
+    }
+}
