@@ -6,8 +6,7 @@ little exteranl dependencies as possible.
 
 Example usage:
 
-```
-
+```java
 // Plain 'ol constructor, create a new konfiguration:
 String json = "...";
 Konfiguration konfig = new JsonKonfiguration(json);
@@ -26,7 +25,7 @@ Konfiguration value can be updated during runtime. A konfiguration instance
 does not return a value directly but returns a wrapper. The wrapper has a method
 v() which returns the actual value. 
 
-```
+```java
 // The json string is updated by some thread.
 private String jsonStr;
 private Supplier<String> jsonSupplier = () -> jsonStr;
