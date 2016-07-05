@@ -35,7 +35,7 @@ private Supplier<String> jsonSupplier = () -> jsonStr;
 
 // create an instance with a supplier instead of string.
 Konfiguration konfig = new JsonKonfiguration(jsonSupplier);
-Konfig<Boolean> konfigValue = konfig.bool("some.konfig.key.deeply.nested");
+KonfigV<Boolean> konfigValue = konfig.bool("some.konfig.key.deeply.nested");
 
 boolean oldValue = konfigValue.v();
 
