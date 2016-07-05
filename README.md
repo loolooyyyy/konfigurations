@@ -12,10 +12,10 @@ Example usage:
 Konfiguration konfig = new JsonKonfiguration("{...JSON STRING...}");
 
 // Get the value, notice the .v()
-bool   b = konfig.bool   ("some.konfig.key.deeply.nested").v()
-int    i = konfig.int_   ("some.int").v()
-long   l = konfig.long_  ("some.long").v()
-String s = konfig.string ("aString").v()
+boolean b = konfig.bool   ("some.konfig.key.deeply.nested").v()
+int     i = konfig.int_   ("some.int").v()
+long    l = konfig.long_  ("some.long").v()
+String  s = konfig.string ("aString").v()
 
 List<String>         list = konfig.list("a.nice.string.list", String.class).v()
 Map<String, Integer> map  = konfig.map ("my.map", int.class).v()
