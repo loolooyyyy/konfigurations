@@ -24,10 +24,21 @@ public final class JsonKonfiguration extends BaseKonfiguration {
     private final Supplier<JsonNode> rootSupplier;
     private JsonNode root;
 
+    public JsonKonfiguration(@NonNull final String json) {
 
-    public JsonKonfiguration(@NonNull final Supplier<JsonNode> json) {
+        this(() -> json);
+    }
 
-        this(json, new KonfigKeyObservers(), () -> defaultObjectReader);
+    public JsonKonfiguration(@NonNull final Supplier<String> json) {
+
+        this(() -> {
+            try {
+                return defaultObjectReader.readTree(json.get());
+            }
+            catch (final IOException e) {
+                throw new KonfigurationException(e);
+            }
+        }, new KonfigKeyObservers(), () -> defaultObjectReader);
     }
 
     public JsonKonfiguration(@NonNull final Supplier<JsonNode> json,
@@ -35,21 +46,23 @@ public final class JsonKonfiguration extends BaseKonfiguration {
                              @NonNull final Supplier<ObjectReader> objectReader) {
 
         super(konfigKeyObservers);
+
         this.rootSupplier = json;
         this.readerSupplier = objectReader;
         this.root = this.rootSupplier.get();
+
         if(this.root == null)
             throw new NullPointerException("initial root");
     }
 
     public final boolean update() {
 
-        val read = this.rootSupplier.get();
+        final JsonNode update = this.rootSupplier.get();
 
-        if(read == null)
+        if(update == null)
             return false;
 
-        this.root = read;
+        this.root = update;
 
         return true;
     }

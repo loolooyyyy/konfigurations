@@ -1,10 +1,8 @@
 package cc.koosha.konfigurations.json;
 
 import cc.koosha.konfigurations.core.KonfigV;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.val;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
@@ -86,7 +84,6 @@ public class JsonKonfigurationPrimitiveTest {
     // -------------------------------------------------------------------------
 
     private static final String dummyFile = "/cc/koosha/konfigurations/json/dummyConfig.json";
-    private static final ObjectMapper om = new ObjectMapper();
     private JsonKonfiguration konfiguration;
 
     @BeforeClass
@@ -103,14 +100,7 @@ public class JsonKonfigurationPrimitiveTest {
             throw new RuntimeException(e);
         }
 
-        this.konfiguration = new JsonKonfiguration(() -> {
-            try {
-                return om.readTree(content);
-            }
-            catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
+        this.konfiguration = new JsonKonfiguration(content);
     }
 
     @SuppressWarnings("unchecked")

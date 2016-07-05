@@ -1,7 +1,6 @@
 package cc.koosha.konfigurations.json;
 
 import cc.koosha.konfigurations.core.KonfigurationBadTypeException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.val;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
@@ -150,7 +149,6 @@ public class JsonKonfigurationPrimitiveBadTypeTest {
     // -------------------------------------------------------------------------
 
     private static final String dummyFile = "/cc/koosha/konfigurations/json/dummyConfig.json";
-    private static final ObjectMapper om = new ObjectMapper();
     private JsonKonfiguration konfiguration;
 
     @BeforeClass
@@ -167,14 +165,7 @@ public class JsonKonfigurationPrimitiveBadTypeTest {
             throw new RuntimeException(e);
         }
 
-        this.konfiguration = new JsonKonfiguration(() -> {
-            try {
-                return om.readTree(content);
-            }
-            catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
+        this.konfiguration = new JsonKonfiguration(content);
     }
 
 }
