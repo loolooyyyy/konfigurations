@@ -130,11 +130,43 @@ public class KonfigTest {
 
 ### Lists and Maps:
 
-todo
+Getting a list or map is possible, as long as the underlying source can parse
+it from the actual configuration. The JsonKonfiguration uses Jackson for 
+parsing json, so if the Jackson parser can parse the map / list, so can the 
+configuration.
+
+```java
+
+Konfiguration konfig = new JsonKonfiguration(...);
+
+List<Integer> ints = konfig.list("some.int.array", Integer.class);
+List<String> strings = konfig.list("array.of.string", String.class);
+```
 
 ### Custom types:
 
 todo
+
+### JsonKonfiguration notes
+
+a String can span multiple lines if it's declared in an array
+
+```json
+{
+    "someLongStr": [
+        "I'm ",
+        "very "
+        "multi "
+        "line."
+    ]
+}
+```
+
+```java
+Konfiguration konfig = new JsonKonfiguration(...); // or put in a Kombiner
+assert "I'm very multi line." == konfig.string("someLongStr");
+```
+
 
 ### Assumptions / Limitaions:
 
