@@ -20,7 +20,6 @@ public class JsonKonfigurationPrimitiveTest extends JsonKonfigurationBaseTest {
 
         m.forEach((k, v) -> {
             final KonfigV<String> konfig = konfiguration.string(k);
-            assertEquals(konfig.key(), k);
             assertEquals(konfig.v(), v);
         });
     }
@@ -35,7 +34,6 @@ public class JsonKonfigurationPrimitiveTest extends JsonKonfigurationBaseTest {
 
         m.forEach((k, v) -> {
             final KonfigV<Boolean> konfig = konfiguration.bool(k);
-            assertEquals(konfig.key(), k);
             assertEquals(konfig.v(), v);
         });
     }
@@ -51,7 +49,6 @@ public class JsonKonfigurationPrimitiveTest extends JsonKonfigurationBaseTest {
 
         m.forEach((k, v) -> {
             final KonfigV<Long> konfig = konfiguration.long_(k);
-            assertEquals(konfig.key(), k);
             assertEquals(konfig.v(), v);
         });
     }
@@ -69,7 +66,6 @@ public class JsonKonfigurationPrimitiveTest extends JsonKonfigurationBaseTest {
 
         m.forEach((k, v) -> {
             final KonfigV<Integer> konfig = konfiguration.int_(k);
-            assertEquals(konfig.key(), k);
             assertEquals(konfig.v(), v);
         });
     }

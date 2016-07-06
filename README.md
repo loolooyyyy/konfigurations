@@ -22,43 +22,110 @@ Map<String, Integer> map  = konfig.map ("my.map", int.class).v()
 
 ```
 
+
+### Kombiner
+
+A JsonKonfiguration does not do much on it's own (or any other 
+<b>konfiguration source</b>). Fun things happen when you put them in a 
+KonfigurationKombiner. You can subscribe to value changes, or mix multiple
+configuration sources.
+
+
+### Overrides
+
+When having multiple sources of configuration, say one from local disk and
+one read from some web URL, they can override each others values. The first
+configuration source has the highest priority.
+
+If a configuration key is removed from one source and added to another source
+(moved between different sources) the Kombiner will find out and set the values 
+properly and accordingly.
+
+```json
+{
+   "only": {
+     "local": "hello",
+   },
+   "myName": "I'm local",
+}
+{
+   "only": {
+     "web": "goodbye",
+   }, 
+   "myName": "I'm web",
+}
+```
+
+```java
+Konfiguration local  = new JsonKonfiguration(stringFromDisk);
+Konfiguration web    = new JsonKonfiguration(stringFromWeb);
+Konfiguration konfig = new KonfigurationKombiner(local, web); // Kombine!
+
+// Look until it's found
+assert "hello" == konfig.string("only.local").v();
+assert "goodbye" == konfig.string("only.web").v();
+
+// Override, local disk is first in list and has higher priority
+assert "I'm local" == konfig.string("myName").v();
+
+```
+
 ### Live updates
 
 Konfiguration value can be updated during runtime. A konfiguration instance
 does not return a value directly but returns a wrapper. The wrapper has a method
 v() which returns the actual value. 
+A simple source such as JsonKonfiguration does not support registering and cool
+stuff, but when it's wrapped in a KonfigurationKombiner, all sort of thing are
+possible.
 
 ```java
-// The json string is updated by some thread.
-private String jsonStr;
-private Supplier<String> jsonSupplier = () -> jsonStr;
 
-// ...
+public class KonfigTest {
 
-// create an instance with a supplier instead of string.
-Konfiguration konfig = new JsonKonfiguration(jsonSupplier);
-KonfigV<Boolean> konfigValue = konfig.bool("some.konfig.key.deeply.nested");
+    static String theJsonKonfigString;
+    static Konfiguration konfig;
 
-boolean oldValue = konfigValue.v();
+    private static void setup() {
+        theJsonKonfigString = "{ \"allowed\": true }";
 
-jsonStr = "..."; // update the configuration and toggle some.konfig.key.deeply.nested
-konfig.update(); // notify the konfiguration of the update. you would want to 
-                 // to do this in the thread that updated the jsonStr.
+        // Put the actual source in a Kombiner and forget about it.
+        Konfiguration _jsonKonfig = new JsonKonfiguration(() -> theJsonKonfigString);
+        konfig = new KonfigurationKombiner(_jsonKonfig);
+    }
+    
+    private static void updateConfig() {
+        // Update the configuration. You would want to do the updaing and 
+        // calling the update() on Kombiner periodrically in a separate thread.
 
-boolean newValue  = konfigValue.v();
+        // The string supplier we gave to JsonKonfiguration, will read this
+        // new string and update everything accordingly.
+        theJsonKonfigString = "{ \"allowed\": false }";
+        konfig.update(); // Must be called!
+    }
 
-// If you have toggled the some.konfig.key.deeply.nested, then:
-assert newValuea == (!oldValue);
+    public static void main(final String[] args) {
+
+        setup();
+
+        // Initial value, true as set above in the string.
+        KonfigV<Boolean> amICool = konfig.bool("allowed");
+        assert amICool.v();
+
+        // Get notified when the key <something> changes.
+        amICool.register(updatedKey -> {
+            System.out.println("\n Hey! the key <something> was updated!";
+            System.out.println("\n Now it is: " + konfig.bool(updatedKey)); // or use amICool.v() directly.
+        });
+
+        updateConfig();
+
+        // By now, the System.out.println(...) thing we wrote above is also called.
+        assert !amICool.v();
+    }
+}
 
 ```
-
-Holding a reference to the wrapper instead of the actual value, it's possible 
-to get the latest updated value. There is no need to have a hold on the 
-konfiguration instance or the actual konfig key. The wrapper itself is enough.
-
-### Registering to updates:
-
-todo
 
 
 ### Lists and Maps:
@@ -69,27 +136,9 @@ todo
 
 todo
 
-### Multiple sources:
-
-todo
-
-
 ### Assumptions / Limitaions:
 
-Shit. this is all wrong
-
- - A config value may be updated, BUT it will not be removed from a 
-   configuration source, otherwise the behaviour is not predicted.
-   (reason: after an instance of KonfigV is created, it's expected to always
-    return a value, and not be removed).
-
- - When combining multiple configuration sources, a config key is always read
-   from a single source, and it is NOT moved between different sources.
-   Otherwise, clients of a configuration key will NOT be notified of furthur
-   change and updates.
-   Multiple sources can have the same key (override each other) as long as the
-   overriding key is not removed from the source containing that key.
-
- - Updates to configuration sources MUST, MUST, MUST take place in a single 
-   thread. Also, they should not be too frequesnt (too frequent as in updateing
-   in a while loop with no delay. A few milli-seconds would do).
+ - Updates of configuration sources, and calling the update() method on a 
+   Konfiguration,MUST, MUST, MUST take place in a single thread. 
+   Also, they should not be too frequesnt (too frequent as in constantly 
+   calling update() in a while loop with no delay. A few milli-seconds would do).

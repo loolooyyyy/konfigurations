@@ -16,22 +16,10 @@ import static cc.koosha.konfigurations.core.DummyV.dummy;
 
 public final class JsonKonfiguration implements Konfiguration {
 
-    public interface ObjectReaderSupplier {
-
-        ObjectReader get();
-
-    }
-
-    public interface JsonSupplier {
-
-        String get();
-
-    }
-
     private static final ObjectReader defaultObjectReader = new ObjectMapper().reader();
 
-    private final ObjectReaderSupplier readerSupplier;
-    private final JsonSupplier jsonSupplier;
+    private final Provider<ObjectReader> readerSupplier;
+    private final Provider<String> json;
     private int lastHash;
     private JsonNode root;
 
@@ -66,15 +54,15 @@ public final class JsonKonfiguration implements Konfiguration {
         this(() -> json);
     }
 
-    public JsonKonfiguration(@NonNull final JsonSupplier json) {
+    public JsonKonfiguration(@NonNull final Provider<String> json) {
 
         this(json, () -> defaultObjectReader);
     }
 
-    public JsonKonfiguration(@NonNull final JsonSupplier jsonSupplier,
-                             @NonNull final ObjectReaderSupplier objectReader) {
+    public JsonKonfiguration(@NonNull final Provider<String> json,
+                             @NonNull final Provider<ObjectReader> objectReader) {
 
-        this.jsonSupplier = jsonSupplier;
+        this.json = json;
         this.readerSupplier = objectReader;
         this.lastHash = -1;
 
@@ -87,7 +75,7 @@ public final class JsonKonfiguration implements Konfiguration {
     @Override
     public boolean update() {
 
-        val newJson = this.jsonSupplier.get();
+        val newJson = this.json.get();
         if(newJson == null)
             return false;
 

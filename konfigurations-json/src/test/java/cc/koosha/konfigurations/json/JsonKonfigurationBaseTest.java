@@ -31,7 +31,7 @@ public class JsonKonfigurationBaseTest {
         this.konfiguration = new JsonKonfiguration(content);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "Duplicates"})
     protected static <T> Map<String, T> map(final String k0, final T v0, final Object... os) {
 
         assertEquals(os.length % 2, 0);

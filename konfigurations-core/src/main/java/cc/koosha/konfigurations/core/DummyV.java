@@ -1,7 +1,5 @@
 package cc.koosha.konfigurations.core;
 
-import java.util.function.Consumer;
-
 
 public final class DummyV<T> implements KonfigV<T> {
 
@@ -16,12 +14,12 @@ public final class DummyV<T> implements KonfigV<T> {
     }
 
     @Override
-    public KonfigV<T> deRegister(final Consumer<String> observer) {
+    public KonfigV<T> deRegister(final KeyObserver observer) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public KonfigV<T> register(final Consumer<String> observer) {
+    public KonfigV<T> register(final KeyObserver observer) {
         throw new UnsupportedOperationException();
     }
 

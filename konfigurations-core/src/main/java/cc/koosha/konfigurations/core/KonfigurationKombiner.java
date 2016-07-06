@@ -6,7 +6,6 @@ import lombok.val;
 import java.util.*;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.function.Consumer;
 
 import static java.lang.String.format;
 
@@ -113,39 +112,31 @@ public final class KonfigurationKombiner implements Konfiguration {
     private final ReadWriteLock observersLock
             = new ReentrantReadWriteLock();
 
-    private final Map<Consumer<String>, Collection<String>> observers
+    private final Map<KeyObserver, Collection<String>> observers
             = new WeakHashMap<>();
 
     private final Map<KonfigurationKombiner.KonfigVImpl, Void> values
             = Collections.synchronizedMap(new WeakHashMap<>());
 
-    private void addObserver(final String key, final Consumer<String> observer) {
+    private void addObserver(final String key, final KeyObserver observer) {
 
         final Collection<String> interestedIn;
         val wLock = this.observersLock.writeLock();
-        val rLock = this.observersLock.readLock();
 
         try {
-            rLock.lock();
-            if (observers.containsKey(observer)) {
-                interestedIn = observers.get(observer);
-            }
-            else {
-                rLock.unlock();
-                wLock.lock();
-                interestedIn = new HashSet<>();
-                observers.put(observer, interestedIn);
-            }
+            wLock.lock();
+            if (!observers.containsKey(observer))
+                observers.put(observer, new HashSet<>());
+            interestedIn = observers.get(observer);
         }
         finally {
             wLock.unlock();
-            rLock.unlock();
         }
 
         interestedIn.add(key);
     }
 
-    private void removeObserver(final String key, final Consumer<String> observer) {
+    private void removeObserver(final String key, final KeyObserver observer) {
 
         final Collection<String> keys;
 
@@ -177,7 +168,7 @@ public final class KonfigurationKombiner implements Konfiguration {
 
     private void notifyObserver(final String key) {
 
-        final Map<Consumer<String>, Collection<String>> copy;
+        final Map<KeyObserver, Collection<String>> copy;
 
         val lock = this.observersLock.readLock();
         try {
@@ -204,22 +195,22 @@ public final class KonfigurationKombiner implements Konfiguration {
             try {
                 switch (dataType) {
                     case BOOLEAN:
-                        return source.bool(key);
+                        return source.bool(key).v();
 
                     case INT:
-                        return source.int_(key);
+                        return source.int_(key).v();
 
                     case LONG:
-                        return source.long_(key);
+                        return source.long_(key).v();
 
                     case STRING:
-                        return source.string(key);
+                        return source.string(key).v();
 
                     case LIST:
-                        return source.list(key, el);
+                        return source.list(key, el).v();
 
                     case MAP:
-                        return source.map(key, el);
+                        return source.map(key, el).v();
 
                     case CUSTOM:
                         return source.custom(key, el);
@@ -323,14 +314,14 @@ public final class KonfigurationKombiner implements Konfiguration {
         }
 
         @Override
-        public KonfigV<T> deRegister(final Consumer<String> observer) {
+        public KonfigV<T> deRegister(final KeyObserver observer) {
 
             removeObserver(this.key, observer);
             return this;
         }
 
         @Override
-        public KonfigV<T> register(@NonNull final Consumer<String> observer) {
+        public KonfigV<T> register(@NonNull final KeyObserver observer) {
 
             addObserver(this.key, observer);
             return this;
