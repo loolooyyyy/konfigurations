@@ -1,0 +1,56 @@
+{
+  "something": 0,
+  "meaning of life": 42,
+
+  "someArr" : [
+    1, 2, 3, 4
+  ],
+
+  "obj": {
+    "a": 3,
+    "n": 5
+  },
+
+  "X": null,
+
+  "hahaTmp": {
+    "ahah": {
+      "hoho": "you got me!"
+    },
+    "blabla": 22
+  },
+
+  "aa": {
+    "bb": true
+  },
+
+  "dd": false,
+
+  "veryInt": 2147483647,
+  "veryLong": 9223372036854775807,
+  "veryString": "I'm string",
+
+
+  "intArr": [ 0, 1, 99 ],
+  "lngArr": [ 0, 1, 444, 9223372036854775807 ],
+  "strArr": [ "a", "bb", "ccc" ],
+  "bolArr": [ true, false, true ],
+
+  "intMap": { "a0": 0, "a1": 1, "a2": 99 },
+  "lngMap": { "a0": 0, "a1": 1, "a2": 9223372036854775807 },
+  "strMap": { "a0": "a", "a1": "bb", "a2": "ccc" },
+  "bolMap": { "a0": true, "a1": false, "a2": true },
+
+  "mixMap": { "a0": true, "a1": 3, "a2": "a" },
+
+
+  "splitStr": [
+    "this ",
+    "is ",
+    "one ",
+    "sentence ",
+    "split over ",
+    "multiple ",
+    "lines."
+  ]
+}

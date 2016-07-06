@@ -1,10 +1,6 @@
 package cc.koosha.konfigurations.json;
 
-import cc.koosha.konfigurations.core.KonfigurationBadTypeException;
-import cc.koosha.konfigurations.core.KonfigurationException;
-import cc.koosha.konfigurations.core.KonfigurationMissingKeyException;
-import cc.koosha.konfigurations.core.impl.BaseKonfiguration;
-import cc.koosha.konfigurations.core.impl.KonfigKeyObservers;
+import cc.koosha.konfigurations.core.*;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,60 +10,44 @@ import lombok.val;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.function.Supplier;
+
+import static cc.koosha.konfigurations.core.DummyV.dummy;
 
 
-public final class JsonKonfiguration extends BaseKonfiguration {
+public final class JsonKonfiguration implements Konfiguration {
+
+    public interface ObjectReaderSupplier {
+
+        ObjectReader get();
+
+    }
+
+    public interface JsonSupplier {
+
+        String get();
+
+    }
 
     private static final ObjectReader defaultObjectReader = new ObjectMapper().reader();
 
-    private Supplier<ObjectReader> readerSupplier;
-    private final Supplier<JsonNode> rootSupplier;
+    private final ObjectReaderSupplier readerSupplier;
+    private final JsonSupplier jsonSupplier;
+    private int lastHash;
     private JsonNode root;
 
-    public JsonKonfiguration(@NonNull final String json) {
+    private void ensureNodeType(final JsonNode jsonNode, final Class<?> el) {
 
-        this(() -> json);
+        if(el == long.class && jsonNode.isInt())
+            return;
+
+        if(
+                el == int.class && !jsonNode.isInt()
+                || el == long.class && !jsonNode.isLong()
+                || el == String.class && !jsonNode.isTextual()
+                || el == boolean.class && !jsonNode.isBoolean())
+            throw new KonfigurationBadTypeException("expected " + el + " got" + jsonNode.getNodeType());
+
     }
-
-    public JsonKonfiguration(@NonNull final Supplier<String> json) {
-
-        this(() -> {
-            try {
-                return defaultObjectReader.readTree(json.get());
-            }
-            catch (final IOException e) {
-                throw new KonfigurationException(e);
-            }
-        }, new KonfigKeyObservers(), () -> defaultObjectReader);
-    }
-
-    public JsonKonfiguration(@NonNull final Supplier<JsonNode> json,
-                             @NonNull final KonfigKeyObservers konfigKeyObservers,
-                             @NonNull final Supplier<ObjectReader> objectReader) {
-
-        super(konfigKeyObservers);
-
-        this.rootSupplier = json;
-        this.readerSupplier = objectReader;
-        this.root = this.rootSupplier.get();
-
-        if(this.root == null)
-            throw new NullPointerException("initial root");
-    }
-
-    public final boolean update() {
-
-        final JsonNode update = this.rootSupplier.get();
-
-        if(update == null)
-            return false;
-
-        this.root = update;
-
-        return true;
-    }
-
 
     private static String key(@NonNull final String key) {
 
@@ -78,8 +58,63 @@ public final class JsonKonfiguration extends BaseKonfiguration {
         return k.charAt(0) == '/' ? k : "/" + k;
     }
 
+
+    // _________________________________________________________________________
+
+    public JsonKonfiguration(@NonNull final String json) {
+
+        this(() -> json);
+    }
+
+    public JsonKonfiguration(@NonNull final JsonSupplier json) {
+
+        this(json, () -> defaultObjectReader);
+    }
+
+    public JsonKonfiguration(@NonNull final JsonSupplier jsonSupplier,
+                             @NonNull final ObjectReaderSupplier objectReader) {
+
+        this.jsonSupplier = jsonSupplier;
+        this.readerSupplier = objectReader;
+        this.lastHash = -1;
+
+        this.update();
+    }
+
+
+    // _________________________________________________________________________
+
     @Override
-    protected final String _string(@NonNull final String key) {
+    public boolean update() {
+
+        val newJson = this.jsonSupplier.get();
+        if(newJson == null)
+            return false;
+
+        val newHash = newJson.hashCode();
+        if(newHash == this.lastHash)
+            return false;
+
+        final JsonNode update;
+        try {
+            update = this.readerSupplier.get().readTree(newJson);
+        }
+        catch (final IOException e) {
+            throw new KonfigurationException(e);
+        }
+
+        if(update == null)
+            throw new KonfigurationException("root element is null");
+
+        this.root = update;
+        this.lastHash = newHash;
+
+        return true;
+    }
+
+
+    @Override
+    public KonfigV<String> string(@NonNull final String key) {
 
         val at = this.root.at(key(key));
 
@@ -92,17 +127,17 @@ public final class JsonKonfiguration extends BaseKonfiguration {
                 ensureNodeType(jsonNode, String.class);
                 sb.append(jsonNode.textValue());
             }
-            return sb.toString();
+            return dummy(sb.toString());
         }
         else if(at.isTextual()) {
-            return at.asText();
+            return dummy(at.asText());
         }
 
         throw new KonfigurationBadTypeException("not a string: " + key);
     }
 
     @Override
-    protected final Boolean _bool(@NonNull final String key) {
+    public KonfigV<Boolean> bool(@NonNull final String key) {
 
         val at = this.root.at(key(key));
 
@@ -112,11 +147,11 @@ public final class JsonKonfiguration extends BaseKonfiguration {
         if(!at.isBoolean())
             throw new KonfigurationBadTypeException("not a boolean: " + key);
 
-        return at.asBoolean();
+        return dummy(at.asBoolean());
     }
 
     @Override
-    protected final Long _long(@NonNull final String key) {
+    public KonfigV<Long> long_(@NonNull final String key) {
 
         val at = this.root.at(key(key));
 
@@ -124,15 +159,15 @@ public final class JsonKonfiguration extends BaseKonfiguration {
             throw new KonfigurationMissingKeyException(key);
 
         if(at.isInt())
-            return (long) at.asInt();
+            return dummy((long) at.asInt());
         else if(at.isLong())
-            return at.asLong();
+            return dummy(at.asLong());
         else
             throw new KonfigurationBadTypeException("not a long: " + key);
     }
 
     @Override
-    protected final Integer _int(@NonNull final String key) {
+    public KonfigV<Integer> int_(@NonNull final String key) {
 
         val at = this.root.at(key(key));
 
@@ -142,25 +177,12 @@ public final class JsonKonfiguration extends BaseKonfiguration {
         if(!at.isInt())
             throw new KonfigurationBadTypeException("not an int: " + key);
 
-        return at.asInt();
-    }
-
-    private void ensureNodeType(final JsonNode jsonNode, final Class<?> el) {
-
-        if(el == long.class && jsonNode.isInt())
-            return;
-
-        if(el == int.class && !jsonNode.isInt()
-                || el == long.class && !jsonNode.isLong()
-                || el == String.class && !jsonNode.isTextual()
-                || el == boolean.class && !jsonNode.isBoolean())
-            throw new KonfigurationBadTypeException("expected " + el + " got" + jsonNode.getNodeType());
-
+        return dummy(at.asInt());
     }
 
     @Override
-    protected final <T> List<T> _list(@NonNull final String key,
-                                      @NonNull final Class<T> el) {
+    public <T> KonfigV<List<T>> list(@NonNull final String key,
+                                     @NonNull final Class<T> el) {
 
         val at = this.root.at(key(key));
 
@@ -186,12 +208,12 @@ public final class JsonKonfiguration extends BaseKonfiguration {
                 throw new KonfigurationException(e);
             }
 
-        return Collections.unmodifiableList(list);
+        return dummy(Collections.unmodifiableList(list));
     }
 
     @Override
-    protected final <T> Map<String, T> _map(@NonNull final String key,
-                                            @NonNull final Class<T> el) {
+    public <T> KonfigV<Map<String, T>> map(@NonNull final String key,
+                                           @NonNull final Class<T> el) {
 
         val at = this.root.at(key(key));
 
@@ -222,12 +244,12 @@ public final class JsonKonfiguration extends BaseKonfiguration {
             map.put(next.getKey(), nextParsed);
         }
 
-        return Collections.unmodifiableMap(map);
+        return dummy(Collections.unmodifiableMap(map));
     }
 
     @Override
-    protected Object _custom(@NonNull final String key,
-                             @NonNull final Class<?> el) {
+    public <T> KonfigV<T> custom(@NonNull final String key,
+                                 @NonNull final Class<T> el) {
 
         val jsonNode = this.root.at(key(key));
 
@@ -238,7 +260,7 @@ public final class JsonKonfiguration extends BaseKonfiguration {
 
         try {
             this.ensureNodeType(jsonNode, el);
-            return reader.readValue(jsonNode.traverse(), el);
+            return dummy(reader.readValue(jsonNode.traverse(), el));
         }
         catch (final JsonMappingException e) {
             throw new KonfigurationBadTypeException(e);

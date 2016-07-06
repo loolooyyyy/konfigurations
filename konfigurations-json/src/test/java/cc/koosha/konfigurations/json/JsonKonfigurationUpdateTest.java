@@ -29,7 +29,8 @@ public class JsonKonfigurationUpdateTest {
     private String json1;
     private String currentJson;
 
-    private boolean iWasCalled = false;
+    private String updatedKey = null;
+    private int updatedValue = -1;
 
     @BeforeMethod
     public void setup() throws Exception {
@@ -147,14 +148,15 @@ public class JsonKonfigurationUpdateTest {
     @Test
     public void testRegister() throws Exception {
 
+        final String key = "something";
 
-        final KonfigV<Integer> something0 = konfiguration.int_("something");
 
-        something0.register(s -> iWasCalled = true);
+        assertEquals(updatedValue, 0);
+        assertEquals(updatedKey, null);
 
         this.update();
 
-        assertTrue(iWasCalled);
-
+        assertEquals(updatedValue, 1);
+        assertEquals(updatedKey, key);
     }
 }

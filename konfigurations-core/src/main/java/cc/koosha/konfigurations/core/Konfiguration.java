@@ -4,12 +4,6 @@ import java.util.List;
 import java.util.Map;
 
 
-/**
- * TODO: change this behaviour:
- * Whenever a listener is notified, it does <b>NOT</b> necessarily mean an
- * actual change in the value. It's clients responsibility to check if it
- * matters.
- */
 public interface Konfiguration {
 
     KonfigV<Boolean> bool(String key);
@@ -25,7 +19,9 @@ public interface Konfiguration {
 
     <T> KonfigV<Map<String, T>> map(String key, Class<T> type);
 
-
     <T> KonfigV<T> custom(String key, Class<T> type);
+
+
+    boolean update();
 
 }

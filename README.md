@@ -72,3 +72,24 @@ todo
 ### Multiple sources:
 
 todo
+
+
+### Assumptions / Limitaions:
+
+Shit. this is all wrong
+
+ - A config value may be updated, BUT it will not be removed from a 
+   configuration source, otherwise the behaviour is not predicted.
+   (reason: after an instance of KonfigV is created, it's expected to always
+    return a value, and not be removed).
+
+ - When combining multiple configuration sources, a config key is always read
+   from a single source, and it is NOT moved between different sources.
+   Otherwise, clients of a configuration key will NOT be notified of furthur
+   change and updates.
+   Multiple sources can have the same key (override each other) as long as the
+   overriding key is not removed from the source containing that key.
+
+ - Updates to configuration sources MUST, MUST, MUST take place in a single 
+   thread. Also, they should not be too frequesnt (too frequent as in updateing
+   in a while loop with no delay. A few milli-seconds would do).
