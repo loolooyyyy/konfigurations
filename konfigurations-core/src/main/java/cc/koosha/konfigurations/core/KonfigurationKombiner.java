@@ -83,7 +83,7 @@ public final class KonfigurationKombiner implements Konfiguration {
         return new KonfigVImpl<>(key, KonfigDataType.CUSTOM, type);
     }
 
-    // @TODO notify observers in a separate thread.
+    // @TODO notify each observer in a separate thread?
     public final boolean update() {
 
         boolean up = false;
@@ -100,8 +100,20 @@ public final class KonfigurationKombiner implements Konfiguration {
         if(updatedKeys.size() == 0)
             return false;
 
+        final Map<KeyObserver, Collection<String>> copy;
+        val lock = this.observersLock.readLock();
+        try {
+            lock.lock();
+            copy = new HashMap<>(this.observers);
+        }
+        finally {
+            lock.unlock();
+        }
+
         for (final String updatedKey : updatedKeys)
-            this.notifyObserver(updatedKey);
+            for (val each : copy.entrySet())
+                if (each.getValue().contains(updatedKey))
+                    each.getKey().accept(updatedKey);
 
         return true;
     }
@@ -164,24 +176,6 @@ public final class KonfigurationKombiner implements Konfiguration {
                 wLock.unlock();
             }
         }
-    }
-
-    private void notifyObserver(final String key) {
-
-        final Map<KeyObserver, Collection<String>> copy;
-
-        val lock = this.observersLock.readLock();
-        try {
-            lock.lock();
-            copy = new HashMap<>(this.observers);
-        }
-        finally {
-            lock.unlock();
-        }
-
-        for (val each : copy.entrySet())
-            if (each.getValue().contains(key))
-                each.getKey().accept(key);
     }
 
 
