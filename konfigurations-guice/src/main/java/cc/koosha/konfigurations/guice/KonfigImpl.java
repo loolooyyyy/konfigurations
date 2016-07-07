@@ -13,15 +13,16 @@ import static java.lang.String.format;
 
 @SuppressWarnings("ClassExplicitlyAnnotation")
 @RequiredArgsConstructor
-@Getter
 @Accessors(fluent = true)
 final class KonfigImpl implements Konfig {
 
     private static final long serialVersionUID = 0;
 
     @NonNull
+    @Getter
     private final String value;
 
+    @Getter
     private final Class<? extends Annotation> annotationType = Konfig.class;
 
 

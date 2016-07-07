@@ -1,5 +1,4 @@
 allprojects {
-
     apply plugin: 'java'
 
     group 'cc.koosha'
@@ -8,30 +7,10 @@ allprojects {
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
 
-
     repositories {
         mavenCentral()
         mavenLocal()
     }
-
-
-    compileJava {
-        options.compilerArgs << '-Xlint:unchecked'
-    }
-
-    test {
-        useTestNG()
-    }
-
-
-    dependencies {
-        compile 'org.projectlombok:lombok:1.16.8'
-        testCompile 'org.testng:testng:6.9.10'
-
-        testCompile 'org.slf4j:slf4j-api:1.7.21'
-        testCompile 'org.slf4j:slf4j-simple:1.7.21'
-    }
-
 
     task sourcesJar(type: Jar, dependsOn: classes) {
         classifier = 'sources'
@@ -48,3 +27,35 @@ allprojects {
         archives javadocJar
     }
 }
+
+subprojects {
+    compileJava {
+        options.compilerArgs << '-Xlint:unchecked'
+    }
+
+    test {
+        useTestNG()
+    }
+
+    dependencies {
+        compile 'org.projectlombok:lombok:1.16.8'
+
+        testCompile 'org.testng:testng:6.9.10'
+        testCompile 'org.slf4j:slf4j-api:1.7.21'
+        testCompile 'org.slf4j:slf4j-simple:1.7.21'
+    }
+}
+
+task allJar(type: Jar, dependsOn: subprojects.tasks["build"]) {
+    baseName = 'allJar'
+    subprojects.each { subproject ->
+        from subproject.configurations.archives.allArtifacts.files.collect {
+            zipTree(it)
+        }
+    }
+}
+
+artifacts {
+    archives allJar
+}
+

@@ -48,4 +48,5 @@ public class KonfigurationKombinerMemoryLeakTest extends KonfigurationKombinerBa
 
         assertTrue(run.get());
     }
+
 }

@@ -29,11 +29,8 @@ public final class KonfigTypeListener implements TypeListener {
 
         while (clazz != null && clazz != Object.class) {
             for (val field : clazz.getDeclaredFields())
-                if (field.getType().isAssignableFrom(KonfigV.class)
-                        && field.isAnnotationPresent(Konfig.class)) {
-                    val config = field.getAnnotation(Konfig.class);
-                    this.processField(field, encounter, config);
-                }
+                if (field.getType().isAssignableFrom(KonfigV.class) && field.isAnnotationPresent(Konfig.class))
+                    this.processField(field, encounter, field.getAnnotation(Konfig.class));
 
             clazz = clazz.getSuperclass();
         }
@@ -87,9 +84,9 @@ public final class KonfigTypeListener implements TypeListener {
     private Object injectByComplexType(final Type neededType,
                                        final Konfig konfig) {
 
-        val cazt = (ParameterizedType) neededType;
-        val rawType = cazt.getRawType();
-        val actual = cazt.getActualTypeArguments();
+        val kast = (ParameterizedType) neededType;
+        val rawType = kast.getRawType();
+        val actual = kast.getActualTypeArguments();
 
         final Object value;
 
