@@ -30,7 +30,7 @@ public class KonfigurationKombinerBaseTest {
             "int key", dummy(42)
     );
 
-    protected Map<String, Object> sample;
+    protected Map<String, Object> sample = sample0;
     protected String updatedKey0;
     protected String updatedKey1;
 
