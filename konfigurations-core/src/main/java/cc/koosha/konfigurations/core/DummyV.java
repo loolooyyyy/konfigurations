@@ -9,8 +9,10 @@ public final class DummyV<T> implements KonfigV<T> {
         this.v = v;
     }
 
-    public static <T> DummyV<T> dummy(final T v) {
-        return new DummyV<>(v);
+    @SuppressWarnings("unchecked")
+    public static <T> DummyV<T> dummy(final Object v) {
+
+        return new DummyV<T>((T) v);
     }
 
     @Override
