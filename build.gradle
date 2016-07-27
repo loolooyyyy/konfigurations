@@ -49,9 +49,6 @@ subprojects {
 task allJar(type: Jar, dependsOn: subprojects.tasks["build"]) {
     baseName = 'allJar'
     subprojects.each { subproject ->
-        println "fuck"
-        println subproject.configurations.archives.artifacts
-
         from subproject.configurations.archives.artifacts.files.collect {
             zipTree(it)
         }
