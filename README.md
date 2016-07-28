@@ -61,12 +61,9 @@ Konfiguration local  = new JsonKonfiguration(stringFromDisk);
 Konfiguration web    = new JsonKonfiguration(stringFromWeb);
 Konfiguration konfig = new KonfigurationKombiner(local, web); // Kombine!
 
-// Look until it's found
-assert "hello" == konfig.string("only.local").v();
-assert "goodbye" == konfig.string("only.web").v();
-
-// Override, local disk is first in list and has higher priority
-assert "I'm local" == konfig.string("myName").v();
+assert "hello" == konfig.string("only.local").v(); // only in local
+assert "goodbye" == konfig.string("only.web").v(); // only in web
+assert "I'm local" == konfig.string("myName").v(); // local takaes priority
 
 ```
 
@@ -81,26 +78,23 @@ possible.
 
 ```java
 
-public class KonfigTest {
+public class KonfigDemo {
 
-    static String theJsonKonfigString;
+    static String theJsonKonfigString; // From disk, classpath, web or ...
     static Konfiguration konfig;
 
     private static void setup() {
-        theJsonKonfigString = "{ \"allowed\": true }";
-
-        // Put the actual source in a Kombiner and forget about it.
+        theJsonKonfigString = "{ \"isAllowed\": true }";
         Konfiguration _jsonKonfig = new JsonKonfiguration(() -> theJsonKonfigString);
         konfig = new KonfigurationKombiner(_jsonKonfig);
     }
     
+    // Update the configuration. You would want to do the updaing and 
+    // calling the update() on Kombiner periodrically in a separate thread.
+    // The string supplier we gave to JsonKonfiguration, will read this
+    // new string and update everything accordingly.
     private static void updateConfig() {
-        // Update the configuration. You would want to do the updaing and 
-        // calling the update() on Kombiner periodrically in a separate thread.
-
-        // The string supplier we gave to JsonKonfiguration, will read this
-        // new string and update everything accordingly.
-        theJsonKonfigString = "{ \"allowed\": false }";
+        theJsonKonfigString = "{ \"isAllowed\": false }";
         konfig.update(); // Must be called!
     }
 
@@ -109,19 +103,21 @@ public class KonfigTest {
         setup();
 
         // Initial value, true as set above in the string.
-        KonfigV<Boolean> amICool = konfig.bool("allowed");
-        assert amICool.v();
+        KonfigV<Boolean> amIAllowed = konfig.bool("isAllowed");
+        assert amIAllowed.v();
 
         // Get notified when the key <something> changes.
-        amICool.register(updatedKey -> {
+        amIAllowed.register(updatedKey -> {
             System.out.println("\n Hey! the key <something> was updated!";
-            System.out.println("\n Now it is: " + konfig.bool(updatedKey)); // or use amICool.v() directly.
+            boolean newSettings = konfig.bool(updatedKey);
+            System.out.println("\n Now it is: " + newSettings);
+            // also possible: boolean newSettings = amIAllowed.v();
         });
 
         updateConfig();
 
         // By now, the System.out.println(...) thing we wrote above is also called.
-        assert !amICool.v();
+        assert !amIAllowed.v();
     }
 }
 

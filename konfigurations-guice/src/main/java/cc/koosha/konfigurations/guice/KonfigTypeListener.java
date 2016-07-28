@@ -125,4 +125,9 @@ public final class KonfigTypeListener implements TypeListener {
         return value;
     }
 
+    public static Konfig annon(final String value) {
+
+        return new KonfigImpl(value);
+    }
+
 }

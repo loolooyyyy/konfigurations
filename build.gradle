@@ -59,3 +59,5 @@ artifacts {
     archives allJar
 }
 
+
+defaultTasks 'allJar'

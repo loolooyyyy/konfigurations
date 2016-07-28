@@ -322,6 +322,36 @@ public final class KonfigurationKombiner implements Konfiguration {
         }
 
         @Override
+        public KonfigV<T> deRegister(final SimpleObserver observer) {
+
+            addObserver(this.key, new SimpleObserverWrapper(observer));
+            return this;
+        }
+
+        @Override
+        public KonfigV<T> register(final SimpleObserver observer) {
+
+            addObserver(this.key, new SimpleObserverWrapper(observer));
+            return this;
+        }
+
+        @Override
+        public KonfigV<T> registerAndCall(final KeyObserver observer) {
+
+            addObserver(this.key, observer);
+            observer.accept(this.key);
+            return this;
+        }
+
+        @Override
+        public KonfigV<T> registerAndCall(final SimpleObserver observer) {
+
+            addObserver(this.key, new SimpleObserverWrapper(observer));
+            observer.accept();
+            return this;
+        }
+
+        @Override
         public String key() {
 
             return this.key;
@@ -387,6 +417,22 @@ public final class KonfigurationKombiner implements Konfiguration {
             return result;
         }
 
+    }
+
+    private static final class SimpleObserverWrapper implements KeyObserver {
+
+        private final SimpleObserver wrapped;
+
+        private SimpleObserverWrapper(final SimpleObserver wrapped) {
+
+            this.wrapped = wrapped;
+        }
+
+        @Override
+        public void accept(final String key) {
+
+            this.wrapped.accept();
+        }
     }
 
 }

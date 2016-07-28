@@ -12,7 +12,7 @@ public final class DummyV<T> implements KonfigV<T> {
     @SuppressWarnings("unchecked")
     public static <T> DummyV<T> dummy(final Object v) {
 
-        return new DummyV<T>((T) v);
+        return new DummyV<>((T) v);
     }
 
     @Override
@@ -22,6 +22,26 @@ public final class DummyV<T> implements KonfigV<T> {
 
     @Override
     public KonfigV<T> register(final KeyObserver observer) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public KonfigV<T> deRegister(final SimpleObserver observer) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public KonfigV<T> register(final SimpleObserver observer) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public KonfigV<T> registerAndCall(final KeyObserver observer) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public KonfigV<T> registerAndCall(final SimpleObserver observer) {
         throw new UnsupportedOperationException();
     }
 
