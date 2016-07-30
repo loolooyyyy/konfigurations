@@ -14,8 +14,7 @@ public class JsonKonfigurationBaseTest {
     protected static final String dummyFile = "/cc/koosha/konfigurations/json/dummyConfig.json";
     protected JsonKonfiguration konfiguration;
 
-    @BeforeClass
-    public void setup() throws Exception {
+    protected final String content() {
 
         final String content;
 
@@ -28,7 +27,13 @@ public class JsonKonfigurationBaseTest {
             throw new RuntimeException(e);
         }
 
-        this.konfiguration = new JsonKonfiguration(content);
+        return content;
+    }
+
+    @BeforeClass
+    public void setup() {
+
+        this.konfiguration = new JsonKonfiguration(content());
     }
 
     @SuppressWarnings({"unchecked", "Duplicates"})

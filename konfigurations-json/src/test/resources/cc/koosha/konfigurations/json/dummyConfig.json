@@ -43,7 +43,6 @@
 
   "mixMap": { "a0": true, "a1": 3, "a2": "a" },
 
-
   "splitStr": [
     "this ",
     "is ",
@@ -52,5 +51,7 @@
     "split over ",
     "multiple ",
     "lines."
-  ]
+  ],
+
+  "customValue": "03:15"
 }

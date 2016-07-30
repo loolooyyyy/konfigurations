@@ -1,6 +1,7 @@
 package cc.koosha.konfigurations.json;
 
 import cc.koosha.konfigurations.core.*;
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -248,7 +249,9 @@ public final class JsonKonfiguration implements Konfiguration {
 
         try {
             this.ensureNodeType(jsonNode, el);
-            return dummy(reader.readValue(jsonNode.traverse(), el));
+            final JsonParser traverse = jsonNode.traverse();
+            final T readT = reader.readValue(traverse, el);
+            return dummy(readT);
         }
         catch (final JsonMappingException e) {
             throw new KonfigurationBadTypeException(e);
