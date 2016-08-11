@@ -1,4 +1,4 @@
-package cc.koosha.konfigurations.json;
+package cc.koosha.konfigurations.core.json;
 
 
 public interface Provider<T> {

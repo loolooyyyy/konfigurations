@@ -1,4 +1,4 @@
 rootProject.name = 'konfigurations'
 
-include 'konfigurations-core', 'konfigurations-json', 'konfigurations-guice'
+include 'konfigurations-core', 'konfigurations-guice'
 
