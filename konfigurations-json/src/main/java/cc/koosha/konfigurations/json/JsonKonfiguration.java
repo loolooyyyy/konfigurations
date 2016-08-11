@@ -52,12 +52,22 @@ public final class JsonKonfiguration implements Konfiguration {
 
     public JsonKonfiguration(@NonNull final String json) {
 
-        this(() -> json);
+        this(new Provider<String>() {
+            @Override
+            public String get() {
+                return json;
+            }
+        });
     }
 
     public JsonKonfiguration(@NonNull final Provider<String> json) {
 
-        this(json, () -> defaultObjectReader);
+        this(json, new Provider<ObjectReader>() {
+            @Override
+            public ObjectReader get() {
+                return defaultObjectReader;
+            }
+        });
     }
 
     public JsonKonfiguration(@NonNull final Provider<String> json,

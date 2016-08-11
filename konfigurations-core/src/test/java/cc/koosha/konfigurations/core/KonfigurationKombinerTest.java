@@ -16,9 +16,24 @@ public class KonfigurationKombinerTest extends KonfigurationKombinerBaseTest {
         final KonfigV<List<Integer>> list = kk.list("list key", int.class);
         final KonfigV<Integer> i = kk.int_("int key");
 
-        string.register(s -> updatedKey0 = s);
-        list.register(s -> updatedKey1 = s);
-        i.register(s -> {throw new RuntimeException();});
+        string.register(new KeyObserver() {
+            @Override
+            public void accept(final String s) {
+                updatedKey0 = s;
+            }
+        });
+        list.register(new KeyObserver() {
+            @Override
+            public void accept(final String s) {
+                updatedKey1 = s;
+            }
+        });
+        i.register(new KeyObserver() {
+            @Override
+            public void accept(final String s) {
+                throw new RuntimeException();
+            }
+        });
 
         assertNull(updatedKey0);
         assertNull(updatedKey1);

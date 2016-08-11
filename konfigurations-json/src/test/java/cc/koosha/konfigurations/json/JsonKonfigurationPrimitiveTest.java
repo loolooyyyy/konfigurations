@@ -1,6 +1,7 @@
 package cc.koosha.konfigurations.json;
 
 import cc.koosha.konfigurations.core.KonfigV;
+import lombok.val;
 import org.testng.annotations.Test;
 
 import java.util.Map;
@@ -18,10 +19,10 @@ public class JsonKonfigurationPrimitiveTest extends JsonKonfigurationBaseTest {
                 "hahaTmp.ahah.hoho", "you got me!"
         );
 
-        m.forEach((k, v) -> {
-            final KonfigV<String> konfig = konfiguration.string(k);
-            assertEquals(konfig.v(), v);
-        });
+        for (val e : m.entrySet()) {
+            final KonfigV<String> konfig = konfiguration.string(e.getKey());
+            assertEquals(konfig.v(), e.getValue());
+        }
     }
 
     @Test
@@ -32,10 +33,10 @@ public class JsonKonfigurationPrimitiveTest extends JsonKonfigurationBaseTest {
                 "dd", false
         );
 
-        m.forEach((k, v) -> {
-            final KonfigV<Boolean> konfig = konfiguration.bool(k);
-            assertEquals(konfig.v(), v);
-        });
+        for (val e : m.entrySet()) {
+            final KonfigV<Boolean> konfig = konfiguration.bool(e.getKey());
+            assertEquals(konfig.v(), e.getValue());
+        }
     }
 
     @Test
@@ -47,10 +48,10 @@ public class JsonKonfigurationPrimitiveTest extends JsonKonfigurationBaseTest {
                 "veryLong", Long.MAX_VALUE
         );
 
-        m.forEach((k, v) -> {
-            final KonfigV<Long> konfig = konfiguration.long_(k);
-            assertEquals(konfig.v(), v);
-        });
+        for (val e : m.entrySet()) {
+            final KonfigV<Long> konfig = konfiguration.long_(e.getKey());
+            assertEquals(konfig.v(), e.getValue());
+        }
     }
 
     @Test
@@ -64,10 +65,10 @@ public class JsonKonfigurationPrimitiveTest extends JsonKonfigurationBaseTest {
                 "obj.n", 5
         );
 
-        m.forEach((k, v) -> {
-            final KonfigV<Integer> konfig = konfiguration.int_(k);
-            assertEquals(konfig.v(), v);
-        });
+        for (val e : m.entrySet()) {
+            final KonfigV<Integer> konfig = konfiguration.int_(e.getKey());
+            assertEquals(konfig.v(), e.getValue());
+        }
     }
 
 

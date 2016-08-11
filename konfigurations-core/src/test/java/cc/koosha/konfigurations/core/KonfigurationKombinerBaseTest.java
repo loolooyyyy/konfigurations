@@ -18,13 +18,13 @@ public class KonfigurationKombinerBaseTest {
     protected final List<Integer> l0 = Arrays.asList(0, 1, 2, Integer.MAX_VALUE, Integer.MAX_VALUE);
     protected final List<Integer> l1 = Arrays.asList(42, 43, 434);
 
-    protected final Map<String, Object> sample0 = map(
+    protected final Map<String, Object> sample0 = KonfigurationKombinerBaseTest.<Object>map(
             "str key", dummy(str0),
             "list key", dummy(l0),
             "int key", dummy(42)
     );
 
-    protected final Map<String, Object> sample1 = map(
+    protected final Map<String, Object> sample1 = KonfigurationKombinerBaseTest.<Object>map(
             "str key", dummy(str1),
             "list key", dummy(l1),
             "int key", dummy(42)

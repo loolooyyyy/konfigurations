@@ -122,22 +122,22 @@ public final class DummyV<T> implements KonfigV<T> {
 
     public static <T> DummyV<Collection<T>> emptyCollection() {
 
-        return new DummyV<>(Collections.emptyList());
+        return new DummyV<Collection<T>>(Collections.<T>emptyList());
     }
 
     public static <T> DummyV<List<T>> emptyList() {
 
-        return new DummyV<>(Collections.emptyList());
+        return new DummyV<List<T>>(Collections.<T>emptyList());
     }
 
     public static <K, V> DummyV<Map<K, V>> emptyMap() {
 
-        return new DummyV<>(Collections.emptyMap());
+        return new DummyV<Map<K, V>>(Collections.<K, V>emptyMap());
     }
 
     public static <T> DummyV<Set<T>> emptySet() {
 
-        return new DummyV<>(Collections.emptySet());
+        return new DummyV<Set<T>>(Collections.<T>emptySet());
     }
 
 }

@@ -53,22 +53,25 @@ public final class KonfigTypeListener implements TypeListener {
         val neededType = actual[0];
 
         // Inject
-        encounter.register((MembersInjector<T>) instance -> {
-            final Object value;
+        encounter.register(new MembersInjector<T>() {
+            @Override
+            public void injectMembers(final T instance) {
+                final Object value;
 
-            if(neededType instanceof Class)
-                value = this.injectByBaseType(neededType, konfig);
-            else if(neededType instanceof ParameterizedType)
-                value = injectByComplexType(neededType, konfig);
-            else
-                throw new KonfigurationException("unknown needed type: " + neededType);
+                if (neededType instanceof Class)
+                    value = KonfigTypeListener.this.injectByBaseType(neededType, konfig);
+                else if (neededType instanceof ParameterizedType)
+                    value = KonfigTypeListener.this.injectByComplexType(neededType, konfig);
+                else
+                    throw new KonfigurationException("unknown needed type: " + neededType);
 
-            try {
-                field.setAccessible(true);
-                field.set(instance, value);
-            }
-            catch (final IllegalAccessException e) {
-                throw new KonfigurationException(e);
+                try {
+                    field.setAccessible(true);
+                    field.set(instance, value);
+                }
+                catch (final IllegalAccessException e) {
+                    throw new KonfigurationException(e);
+                }
             }
         });
     }

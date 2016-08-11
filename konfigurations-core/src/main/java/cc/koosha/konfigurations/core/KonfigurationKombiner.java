@@ -128,7 +128,7 @@ public final class KonfigurationKombiner implements Konfiguration {
             = new WeakHashMap<>();
 
     private final Map<KonfigurationKombiner.KonfigVImpl, Void> values
-            = Collections.synchronizedMap(new WeakHashMap<>());
+            = Collections.synchronizedMap(new WeakHashMap<KonfigurationKombiner.KonfigVImpl, Void>());
 
     private void addObserver(final String key, final KeyObserver observer) {
 
@@ -138,7 +138,7 @@ public final class KonfigurationKombiner implements Konfiguration {
         try {
             wLock.lock();
             if (!observers.containsKey(observer))
-                observers.put(observer, new HashSet<>());
+                observers.put(observer, new HashSet<String>());
             interestedIn = observers.get(observer);
         }
         finally {

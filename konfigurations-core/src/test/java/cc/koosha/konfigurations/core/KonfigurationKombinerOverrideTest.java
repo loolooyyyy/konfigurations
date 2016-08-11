@@ -3,6 +3,7 @@ package cc.koosha.konfigurations.core;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import static org.testng.Assert.*;
@@ -17,11 +18,16 @@ public class KonfigurationKombinerOverrideTest extends KonfigurationKombinerBase
     @BeforeMethod
     public void setup() {
 
-        konfigMap =  map(
-            "str key", str1,
-            "list key", l1
-        );
-        inMem = new InMemoryKonfiguration(() -> this.konfigMap);
+        konfigMap = new HashMap<>();
+        konfigMap.put("str key", str1);
+        konfigMap.put("list key", l1);
+
+        inMem = new InMemoryKonfiguration(new InMemoryKonfiguration.KonfigMapProvider() {
+            @Override
+            public Map<String, Object> get() {
+                return KonfigurationKombinerOverrideTest.this.konfigMap;
+            }
+        });
         konfig = new KonfigurationKombiner(this.inMem, super.dummyKonfig);
     }
 

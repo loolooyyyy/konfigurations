@@ -1,10 +1,9 @@
 package cc.koosha.konfigurations.json;
 
-import cc.koosha.konfigurations.core.KonfigV;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import lombok.AllArgsConstructor;
@@ -54,7 +53,17 @@ public class JsonKonfigurationCustomTypeTest extends JsonKonfigurationBaseTest {
         sm.addDeserializer(CustomType.class, new CustomTypeJacksonDeserializer());
         r.registerModule(sm);
 
-        this.konfiguration = new JsonKonfiguration(() -> c, r::reader);
+        this.konfiguration = new JsonKonfiguration(new Provider<String>() {
+            @Override
+            public String get() {
+                return c;
+            }
+        }, new Provider<ObjectReader>() {
+            @Override
+            public ObjectReader get() {
+                return r.reader();
+            }
+        });
 
         final CustomType customValue = this.konfiguration
                 .custom("customValue", CustomType.class).v();

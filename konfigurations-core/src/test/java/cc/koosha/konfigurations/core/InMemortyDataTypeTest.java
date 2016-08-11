@@ -20,7 +20,12 @@ public class InMemortyDataTypeTest {
         this.konfigMap.put("str key", "i'm string");
         this.konfigMap.put("me int", 42);
 
-        this.inMem = new InMemoryKonfiguration(() -> this.konfigMap);
+        this.inMem = new InMemoryKonfiguration(new InMemoryKonfiguration.KonfigMapProvider() {
+            @Override
+            public Map<String, Object> get() {
+                return InMemortyDataTypeTest.this.konfigMap;
+            }
+        });
         this.konfig = new KonfigurationKombiner(this.inMem);
     }
 
