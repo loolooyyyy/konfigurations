@@ -3,4 +3,5 @@ dependencies {
     //compile 'com.google.code.gson:gson:2.6.2'
     compileOnly 'com.fasterxml.jackson.core:jackson-core:2.7.5'
     compileOnly 'com.fasterxml.jackson.core:jackson-databind:2.7.5'
+    compileOnly 'com.google.inject:guice:4.0'
 }

@@ -1,6 +1,5 @@
-package cc.koosha.konfigurations.guice;
+package cc.koosha.konfigurations.core;
 
-import cc.koosha.konfigurations.core.Konfig;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +13,7 @@ import static java.lang.String.format;
 @SuppressWarnings("ClassExplicitlyAnnotation")
 @RequiredArgsConstructor
 @Accessors(fluent = true)
-final class KonfigImpl implements Konfig {
+public final class KonfigImpl implements Konfig {
 
     private static final long serialVersionUID = 0;
 

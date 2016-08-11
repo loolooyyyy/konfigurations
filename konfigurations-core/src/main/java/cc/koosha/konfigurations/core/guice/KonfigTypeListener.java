@@ -1,4 +1,4 @@
-package cc.koosha.konfigurations.guice;
+package cc.koosha.konfigurations.core.guice;
 
 import cc.koosha.konfigurations.core.*;
 import com.google.inject.MembersInjector;
