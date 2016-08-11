@@ -1,5 +1,6 @@
 package cc.koosha.konfigurations.core;
 
+import cc.koosha.konfigurations.core.impl.KonfigurationKombiner;
 import lombok.val;
 import org.testng.annotations.Test;
 

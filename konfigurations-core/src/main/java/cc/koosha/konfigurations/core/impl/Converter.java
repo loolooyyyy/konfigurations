@@ -1,4 +1,4 @@
-package cc.koosha.konfigurations.core;
+package cc.koosha.konfigurations.core.impl;
 
 
 public interface Converter<F, T> {

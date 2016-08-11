@@ -1,4 +1,4 @@
-package cc.koosha.konfigurations.core.json;
+package cc.koosha.konfigurations.core.impl;
 
 import cc.koosha.konfigurations.core.*;
 import com.fasterxml.jackson.core.JsonParser;
@@ -17,8 +17,8 @@ import static cc.koosha.konfigurations.core.DummyV.dummy;
 
 public final class JsonKonfiguration implements Konfiguration {
 
-    private final Provider<ObjectReader> readerSupplier;
-    private final Provider<String> json;
+    private final Supplier<ObjectReader> readerSupplier;
+    private final Supplier<String> json;
     private int lastHash;
     private JsonNode root;
 
@@ -50,7 +50,7 @@ public final class JsonKonfiguration implements Konfiguration {
 
     public JsonKonfiguration(@NonNull final String json) {
 
-        this(new Provider<String>() {
+        this(new Supplier<String>() {
             @Override
             public String get() {
                 return json;
@@ -58,11 +58,11 @@ public final class JsonKonfiguration implements Konfiguration {
         });
     }
 
-    public JsonKonfiguration(@NonNull final Provider<String> json) {
+    public JsonKonfiguration(@NonNull final Supplier<String> json) {
 
         final ObjectReader reader = new ObjectMapper().reader();
         this.json = json;
-        this.readerSupplier = new Provider<ObjectReader>() {
+        this.readerSupplier = new Supplier<ObjectReader>() {
             @Override
             public ObjectReader get() {
                 return reader;
@@ -73,8 +73,8 @@ public final class JsonKonfiguration implements Konfiguration {
         this.update();
     }
 
-    public JsonKonfiguration(@NonNull final Provider<String> json,
-                             @NonNull final Provider<ObjectReader> objectReader) {
+    public JsonKonfiguration(@NonNull final Supplier<String> json,
+                             @NonNull final Supplier<ObjectReader> objectReader) {
 
         this.json = json;
         this.readerSupplier = objectReader;

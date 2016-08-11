@@ -1,5 +1,6 @@
-package cc.koosha.konfigurations.core;
+package cc.koosha.konfigurations.core.impl;
 
+import cc.koosha.konfigurations.core.*;
 import lombok.NonNull;
 import lombok.val;
 
@@ -19,23 +20,8 @@ public final class KonfigurationKombiner implements Konfiguration {
 
     public KonfigurationKombiner(@NonNull final Collection<Konfiguration> sources) {
 
-        this.converters = Collections.emptyMap();
         this.sources = new ArrayList<>(sources);
     }
-
-    public KonfigurationKombiner(@NonNull final Map<Class<?>, Converter<?, ?>> converters,
-                                 @NonNull final Konfiguration... sources) {
-
-        this(converters, Arrays.asList(sources));
-    }
-
-    public KonfigurationKombiner(@NonNull final Map<Class<?>, Converter<?, ?>> converters,
-                                 @NonNull final Collection<Konfiguration> sources) {
-
-        this.converters = new HashMap<>(converters);
-        this.sources = new ArrayList<>(sources);
-    }
-
 
     // _________________________________________________________________________
 
@@ -193,7 +179,6 @@ public final class KonfigurationKombiner implements Konfiguration {
     }
 
 
-    private final Map<Class<?>, Converter<?, ?>> converters;
     private final Collection<Konfiguration> sources;
 
     private Object fetch(final String key,

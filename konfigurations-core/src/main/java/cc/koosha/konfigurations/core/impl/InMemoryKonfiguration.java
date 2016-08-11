@@ -1,5 +1,6 @@
-package cc.koosha.konfigurations.core;
+package cc.koosha.konfigurations.core.impl;
 
+import cc.koosha.konfigurations.core.*;
 import lombok.NonNull;
 import lombok.val;
 
