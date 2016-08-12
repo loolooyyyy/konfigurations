@@ -207,7 +207,7 @@ public final class KonfigurationKombiner implements Konfiguration {
                         return source.map(key, el).v();
 
                     case CUSTOM:
-                        return source.custom(key, el);
+                        return source.custom(key, el).v();
 
                     default:
                         // shouldn't happen
