@@ -170,3 +170,8 @@ assert "I'm very multi line." == konfig.string("someLongStr");
    Konfiguration,MUST, MUST, MUST take place in a single thread. 
    Also, they should not be too frequesnt (too frequent as in constantly 
    calling update() in a while loop with no delay. A few milli-seconds would do).
+ 
+ - Currently, custom types and ALL the required fields corresponding to those 
+   read from json string, MUST be public. (jackson wont find private, protected
+   and package local fields AND classes (important: both class and fields, must
+   be public)). This affects list(), map() and custom() methods.
