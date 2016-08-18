@@ -1,0 +1,59 @@
+{
+
+    "some": {
+        "map": { "a": 1, "b": 2, "c": 0 }
+    },
+
+    "a": {
+        "list": [ "a", "b", "c" ]
+    },
+
+    "cus": {
+        "tom": {
+            "a": 23,
+            "name": "hello",
+            "family": "me"
+        }
+    },
+
+    "listOf": {
+        "customs": [
+            {
+                "a": 10,
+                "name": "name10",
+                "family": "family10"
+            },
+            {
+                "a": 20,
+                "name": "name20",
+                "family": "family20"
+            },
+            {
+                "a": 30,
+                "name": "name30",
+                "family": "family30"
+            }
+        ]
+    },
+
+    "mapOf": {
+        "a":
+            {
+                "a": 10,
+                "name": "name10",
+                "family": "family10"
+            },
+        "b":
+            {
+                "a": 20,
+                "name": "name20",
+                "family": "family20"
+            },
+        "c":
+            {
+                "a": 30,
+                "name": "name30",
+                "family": "family30"
+            }
+    }
+}

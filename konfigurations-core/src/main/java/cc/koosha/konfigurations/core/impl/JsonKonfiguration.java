@@ -2,15 +2,13 @@ package cc.koosha.konfigurations.core.impl;
 
 import cc.koosha.konfigurations.core.*;
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.*;
 import lombok.NonNull;
 import lombok.val;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 
 import static cc.koosha.konfigurations.core.DummyV.dummy;
 
@@ -186,7 +184,7 @@ public final class JsonKonfiguration implements Konfiguration {
     public <T> KonfigV<List<T>> list(@NonNull final String key,
                                      @NonNull final Class<T> el) {
 
-        val at = this.root.at(key(key));
+        final JsonNode at = this.root.at(key(key));
 
         if(at.isMissingNode())
             throw new KonfigurationMissingKeyException(key);
@@ -194,30 +192,42 @@ public final class JsonKonfiguration implements Konfiguration {
         if(!at.isArray())
             throw new KonfigurationBadTypeException("not an array: " + key);
 
-        final List<T> list = new ArrayList<>(at.size());
-
         val reader = this.readerSupplier.get();
-        for (final JsonNode jsonNode : at)
-            try {
-                this.ensureNodeType(jsonNode, el);
-                final T toAdd = reader.readValue(jsonNode.traverse(), el);
-                list.add(toAdd);
-            }
-            catch (final JsonMappingException e) {
-                throw new KonfigurationBadTypeException(e);
-            }
-            catch (final IOException e) {
-                throw new KonfigurationException(e);
-            }
 
-        return dummy(Collections.unmodifiableList(list));
+        final JavaType javaType =
+                reader.getTypeFactory().constructCollectionType(List.class, el);
+
+        try {
+            final List<T> list = reader.readValue(at.traverse(), javaType);
+            return dummy(list);
+        }
+        catch (final IOException e) {
+            throw new KonfigurationException(e);
+        }
+
+//        final List<T> list = new ArrayList<>(at.size());
+//
+//        for (final JsonNode jsonNode : at)
+//            try {
+//                this.ensureNodeType(jsonNode, el);
+//                final T toAdd = reader.readValue(jsonNode.traverse(), el);
+//                list.add(toAdd);
+//            }
+//            catch (final JsonMappingException e) {
+//                throw new KonfigurationBadTypeException(e);
+//            }
+//            catch (final IOException e) {
+//                throw new KonfigurationException(e);
+//            }
+//
+//        return dummy(Collections.unmodifiableList(list));
     }
 
     @Override
     public <T> KonfigV<Map<String, T>> map(@NonNull final String key,
                                            @NonNull final Class<T> el) {
 
-        val at = this.root.at(key(key));
+        final JsonNode at = this.root.at(key(key));
 
         if(at.isMissingNode())
             throw new KonfigurationMissingKeyException(key);
@@ -225,28 +235,38 @@ public final class JsonKonfiguration implements Konfiguration {
         if(!at.isObject())
             throw new KonfigurationBadTypeException("not a map: " + key);
 
-        final Map<String, T> map = new HashMap<>(at.size());
-
         val reader = this.readerSupplier.get();
 
-        final Iterator<Map.Entry<String, JsonNode>> iter = at.fields();
-        while(iter.hasNext()) {
-            final Map.Entry<String, JsonNode> next = iter.next();
-            this.ensureNodeType(next.getValue(), el);
-            final T nextParsed;
-            try {
-                nextParsed = reader.readValue(next.getValue().traverse(), el);
-            }
-            catch (final JsonMappingException e) {
-                throw new KonfigurationBadTypeException(e);
-            }
-            catch (final IOException e) {
-                throw new KonfigurationException(e);
-            }
-            map.put(next.getKey(), nextParsed);
+        final JavaType javaType =
+                reader.getTypeFactory().constructMapType(Map.class, String.class, el);
+
+        try {
+            final Map<String, T> map = reader.readValue(at.traverse(), javaType);
+            return dummy(map);
+        }
+        catch (final IOException e) {
+            throw new KonfigurationException(e);
         }
 
-        return dummy(Collections.unmodifiableMap(map));
+//        final Map<String, T> map = new HashMap<>(at.size());
+//        final Iterator<Map.Entry<String, JsonNode>> iter = at.fields();
+//        while(iter.hasNext()) {
+//            final Map.Entry<String, JsonNode> next = iter.next();
+//            this.ensureNodeType(next.getValue(), el);
+//            final T nextParsed;
+//            try {
+//                nextParsed = reader.readValue(next.getValue().traverse(), el);
+//            }
+//            catch (final JsonMappingException e) {
+//                throw new KonfigurationBadTypeException(e);
+//            }
+//            catch (final IOException e) {
+//                throw new KonfigurationException(e);
+//            }
+//            map.put(next.getKey(), nextParsed);
+//        }
+//
+//        return dummy(Collections.unmodifiableMap(map));
     }
 
     @Override
