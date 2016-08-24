@@ -72,4 +72,10 @@ public final class SubsetKonfiguration implements Konfiguration {
         return new SubsetKonfiguration(this.wrapped, this.baseKey + key);
     }
 
+    @Override
+    public Konfiguration parent() {
+
+        return this.wrapped;
+    }
+
 }

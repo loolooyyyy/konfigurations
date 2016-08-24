@@ -26,4 +26,6 @@ public interface Konfiguration {
 
     Konfiguration subset(String key);
 
+    Konfiguration parent();
+
 }

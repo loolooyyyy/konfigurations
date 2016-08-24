@@ -118,6 +118,12 @@ public final class JsonKonfiguration implements Konfiguration {
         return new SubsetKonfiguration(this, key);
     }
 
+    @Override
+    public Konfiguration parent() {
+
+        return this;
+    }
+
 
     @Override
     public KonfigV<String> string(@NonNull final String key) {

@@ -146,4 +146,10 @@ public final class InMemoryKonfiguration implements Konfiguration {
         return new SubsetKonfiguration(this, key);
     }
 
+    @Override
+    public Konfiguration parent() {
+
+        return this;
+    }
+
 }

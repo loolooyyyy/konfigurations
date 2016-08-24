@@ -124,6 +124,12 @@ public final class KonfigurationKombiner implements Konfiguration {
         return new SubsetKonfiguration(this, key);
     }
 
+    @Override
+    public Konfiguration parent() {
+
+        return this;
+    }
+
 
     // _________________________________________________________________________
 

@@ -84,8 +84,12 @@ public class KonfigurationKombinerBaseTest {
 
         @Override
         public Konfiguration subset(String key) {
-            throw new UnsupportedOperationException(this.getClass().getName() +
-                    ".subset()");
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Konfiguration parent() {
+            throw new UnsupportedOperationException();
         }
     };
 
