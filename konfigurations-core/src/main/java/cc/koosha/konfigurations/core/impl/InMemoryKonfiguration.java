@@ -140,4 +140,10 @@ public final class InMemoryKonfiguration implements Konfiguration {
         return same;
     }
 
+    @Override
+    public Konfiguration subset(@NonNull final String key) {
+
+        return new SubsetKonfiguration(this, key);
+    }
+
 }

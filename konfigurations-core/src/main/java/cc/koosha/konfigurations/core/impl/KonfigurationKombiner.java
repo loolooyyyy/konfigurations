@@ -118,6 +118,12 @@ public final class KonfigurationKombiner implements Konfiguration {
         return true;
     }
 
+    @Override
+    public Konfiguration subset(final String key) {
+
+        return new SubsetKonfiguration(this, key);
+    }
+
 
     // _________________________________________________________________________
 

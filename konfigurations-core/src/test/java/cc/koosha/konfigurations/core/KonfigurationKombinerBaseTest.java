@@ -81,6 +81,12 @@ public class KonfigurationKombinerBaseTest {
         public boolean update() {
             return true;
         }
+
+        @Override
+        public Konfiguration subset(String key) {
+            throw new UnsupportedOperationException(this.getClass().getName() +
+                    ".subset()");
+        }
     };
 
     protected final KonfigurationKombiner kk = new KonfigurationKombiner(dummyKonfig);

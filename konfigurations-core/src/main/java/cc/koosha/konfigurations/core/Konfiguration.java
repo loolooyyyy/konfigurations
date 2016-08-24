@@ -24,4 +24,6 @@ public interface Konfiguration {
 
     boolean update();
 
+    Konfiguration subset(String key);
+
 }
