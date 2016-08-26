@@ -38,6 +38,7 @@ public final class KonfigurationMover {
     public InMemoryKonfiguration get() {
 
         this.fin = true;
+        this.inMem.update();
         return this.inMem;
     }
 
