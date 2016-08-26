@@ -15,7 +15,7 @@ import java.util.Objects;
 public enum KonfigDataType {
 
     BOOLEAN(Boolean.class),
-    INT(Int.class),
+    INT(Integer.class),
     LONG(Long.class),
     STRING(String.class),
 
@@ -32,7 +32,7 @@ public enum KonfigDataType {
 
         if(Objects.equals(klass, Boolean.class))
             return BOOLEAN;
-        else if(Objects.equals(klass, Int.class))
+        else if(Objects.equals(klass, Integer.class))
             return INT;
         else if(Objects.equals(klass, Long.class))
             return LONG;

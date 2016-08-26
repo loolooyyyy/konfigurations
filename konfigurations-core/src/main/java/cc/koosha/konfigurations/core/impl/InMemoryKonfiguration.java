@@ -43,7 +43,7 @@ public final class InMemoryKonfiguration implements Konfiguration {
     @Override
     public KonfigV<Integer> int_(final String key) {
 
-        return get(key, Int.class);
+        return get(key, Integer.class);
     }
 
     @Override

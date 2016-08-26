@@ -26,7 +26,7 @@ public final class JsonKonfiguration implements Konfiguration {
             return;
 
         if(
-                el == Int.class && !jsonNode.isInt()
+                el == Integer.class && !jsonNode.isInt()
                 || el == Long.class && !jsonNode.isLong()
                 || el == String.class && !jsonNode.isTextual()
                 || el == Boolean.class && !jsonNode.isBoolean())
