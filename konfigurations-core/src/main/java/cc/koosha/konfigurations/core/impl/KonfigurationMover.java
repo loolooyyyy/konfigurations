@@ -3,6 +3,7 @@ package cc.koosha.konfigurations.core.impl;
 import cc.koosha.konfigurations.core.Konfiguration;
 import lombok.NonNull;
 import lombok.Synchronized;
+import lombok.val;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -40,43 +41,133 @@ public final class KonfigurationMover {
         return this.inMem;
     }
 
-    public KonfigurationMover bool(@NonNull final String key) {
+    public KonfigurationMover bool(@NonNull final String... keys) {
 
-        return this.add(key, from.bool(key).v());
+        for (val key : keys)
+            this.add(key, from.bool(key).v());
+
+        return this;
     }
 
-    public KonfigurationMover int_(@NonNull final String key) {
+    public KonfigurationMover int_(@NonNull final String... keys) {
 
-        return this.add(key, from.int_(key).v());
+        for (val key : keys)
+            this.add(key, from.int_(key).v());
+
+        return this;
     }
 
-    public KonfigurationMover long_(@NonNull final String key) {
+    public KonfigurationMover long_(@NonNull final String... keys) {
 
-        return this.add(key, from.long_(key).v());
+        for (val key : keys)
+            this.add(key, from.long_(key).v());
+
+        return this;
     }
 
-    public KonfigurationMover string(@NonNull final String key) {
+    public KonfigurationMover string(@NonNull final String... keys) {
 
-        return this.add(key, from.string(key).v());
+        for (val key : keys)
+            this.add(key, from.string(key).v());
+
+        return this;
     }
 
-    public <T> KonfigurationMover list(@NonNull final String key,
-                                       @NonNull final Class<T> type) {
+    public <T> KonfigurationMover list(@NonNull final Class<T> type,
+                                       @NonNull final String... keys) {
 
-        return this.add(key, from.list(key, type).v());
+        for (val key : keys)
+            this.add(key, from.list(key, type).v());
+
+        return this;
     }
 
-    public <T> KonfigurationMover map(@NonNull final String key,
-                                      @NonNull final Class<T> type) {
+    public <T> KonfigurationMover map(@NonNull final Class<T> type,
+                                      @NonNull final String... keys) {
 
-        return this.add(key, from.map(key, type).v());
+        for (val key : keys)
+            this.add(key, from.map(key, type).v());
+
+        return this;
     }
 
-    public <T> KonfigurationMover custom(@NonNull final String key,
-                                         @NonNull final Class<T> type) {
+    public <T> KonfigurationMover custom(@NonNull final Class<T> type,
+                                         @NonNull final String... keys) {
 
-        return this.add(key, from.custom(key, type).v());
+        for (val key : keys)
+            this.add(key, from.custom(key, type).v());
+
+        return this;
     }
+
+
+    public KonfigurationMover subBool(@NonNull final String subSection,
+                                      @NonNull final String... keys) {
+
+        for (val key : keys)
+            this.bool(subSection + key);
+
+        return this;
+    }
+
+    public KonfigurationMover subInt_(@NonNull final String subSection,
+                                      @NonNull final String... keys) {
+
+        for (val key : keys)
+            this.int_(subSection + key);
+
+        return this;
+    }
+
+    public KonfigurationMover subLong_(@NonNull final String subSection,
+                                       @NonNull final String... keys) {
+
+        for (val key : keys)
+            this.long_(subSection + key);
+
+        return this;
+    }
+
+    public KonfigurationMover subString(@NonNull final String subSection,
+                                        @NonNull final String... keys) {
+
+        for (val key : keys)
+            this.string(subSection + key);
+
+        return this;
+    }
+
+    public <T> KonfigurationMover subList(@NonNull final String subSection,
+                                          @NonNull final Class<T> type,
+                                          @NonNull final String... keys) {
+
+        for (val key : keys)
+            this.list(type, subSection + key);
+
+        return this;
+    }
+
+    public <T> KonfigurationMover subMap(@NonNull final String subSection,
+                                         @NonNull final Class<T> type,
+                                         @NonNull final String... keys) {
+
+        for (val key : keys)
+            this.map(type, subSection + key);
+
+        return this;
+    }
+
+    public <T> KonfigurationMover subCustom(@NonNull final String subSection,
+                                            @NonNull final Class<T> type,
+                                            @NonNull final String... keys) {
+
+        for (val key : keys)
+            this.custom(type, subSection + key);
+
+        return this;
+    }
+
+
 
     @Synchronized
     private KonfigurationMover add(@NonNull final String key,
@@ -84,6 +175,9 @@ public final class KonfigurationMover {
 
         if(this.fin)
             throw new IllegalStateException("No more modifying is allowed");
+
+        if(this.storage.containsKey(key))
+            throw new IllegalArgumentException("duplicate konfig key: " + key);
 
         this.storage.put(key, value);
 

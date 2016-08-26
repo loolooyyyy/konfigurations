@@ -14,9 +14,9 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public enum KonfigDataType {
 
-    BOOLEAN(boolean.class),
-    INT(int.class),
-    LONG(long.class),
+    BOOLEAN(Boolean.class),
+    INT(Int.class),
+    LONG(Long.class),
     STRING(String.class),
 
     LIST(List.class),
@@ -30,11 +30,11 @@ public enum KonfigDataType {
 
     public KonfigDataType valueOf(final Class<?> klass) {
 
-        if(Objects.equals(klass, boolean.class))
+        if(Objects.equals(klass, Boolean.class))
             return BOOLEAN;
-        else if(Objects.equals(klass, int.class))
+        else if(Objects.equals(klass, Int.class))
             return INT;
-        else if(Objects.equals(klass, long.class))
+        else if(Objects.equals(klass, Long.class))
             return LONG;
         else if(Objects.equals(klass, String.class))
             return STRING;

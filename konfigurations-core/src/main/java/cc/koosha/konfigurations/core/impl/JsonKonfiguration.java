@@ -22,14 +22,14 @@ public final class JsonKonfiguration implements Konfiguration {
 
     private void ensureNodeType(final JsonNode jsonNode, final Class<?> el) {
 
-        if(el == long.class && jsonNode.isInt())
+        if(el == Long.class && jsonNode.isInt())
             return;
 
         if(
-                el == int.class && !jsonNode.isInt()
-                || el == long.class && !jsonNode.isLong()
+                el == Int.class && !jsonNode.isInt()
+                || el == Long.class && !jsonNode.isLong()
                 || el == String.class && !jsonNode.isTextual()
-                || el == boolean.class && !jsonNode.isBoolean())
+                || el == Boolean.class && !jsonNode.isBoolean())
             throw new KonfigurationBadTypeException("expected " + el + " got" + jsonNode.getNodeType());
 
     }

@@ -37,19 +37,19 @@ public final class InMemoryKonfiguration implements Konfiguration {
     @Override
     public KonfigV<Boolean> bool(final String key) {
 
-        return get(key, boolean.class);
+        return get(key, Boolean.class);
     }
 
     @Override
     public KonfigV<Integer> int_(final String key) {
 
-        return get(key, int.class);
+        return get(key, Int.class);
     }
 
     @Override
     public KonfigV<Long> long_(final String key) {
 
-        return get(key, long.class);
+        return get(key, Long.class);
     }
 
     @Override
