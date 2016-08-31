@@ -64,7 +64,7 @@ public final class KonfigurationKombiner implements Konfiguration {
     }
 
     @Override
-    public <T> KonfigV<Map<String, T>> set(final String key, final Class<T> type) {
+    public <T> KonfigV<Set<T>> set(final String key, final Class<T> type) {
 
         return new KonfigVImpl<>(key, KonfigDataType.SET, type);
     }

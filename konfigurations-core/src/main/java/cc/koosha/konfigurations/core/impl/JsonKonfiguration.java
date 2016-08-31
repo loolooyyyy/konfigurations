@@ -247,7 +247,7 @@ public final class JsonKonfiguration implements Konfiguration {
     }
 
     @Override
-    public <T> KonfigV<Map<String, T>> set(final String key, final Class<T> el) {
+    public <T> KonfigV<Set<T>> set(final String key, final Class<T> el) {
 
         final List<T> asList = this.list(key, el).v();
         final Set<T> asSet = new HashSet<>(asList);

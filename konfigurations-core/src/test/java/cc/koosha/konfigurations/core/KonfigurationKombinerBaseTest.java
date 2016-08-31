@@ -3,10 +3,7 @@ package cc.koosha.konfigurations.core;
 import cc.koosha.konfigurations.core.impl.KonfigurationKombiner;
 import org.testng.annotations.BeforeMethod;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static cc.koosha.konfigurations.core.DummyV.dummy;
 import static org.testng.Assert.assertEquals;
@@ -73,7 +70,7 @@ public class KonfigurationKombinerBaseTest {
         }
 
         @Override
-        public <T> KonfigV<Map<String, T>> set(final String key, final Class<T> type) {
+        public <T> KonfigV<Set<T>> set(final String key, final Class<T> type) {
             throw new UnsupportedOperationException();
         }
 

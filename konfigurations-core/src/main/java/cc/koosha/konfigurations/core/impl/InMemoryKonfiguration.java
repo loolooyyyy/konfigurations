@@ -4,10 +4,7 @@ import cc.koosha.konfigurations.core.*;
 import lombok.NonNull;
 import lombok.val;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -73,7 +70,7 @@ public final class InMemoryKonfiguration implements Konfiguration {
     }
 
     @Override
-    public <T> KonfigV<Map<String, T>> set(final String key, final Class<T> type) {
+    public <T> KonfigV<Set<T>> set(final String key, final Class<T> type) {
 
         return get(key);
     }
