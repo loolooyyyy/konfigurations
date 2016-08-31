@@ -7,6 +7,7 @@ import lombok.experimental.Accessors;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 
 @Getter
@@ -21,6 +22,7 @@ public enum KonfigDataType {
 
     LIST(List.class),
     MAP(Map.class),
+    SET(Set.class),
 
     CUSTOM(null),
 
@@ -42,6 +44,8 @@ public enum KonfigDataType {
             return LIST;
         else if(Objects.equals(klass, Map.class))
             return MAP;
+        else if(Objects.equals(klass, Set.class))
+            return SET;
         else
             return CUSTOM;
     }

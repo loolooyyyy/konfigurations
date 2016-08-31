@@ -19,6 +19,8 @@ public interface Konfiguration {
 
     <T> KonfigV<Map<String, T>> map(String key, Class<T> type);
 
+    <T> KonfigV<Map<String, T>> set(String key, Class<T> type);
+
     <T> KonfigV<T> custom(String key, Class<T> type);
 
 

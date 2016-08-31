@@ -55,6 +55,12 @@ public final class SubsetKonfiguration implements Konfiguration {
     }
 
     @Override
+    public <T> KonfigV<Map<String, T>> set(final String key, final Class<T> type) {
+
+        return wrapped.set(baseKey + key, type);
+    }
+
+    @Override
     public <T> KonfigV<T> custom(final String key, final Class<T> type) {
 
         return wrapped.custom(baseKey + key, type);

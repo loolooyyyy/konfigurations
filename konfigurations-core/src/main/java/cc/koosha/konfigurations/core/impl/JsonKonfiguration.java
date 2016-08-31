@@ -7,8 +7,10 @@ import lombok.NonNull;
 import lombok.val;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static cc.koosha.konfigurations.core.DummyV.dummy;
 
@@ -216,23 +218,6 @@ public final class JsonKonfiguration implements Konfiguration {
         catch (final IOException e) {
             throw new KonfigurationException(e);
         }
-
-//        final List<T> list = new ArrayList<>(at.size());
-//
-//        for (final JsonNode jsonNode : at)
-//            try {
-//                this.ensureNodeType(jsonNode, el);
-//                final T toAdd = reader.readValue(jsonNode.traverse(), el);
-//                list.add(toAdd);
-//            }
-//            catch (final JsonMappingException e) {
-//                throw new KonfigurationBadTypeException(e);
-//            }
-//            catch (final IOException e) {
-//                throw new KonfigurationException(e);
-//            }
-//
-//        return dummy(Collections.unmodifiableList(list));
     }
 
     @Override
@@ -259,26 +244,14 @@ public final class JsonKonfiguration implements Konfiguration {
         catch (final IOException e) {
             throw new KonfigurationException(e);
         }
+    }
 
-//        final Map<String, T> map = new HashMap<>(at.size());
-//        final Iterator<Map.Entry<String, JsonNode>> iter = at.fields();
-//        while(iter.hasNext()) {
-//            final Map.Entry<String, JsonNode> next = iter.next();
-//            this.ensureNodeType(next.getValue(), el);
-//            final T nextParsed;
-//            try {
-//                nextParsed = reader.readValue(next.getValue().traverse(), el);
-//            }
-//            catch (final JsonMappingException e) {
-//                throw new KonfigurationBadTypeException(e);
-//            }
-//            catch (final IOException e) {
-//                throw new KonfigurationException(e);
-//            }
-//            map.put(next.getKey(), nextParsed);
-//        }
-//
-//        return dummy(Collections.unmodifiableMap(map));
+    @Override
+    public <T> KonfigV<Map<String, T>> set(final String key, final Class<T> el) {
+
+        final List<T> asList = this.list(key, el).v();
+        final Set<T> asSet = new HashSet<>(asList);
+        return dummy(asSet);
     }
 
     @Override

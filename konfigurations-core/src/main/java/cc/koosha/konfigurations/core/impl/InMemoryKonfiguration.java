@@ -73,6 +73,12 @@ public final class InMemoryKonfiguration implements Konfiguration {
     }
 
     @Override
+    public <T> KonfigV<Map<String, T>> set(final String key, final Class<T> type) {
+
+        return get(key);
+    }
+
+    @Override
     public <T> KonfigV<T> custom(final String key, final Class<T> type) {
 
         return get(key);

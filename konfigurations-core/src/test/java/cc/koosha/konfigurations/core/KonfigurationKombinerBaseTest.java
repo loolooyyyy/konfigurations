@@ -73,6 +73,11 @@ public class KonfigurationKombinerBaseTest {
         }
 
         @Override
+        public <T> KonfigV<Map<String, T>> set(final String key, final Class<T> type) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
         public <T> KonfigV<T> custom(final String key, final Class<T> type) {
             return (KonfigV<T>) sample().get(key);
         }

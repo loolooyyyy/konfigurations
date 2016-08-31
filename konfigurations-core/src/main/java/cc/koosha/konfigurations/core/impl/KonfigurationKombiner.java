@@ -63,6 +63,12 @@ public final class KonfigurationKombiner implements Konfiguration {
         return new KonfigVImpl<>(key, KonfigDataType.MAP, type);
     }
 
+    @Override
+    public <T> KonfigV<Map<String, T>> set(final String key, final Class<T> type) {
+
+        return new KonfigVImpl<>(key, KonfigDataType.SET, type);
+    }
+
     @SuppressWarnings("unchecked")
     @Override
     public final <T> KonfigV<T> custom(@NonNull final String key,
@@ -217,6 +223,9 @@ public final class KonfigurationKombiner implements Konfiguration {
 
                     case MAP:
                         return source.map(key, el).v();
+
+                    case SET:
+                        return source.set(key, el).v();
 
                     case CUSTOM:
                         return source.custom(key, el).v();
