@@ -109,10 +109,10 @@ public class JsonKonfigurationTest {
     @AllArgsConstructor
     @NoArgsConstructor
     @EqualsAndHashCode
-    static final class Custom {
-        int a;
-        String name;
-        String family;
+    public static final class Custom {
+        public int a;
+        public String name;
+        public String family;
     }
 
 }
