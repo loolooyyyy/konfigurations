@@ -1,5 +1,6 @@
 allprojects {
     apply plugin: 'java'
+    apply plugin: 'idea'
 
     group 'cc.koosha'
     version '1.0-SNAPSHOT'
