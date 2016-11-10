@@ -127,7 +127,7 @@ public final class KonfigurationKombiner implements Konfiguration {
     @Override
     public Konfiguration subset(final String key) {
 
-        return new SubsetKonfiguration(this, key);
+        return new KonfigurationSubsetView(this, key);
     }
 
     @Override

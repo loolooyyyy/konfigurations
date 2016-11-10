@@ -16,7 +16,7 @@ public class KonfigurationKombinerMemoryLeakTest extends KonfigurationKombinerBa
 
     private final AtomicBoolean run = new AtomicBoolean(false);
 
-    @Test
+    @Test(enabled = false)
     public void testMemLeak() throws Exception {
 
         val f = KonfigurationKombiner.class.getDeclaredField("observers");

@@ -117,7 +117,7 @@ public final class JsonKonfiguration implements Konfiguration {
     @Override
     public Konfiguration subset(final String key) {
 
-        return new SubsetKonfiguration(this, key);
+        return new KonfigurationSubsetView(this, key);
     }
 
     @Override

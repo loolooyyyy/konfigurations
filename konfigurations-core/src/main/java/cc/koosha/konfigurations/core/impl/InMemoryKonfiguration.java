@@ -121,8 +121,7 @@ public final class InMemoryKonfiguration implements Konfiguration {
         }
         else {
             for (val e : this.storage.entrySet())
-                if (!Objects.equals(this.storage.get(e.getKey()), newStorage.get(e
-                        .getKey()))) {
+                if (!Objects.equals(this.storage.get(e.getKey()), newStorage.get(e.getKey()))) {
                     same = false;
                     break;
                 }
@@ -146,7 +145,7 @@ public final class InMemoryKonfiguration implements Konfiguration {
     @Override
     public Konfiguration subset(@NonNull final String key) {
 
-        return new SubsetKonfiguration(this, key);
+        return new KonfigurationSubsetView(this, key);
     }
 
     @Override

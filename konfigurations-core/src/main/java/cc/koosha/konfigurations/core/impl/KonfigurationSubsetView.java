@@ -11,7 +11,7 @@ import java.util.Set;
 
 
 @RequiredArgsConstructor
-public final class SubsetKonfiguration implements Konfiguration {
+public final class KonfigurationSubsetView implements Konfiguration {
 
     @NonNull
     private final Konfiguration wrapped;
@@ -76,7 +76,7 @@ public final class SubsetKonfiguration implements Konfiguration {
     @Override
     public Konfiguration subset(@NonNull final String key) {
 
-        return new SubsetKonfiguration(this.wrapped, this.baseKey + key);
+        return new KonfigurationSubsetView(this.wrapped, this.baseKey + key);
     }
 
     @Override
