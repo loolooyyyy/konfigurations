@@ -30,6 +30,16 @@ public final class InMemoryKonfiguration implements Konfiguration {
         this.update();
     }
 
+    public InMemoryKonfiguration(@NonNull final Map<String, Object> storage) {
+
+        this(new KonfigMapProvider() {
+            @Override
+            public Map<String, Object> get() {
+                return storage;
+            }
+        });
+    }
+
 
     @Override
     public KonfigV<Boolean> bool(final String key) {
