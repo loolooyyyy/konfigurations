@@ -136,5 +136,9 @@ assert "I'm very multi line." == konfig.string("someLongStr");
    and package local fields AND classes (important: both class and fields, must
    be public)). This affects list(), map() and custom() methods.
 
- - Removing a key or changing it's type (such as from int to String) is not
-   recomended or tested.
+ - Changing a key type (such as from int to String) during an update is not recomended.
+   TODO: disallow this.
+
+ - Removing a key or adding a new one during IS supported.
+   TODO: disallow this.
+
