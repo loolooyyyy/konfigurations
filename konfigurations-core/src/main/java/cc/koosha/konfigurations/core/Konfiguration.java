@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Set;
 
 
+@SuppressWarnings("unused")
 public interface Konfiguration {
 
     /**
@@ -118,7 +119,7 @@ public interface Konfiguration {
      * <b>Important:</b> the underlying konfiguration source must support this!
      *
      * <b>Important:</b> this method must <em>NOT</em> be used to obtain maps,
-     * lists or sets. use the correspong methods {@link #map(String, Class)},
+     * lists or sets. use the corresponding methods {@link #map(String, Class)},
      * {@link #list(String, Class)} and {@link #set(String, Class)}.
      *
      * @param key unique key of the konfiguration being requested.
@@ -134,46 +135,90 @@ public interface Konfiguration {
 
     /**
      * Same as {@link #bool(String)} but does not require the key to exist.
+     * (so default values can be used).
+     *
+     * @param key key
+     * @return r
      */
     KonfigV<Boolean> boolD(String key);
 
     /**
      * Same as {@link #int_(String)} but does not require the key to exist.
+     * (so default values can be used).
+     *
+     * @param key key
+     * @return r
      */
     KonfigV<Integer> intD(String key);
 
     /**
      * Same as {@link #long_(String)} but does not require the key to exist.
+     * (so default values can be used).
+     *
+     * @param key key
+     * @return r
      */
     KonfigV<Long> longD(String key);
 
     /**
      * Same as {@link #double_(String)} but does not require the key to exist.
+     * (so default values can be used).
+     *
+     * @param key key
+     * @return r
      */
     KonfigV<Double> doubleD(String key);
 
     /**
      * Same as {@link #string(String)} but does not require the key to exist.
+     * (so default values can be used).
+     *
+     * @param key key
+     * @return r
      */
     KonfigV<String> stringD(String key);
 
     /**
      * Same as {@link #list(String, Class)} but does not require the key to exist.
+     * (so default values can be used).
+     *
+     * @param key key
+     * @param type type
+     * @param <T> t
+     * @return r
      */
     <T> KonfigV<List<T>> listD(String key, Class<T> type);
 
     /**
      * Same as {@link #map(String, Class)} but does not require the key to exist.
+     * (so default values can be used).
+     *
+     * @param key key
+     * @param type type
+     * @param <T> t
+     * @return r
      */
     <T> KonfigV<Map<String, T>> mapD(String key, Class<T> type);
 
     /**
      * Same as {@link #set(String, Class)} but does not require the key to exist.
+     * (so default values can be used).
+     *
+     * @param key key
+     * @param type type
+     * @param <T> t
+     * @return r
      */
     <T> KonfigV<Set<T>> setD(String key, Class<T> type);
 
     /**
-     * Same as {@link #custom(String, Class)} but does not require the key to exist.
+     * Same as {@link #custom(String, Class)} but does not require the key to exist
+     * (so default values can be used).
+     *
+     * @param key key
+     * @param type type
+     * @param <T> t
+     * @return r
      */
     <T> KonfigV<T> customD(String key, Class<T> type);
 
