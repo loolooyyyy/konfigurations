@@ -6,7 +6,6 @@ import com.google.inject.TypeLiteral;
 import com.google.inject.spi.TypeEncounter;
 import com.google.inject.spi.TypeListener;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.val;
 
 import java.lang.reflect.Field;
@@ -17,10 +16,14 @@ import java.util.Map;
 
 
 // The code is ugly as fuck, I know.
-@RequiredArgsConstructor
 public final class KonfigTypeListener implements TypeListener {
 
     private final Konfiguration cfg;
+
+    public KonfigTypeListener(final Konfiguration cfg) {
+
+        this.cfg = cfg;
+    }
 
     public <T> void hear(@NonNull final TypeLiteral<T> literal,
                          @NonNull final TypeEncounter<T> encounter) {
@@ -126,11 +129,6 @@ public final class KonfigTypeListener implements TypeListener {
         }
 
         return value;
-    }
-
-    public static Konfig annon(final String value) {
-
-        return new KonfigImpl(value);
     }
 
 }

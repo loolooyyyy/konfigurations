@@ -1,0 +1,92 @@
+package cc.koosha.konfigurations.core.impl;
+
+import cc.koosha.konfigurations.core.KeyObserver;
+import cc.koosha.konfigurations.core.KonfigV;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
+import static java.lang.String.format;
+
+
+@RequiredArgsConstructor
+final class KonfigVImpl<T> implements KonfigV<T> {
+
+    private final BaseKonfiguration origin;
+    private final KonfigKey key;
+
+    @Override
+    public T v() {
+
+        return origin.v(this.key);
+    }
+
+    @Override
+    public T v(final T defaultValue) {
+
+        return origin.v(this.key, defaultValue);
+    }
+
+
+
+    @Override
+    public KonfigV<T> deregister(final KeyObserver observer) {
+
+        origin.konfigObserversManager().deregister(observer, this.key.name());
+        return this;
+    }
+
+    @Override
+    public KonfigV<T> register(@NonNull final KeyObserver observer) {
+
+        origin.konfigObserversManager().register(observer, this.key.name());
+        return this;
+    }
+
+    @Override
+    public String key() {
+
+        return this.key.name();
+    }
+
+    @Override
+    public String toString() {
+
+        String vs;
+
+        try {
+            vs = "<" + this.v().toString() + ">";
+        }
+        catch (final Exception e) {
+            vs = "?";
+        }
+
+        return format("KonfigV(%s=%s)", this.key, vs);
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+
+        if (o == this)
+            return true;
+
+        if (!(o instanceof KonfigVImpl))
+            return false;
+
+        final KonfigVImpl other = (KonfigVImpl) o;
+
+        return this.key.equals(other.key) && this.origin.equals(other.origin);
+    }
+
+    @Override
+    public int hashCode() {
+
+        final int PRIME = 59;
+        int result = 1;
+
+        result = result * PRIME + this.origin.hashCode();
+        result = result * PRIME + this.key.hashCode();
+
+        return result;
+    }
+
+}

@@ -1,9 +1,6 @@
-package cc.koosha.konfigurations.core;
+package cc.koosha.konfigurations.core.guice;
 
-import lombok.Getter;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.Accessors;
 
 import java.lang.annotation.Annotation;
 
@@ -11,18 +8,34 @@ import static java.lang.String.format;
 
 
 @SuppressWarnings("ClassExplicitlyAnnotation")
-@RequiredArgsConstructor
-@Accessors(fluent = true)
 public final class KonfigImpl implements Konfig {
 
     private static final long serialVersionUID = 0;
 
-    @NonNull
-    @Getter
     private final String value;
 
-    @Getter
     private final Class<? extends Annotation> annotationType = Konfig.class;
+
+    public KonfigImpl(@NonNull final String value) {
+
+        this.value = value;
+    }
+
+    public static Konfig annon(final String value) {
+
+        return new KonfigImpl(value);
+    }
+
+
+    public String value() {
+
+        return this.value;
+    }
+
+    public Class<? extends Annotation> annotationType() {
+
+        return this.annotationType;
+    }
 
 
     @Override

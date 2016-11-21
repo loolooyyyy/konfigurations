@@ -1,4 +1,4 @@
-package cc.koosha.konfigurations.core;
+package cc.koosha.konfigurations.core.guice;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;

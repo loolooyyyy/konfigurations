@@ -1,6 +1,7 @@
 package cc.koosha.konfigurations.core;
 
-public interface SimpleObserver {
+
+public interface EverythingObserver {
 
     void accept();
 
