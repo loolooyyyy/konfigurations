@@ -72,7 +72,7 @@ public class KonfigDemo {
 
 ### Default values
 
-If you are okay with non-existing values, you may get a defaulted-konfiruation-value:
+If you are okay with non-existing values, you may get a defaulted-konfiguration-value:
 
 ```java
 
@@ -80,7 +80,7 @@ If you are okay with non-existing values, you may get a defaulted-konfiruation-v
 KonfigV<String> defValue = konfig.stringD("non.exisintg.key_hahaha_:)))_boo");
 
 // Assuming the crazy key above does not exist in the konfiguration,
-// Instead of plaing v():
+// Instead of plain v():
 String value = defValue.v("somethingDefault");
 
 assert "somethingDefault".equals(value);
@@ -115,15 +115,16 @@ a String can span multiple lines if it's declared in an array
 {
     "someLongStr": [
         "I'm ",
-        "very "
-        "multi "
+        "very ",
+        "multi ",
         "line."
     ]
 }
 ```
 
 ```java
-Konfiguration konfig = new JsonKonfiguration(...); // or put in a Kombiner
+JsonKonfigSource js = new JsonKonfiguration(...); 
+Konfiguration konfig = new KonfigurationKombiner(js);
 assert "I'm very multi line." == konfig.string("someLongStr");
 ```
 
