@@ -1,29 +1,21 @@
 package cc.koosha.konfigurations.core.impl;
 
-import cc.koosha.konfigurations.core.KonfigSource;
-import cc.koosha.konfigurations.core.KonfigV;
-import cc.koosha.konfigurations.core.KonfigurationMissingKeyException;
+import cc.koosha.konfigurations.core.*;
+import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.val;
 
 import java.util.*;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 
-/**
- * Memory leak: once a configuration is read, it always stays in the cache, even
- * if it's not needed anymore.
- */
-public final class KonfigurationKombiner extends BaseKonfiguration {
+public class KonfigurationKombiner implements Konfiguration {
 
-    private final ReadWriteLock READ_LOCK = new ReentrantReadWriteLock();
-    private final ReadWriteLock WRITE_LOCK = new ReentrantReadWriteLock();
+    @Getter(AccessLevel.PACKAGE)
+    private final KonfigObserversManager konfigObserversManager;
 
-    private final Map<KonfigKey, Object> vCache = new HashMap<>();
-
-    private final Collection<KonfigSource> sources;
-
+    @Getter(AccessLevel.PACKAGE)
+    private final KonfigurationCache cache;
 
     @SuppressWarnings("unused")
     public KonfigurationKombiner(@NonNull final KonfigSource... sources) {
@@ -33,168 +25,240 @@ public final class KonfigurationKombiner extends BaseKonfiguration {
 
     public KonfigurationKombiner(@NonNull final Collection<KonfigSource> sources) {
 
-        if(sources.size() < 1)
+        if (sources.size() < 1)
             throw new IllegalArgumentException("no source given");
 
-        this.sources = new ArrayList<>(sources);
+        konfigObserversManager = new KonfigObserversManager();
+
+        this.cache = new KonfigurationCacheSingleImpl(this, sources);
     }
 
 
-    @Override
-    protected <T> KonfigV<T> get(final KonfigKey key, final boolean mustExist) {
+    protected static Object getInSource(final KonfigSource source, final KonfigKey key) {
 
-        val rLock = READ_LOCK.readLock();
-        final KonfigVImpl<T> ret = new KonfigVImpl<>(this, key);
+        final String name = key.name();
+        final Class<?> dt = key.dt();
+        final Class<?> el = key.el();
 
-        try {
-            rLock.lock();
-            if(vCache.containsKey(key))
-                return ret;
-        }
-        finally {
-            rLock.unlock();
-        }
-
-        boolean found = false;
-        val rwLock = READ_LOCK.writeLock();
-        val wwLock = WRITE_LOCK.writeLock();
-
-        try {
-            rwLock.lock();
-            try {
-                wwLock.lock();
-                if (!vCache.containsKey(key))
-                    for (val source : sources)
-                        if (source.contains(key.name())) {
-                            vCache.put(key, BaseKonfiguration.getInSource(source, key));
-                            found = true;
-                            break;
-                        }
-            }
-            finally {
-                wwLock.unlock();
-            }
-        }
-        finally {
-            rwLock.unlock();
-        }
+        if (dt == Boolean.class)
+            return source.bool(name);
+        else if (dt == Integer.class)
+            return source.int_(name);
+        else if (dt == Long.class)
+            return source.long_(name);
+        else if (dt == Double.class)
+            return source.double_(name);
+        else if (dt == String.class)
+            return source.string(name);
+        else if (dt == List.class)
+            return source.list(name, el);
+        else if (dt == Map.class)
+            return source.map(name, el);
+        else if (dt == Set.class)
+            return source.set(name, el);
+        else
+            return source.custom(name, el);
+    }
 
 
-        if (!found && mustExist)
-            throw new KonfigurationMissingKeyException(key.name());
+    private <T> KonfigV<T> get(@NonNull String key, @NonNull Class<?> dt, Class<?> el) {
 
+        val k = new KonfigKey(key, dt, el);
+        final KonfigVImpl<T> ret = new KonfigVImpl<>(this, k);
+        cache.create(k, true);
         return ret;
     }
 
-    @SuppressWarnings({"unchecked", "Duplicates"})
-    @Override
-    protected <T> T v(final KonfigKey key) {
+    private <T> KonfigV<T> getD(@NonNull String key, @NonNull Class<?> dt, Class<?> el) {
 
-        val rLock = READ_LOCK.readLock();
-
-        try {
-            rLock.lock();
-            if(vCache.containsKey(key))
-                return (T) vCache.get(key);
-        }
-        finally {
-            rLock.unlock();
-        }
-
-        throw new KonfigurationMissingKeyException(key.name());
+        val k = new KonfigKey(key, dt, el);
+        final KonfigVImpl<T> ret = new KonfigVImpl<>(this, k);
+        cache.create(k, false);
+        return ret;
     }
 
-    @SuppressWarnings({"Duplicates", "unchecked"})
+
     @Override
-    protected <T> T v(final KonfigKey key, final T def) {
+    public final KonfigV<Boolean> bool(final String key) {
 
-        val rLock = READ_LOCK.readLock();
+        return get(key, Boolean.class, null);
+    }
 
-        try {
-            rLock.lock();
-            if(vCache.containsKey(key))
-                return (T) vCache.get(key);
-        }
-        finally {
-            rLock.unlock();
-        }
+    @Override
+    public final KonfigV<Integer> int_(final String key) {
 
-        return def;
+        return get(key, Integer.class, null);
+    }
+
+    @Override
+    public final KonfigV<Long> long_(final String key) {
+
+        return get(key, Long.class, null);
+    }
+
+    @Override
+    public final KonfigV<Double> double_(final String key) {
+
+        return get(key, Double.class, null);
+    }
+
+    @Override
+    public final KonfigV<String> string(final String key) {
+
+        return get(key, String.class, null);
+    }
+
+    @Override
+    public final <T> KonfigV<List<T>> list(final String key, final Class<T> type) {
+
+        return get(key, List.class, type);
+    }
+
+    @Override
+    public final <T> KonfigV<Map<String, T>> map(final String key, final Class<T> type) {
+
+        return get(key, Map.class, type);
+    }
+
+    @Override
+    public final <T> KonfigV<Set<T>> set(final String key, final Class<T> type) {
+
+        return get(key, Set.class, type);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public final <T> KonfigV<T> custom(final String key, @NonNull final Class<T> type) {
+
+        if(Boolean.class.equals(type) || boolean.class.equals(type))
+            return (KonfigV<T>) this.bool(key);
+
+        if(Integer.class.equals(type) || int.class.equals(type))
+            return (KonfigV<T>) this.int_(key);
+
+        if(Long.class.equals(type) || long.class.equals(type))
+            return (KonfigV<T>) this.long_(key);
+
+        if(Double.class.equals(type) || double.class.equals(type))
+            return (KonfigV<T>) this.double_(key);
+
+        if(String.class.equals(type))
+            return (KonfigV<T>) this.string(key);
+
+        if(type.isAssignableFrom(Map.class)
+                || type.isAssignableFrom(Set.class)
+                || type.isAssignableFrom(List.class))
+            throw new KonfigurationException("for collection types, use corresponding methods");
+
+        return get(key, null, type);
+    }
+
+
+    @Override
+    public final KonfigV<Boolean> boolD(final String key) {
+
+        return getD(key, Boolean.class, null);
+    }
+
+    @Override
+    public final KonfigV<Integer> intD(final String key) {
+
+        return getD(key, Integer.class, null);
+    }
+
+    @Override
+    public final KonfigV<Long> longD(final String key) {
+
+        return getD(key, Long.class, null);
+    }
+
+    @Override
+    public final KonfigV<Double> doubleD(final String key) {
+
+        return getD(key, Double.class, null);
+    }
+
+    @Override
+    public final KonfigV<String> stringD(final String key) {
+
+        return getD(key, String.class, null);
+    }
+
+    @Override
+    public final <T> KonfigV<List<T>> listD(final String key, final Class<T> type) {
+
+        return getD(key, List.class, type);
+    }
+
+    @Override
+    public final <T> KonfigV<Map<String, T>> mapD(final String key, final Class<T> type) {
+
+        return getD(key, Map.class, type);
+    }
+
+    @Override
+    public final <T> KonfigV<Set<T>> setD(final String key, final Class<T> type) {
+
+        return getD(key, Set.class, type);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public final <T> KonfigV<T> customD(final String key, final Class<T> type) {
+
+        if(Boolean.class.equals(type) || boolean.class.equals(type))
+            return (KonfigV<T>) this.boolD(key);
+
+        if(Integer.class.equals(type) || int.class.equals(type))
+            return (KonfigV<T>) this.intD(key);
+
+        if(Long.class.equals(type) || long.class.equals(type))
+            return (KonfigV<T>) this.longD(key);
+
+        if(Double.class.equals(type) || double.class.equals(type))
+            return (KonfigV<T>) this.doubleD(key);
+
+        if(String.class.equals(type))
+            return (KonfigV<T>) this.stringD(key);
+
+        if(type.isAssignableFrom(Map.class)
+                || type.isAssignableFrom(Set.class)
+                || type.isAssignableFrom(List.class))
+            throw new KonfigurationException("for collection types, use corresponding methods");
+
+        return getD(key, null, type);
+    }
+
+
+    // ________________________________________________________________________
+
+    @Override
+    public final Konfiguration subset(final String key) {
+
+        if(key.startsWith("."))
+            throw new IllegalArgumentException("key must not start with a dot: " + key);
+
+        return new KonfigurationSubsetView(this, key);
+    }
+
+    @Override
+    public final Konfiguration register(final EverythingObserver observer) {
+
+        konfigObserversManager.register(observer);
+        return this;
+    }
+
+    @Override
+    public final Konfiguration deregister(final EverythingObserver observer) {
+
+        konfigObserversManager.deregister(observer);
+        return this;
     }
 
     @Override
     public boolean update() {
 
-        boolean up = false;
-        for (final KonfigSource source : this.sources)
-            if(source.isUpdatable()) {
-                up = true;
-                break;
-            }
-
-        if(!up)
-            return false;
-
-        final List<KonfigSource> sourcesCopy = new ArrayList<>(sources.size());
-        for (final KonfigSource source : sources)
-            sourcesCopy.add(source.copy());
-
-        final Map<KonfigKey, Object> newCache = new HashMap<>(vCache.size());
-        final Set<String> updatedKeys = new HashSet<>();
-
-        final KonfigObserversHolder holder;
-
-        val rLock = READ_LOCK.readLock();
-        val wLock = WRITE_LOCK.writeLock();
-        try {
-            rLock.lock();
-            for (val each: this.vCache.entrySet()) {
-                boolean found = false;
-                boolean changed = false;
-                for (val source : sourcesCopy) {
-                    if (source.contains(each.getKey().name())) {
-                        val newVal = BaseKonfiguration.getInSource(source, each.getKey());
-                        newCache.put(each.getKey(), newVal);
-                        found = true;
-                        changed = !newVal.equals(each.getValue());
-                        break;
-                    }
-                }
-
-                if(!found || changed)
-                    updatedKeys.add(each.getKey().name());
-            }
-
-            if(updatedKeys.size() == 0)
-                return false;
-
-            try {
-                wLock.lock();
-                this.sources.clear();
-                this.sources.addAll(sourcesCopy);
-                vCache.clear();
-                vCache.putAll(newCache);
-                holder = konfigObserversManager().get();
-            }
-            finally {
-                wLock.unlock();
-            }
-        }
-        finally {
-            rLock.unlock();
-        }
-
-        // Notify observers of specific keys.
-        for (val listener : holder.keyObservers().entrySet())
-            for (val updatedKey : updatedKeys)
-                if (listener.getValue().contains(updatedKey))
-                    listener.getKey().accept(updatedKey);
-
-        // Notify observers of source updates.
-        for (val listener : holder.everythingObservers().entrySet())
-            listener.getKey().accept();
-
-        return true;
+        return cache.update();
     }
 
 }

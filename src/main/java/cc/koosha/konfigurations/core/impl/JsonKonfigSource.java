@@ -45,9 +45,7 @@ public final class JsonKonfigSource implements KonfigSource {
         if (key.length() < 1)
             throw new IllegalArgumentException();
 
-        String k = key.replace('.', '/');
-        k = k.charAt(0) == '/' ? k : "/" + k;
-
+        final String k = "/" + key.replace('.', '/');
         val node = this.root.at(k);
 
         if (node.isMissingNode())
@@ -308,7 +306,8 @@ public final class JsonKonfigSource implements KonfigSource {
     @Override
     public boolean contains(final String key) {
 
-        return !this.root.at(key).isMissingNode();
+        final String k = "/" + key.replace('.', '/');
+        return !this.root.at(k).isMissingNode();
     }
 
     /**

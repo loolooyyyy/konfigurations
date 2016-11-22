@@ -1,31 +1,41 @@
 package cc.koosha.konfigurations.core.impl;
 
-import cc.koosha.konfigurations.core.KonfigurationBadTypeException;
-import cc.koosha.konfigurations.core.KonfigurationMissingKeyException;
 import lombok.val;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.io.File;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Scanner;
+import java.util.concurrent.Executors;
 
 import static java.util.Arrays.asList;
-import static org.testng.Assert.assertEquals;
 
 
-public final class KonfigurationKombinerTest {
+public class KonfigurationKombinerBenchmarkTest {
 
     private Map<String, Object> mapA;
     private Map<String, Object> map0;
     private Map<String, Object> map1;
     private Map<String, Object> mapB;
 
+    private String json;
+    private String json0;
+    private String json1;
+
     private KonfigurationKombiner k;
 
     @BeforeClass
     public void classSetup() throws Exception {
+
+        val url0 = getClass().getResource("sample0.json");
+        val url1 = getClass().getResource("sample1.json");
+
+        this.json0 = new Scanner(new File(url0.toURI()), "UTF8").useDelimiter("\\Z").next();
+        this.json1 = new Scanner(new File(url1.toURI()), "UTF8").useDelimiter("\\Z").next();
 
         this.map0 = new HashMap<>();
         map0.put("aInt", 12);
@@ -67,7 +77,15 @@ public final class KonfigurationKombinerTest {
             }
         });
 
-        this.k = new KonfigurationKombiner(inMemA, inMemB);
+        json = json0;
+        val j = new JsonKonfigSource(new JsonKonfigSource.KSupplier<String>() {
+            @Override
+            public String get() {
+                return json;
+            }
+        });
+
+        this.k = new KonfigurationKombiner(inMemA, inMemB, j);
     }
 
     @BeforeMethod
@@ -76,64 +94,46 @@ public final class KonfigurationKombinerTest {
         reset();
     }
 
+    @SuppressWarnings("StringEquality")
     private void update() {
 
-         mapA = mapA == map0 ?  map1 : map0;
+        mapA = mapA == map0 ?  map1 : map0;
+        json = json == json0 ? json1 : json0;
     }
 
 
-    @Test
-    public void testV1() throws Exception {
+    boolean run = true;
+    long c = 0;
 
-        assertEquals(k.int_("aInt").v(), (Integer) 12);
-        update();
-        k.update();
-        assertEquals(k.int_("aInt").v(), (Integer) 99);
-    }
+    @Test(enabled = false)
+    public void test() {
 
-    @Test
-    public void testV2() throws Exception {
+        val e = Executors.newSingleThreadExecutor();
+        e.submit(new Runnable() {
+            @Override
+            public void run() {
+                while (run) {
+                    update();
+                    k.update();
+                    c++;
+                }
+            }
+        });
 
-        val aInt = k.int_("aInt");
-        assertEquals(aInt.v(), (Integer) 12);
-        update();
-        k.update();
-        assertEquals(aInt.v(), (Integer) 99);
-    }
+        long total = 0;
+        for (int i = 0; i < 1_000_000; i++) {
+            final long b = System.currentTimeMillis();
+            k.intD("xxx" + i).v(2);
+            k.int_("aInt").v();
+            total += System.currentTimeMillis() - b;
+        }
 
-    @Test(expectedExceptions = KonfigurationBadTypeException.class)
-    @SuppressWarnings("unused")
-    public void testV3() throws Exception {
+        run = false;
+        e.shutdown();
+        e.shutdownNow();
 
-        val aInt = k.string("aInt");
-    }
-
-
-    @Test
-    @SuppressWarnings("unused")
-    public void testLongOfInt() {
-
-        val l0 = k.long_("aLong");
-        assertEquals(l0.v(), (Long) 88L);
-
-        reset();
-
-        val l1 = k.int_("aInt");
-        val l2 = k.long_("aInt");
-        assertEquals(l2.v(), (Long) 12L);
-    }
-
-    @Test(expectedExceptions = KonfigurationMissingKeyException.class)
-    public void testNoDefaultValue() {
-
-        k.longD("someblablabla").v();
-    }
-
-    @Test
-    public void testDefaultValue() {
-
-        final long v = k.longD("someblablabla").v(9876L);
-        assertEquals(v, 9876L);
+        System.out.println("total: " + total + " - " + ((double)total) / 1_000_000);
+        System.out.println("up: " + c);
     }
 
 }

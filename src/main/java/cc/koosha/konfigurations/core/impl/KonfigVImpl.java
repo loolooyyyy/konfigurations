@@ -11,22 +11,20 @@ import static java.lang.String.format;
 @RequiredArgsConstructor
 final class KonfigVImpl<T> implements KonfigV<T> {
 
-    private final BaseKonfiguration origin;
+    private final KonfigurationKombiner origin;
     private final KonfigKey key;
 
     @Override
     public T v() {
 
-        return origin.v(this.key);
+        return origin.cache().v(this.key, null, true);
     }
 
     @Override
     public T v(final T defaultValue) {
 
-        return origin.v(this.key, defaultValue);
+        return origin.cache().v(this.key, defaultValue, false);
     }
-
-
 
     @Override
     public KonfigV<T> deregister(final KeyObserver observer) {
