@@ -1,50 +1,48 @@
-allprojects {
-    apply plugin: 'java'
-    apply plugin: 'idea'
+apply plugin: 'java'
+apply plugin: 'idea'
 
-    group 'cc.koosha'
-    version '1.0-SNAPSHOT'
+group 'cc.koosha'
+version '1.0-SNAPSHOT'
 
-    sourceCompatibility = 1.7
-    targetCompatibility = 1.7
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
 
-    repositories {
-        mavenCentral()
-        mavenLocal()
-    }
-
-    task sourcesJar(type: Jar, dependsOn: classes) {
-        classifier = 'sources'
-        from sourceSets.main.allSource
-    }
-
-    task javadocJar(type: Jar, dependsOn: javadoc) {
-        classifier = 'javadoc'
-        from javadoc.destinationDir
-    }
-
-    artifacts {
-        archives sourcesJar
-        archives javadocJar
-    }
+repositories {
+    mavenCentral()
+    mavenLocal()
 }
 
-subprojects {
-    compileJava {
-        options.compilerArgs << '-Xlint:unchecked'
-    }
+compileJava {
+    options.compilerArgs << '-Xlint:unchecked'
+}
 
-    test {
-        useTestNG()
-    }
+test {
+    useTestNG()
+}
 
-    dependencies {
-        compile 'org.projectlombok:lombok:1.16.10'
+dependencies {
+    compile 'org.projectlombok:lombok:1.16.10'
 
-        testCompile 'org.testng:testng:6.9.10'
-        testCompile 'org.slf4j:slf4j-api:1.7.21'
-        testCompile 'org.slf4j:slf4j-simple:1.7.21'
-    }
+    compileOnly 'com.fasterxml.jackson.core:jackson-core:2.7.5'
+    compileOnly 'com.fasterxml.jackson.core:jackson-databind:2.7.5'
+    compileOnly 'com.google.inject:guice:4.0'
+
+    testCompile 'com.fasterxml.jackson.core:jackson-core:2.7.5'
+    testCompile 'com.fasterxml.jackson.core:jackson-databind:2.7.5'
+
+    testCompile 'org.testng:testng:6.9.10'
+    testCompile 'org.slf4j:slf4j-api:1.7.21'
+    testCompile 'org.slf4j:slf4j-simple:1.7.21'
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
 }
 
 task allJar(type: Jar, dependsOn: subprojects.tasks["build"]) {
@@ -57,8 +55,9 @@ task allJar(type: Jar, dependsOn: subprojects.tasks["build"]) {
 }
 
 artifacts {
+    archives sourcesJar
+    archives javadocJar
     archives allJar
 }
-
 
 defaultTasks 'allJar'
