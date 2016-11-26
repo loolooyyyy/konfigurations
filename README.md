@@ -2,7 +2,7 @@
 ## Java Configuration Library
 
 Similar to apache commons configuration but strives to be simple and have as
-little exteranl dependencies as possible.
+little external dependencies as possible.
 
 Example usage:
 
@@ -35,17 +35,17 @@ the requested key is selected.
 
 ### Live updates
 
-Value can be updated during runtime. A konfiguration instance does not return 
-a value directly but returns a wrapper. The wrapper has a method v() which 
-returns the actual value.  
+Value can be updated during runtime. A konfiguration instance does not return
+a value directly but returns a wrapper. The wrapper has a method v() which
+returns the actual value.
 
 ```java
 
 public class KonfigDemo {
 
-    static String theJsonKonfigString = "{ \"isAllowed\": true }"; 
+    static String theJsonKonfigString = "{ \"isAllowed\": true }";
 
-    static Konfiguration konfig = 
+    static Konfiguration konfig =
         new KonfigurationKombiner(new JsonKonfigSource(() -> theJsonKonfigString));;
 
     public static void main(final String[] args) {
@@ -54,8 +54,8 @@ public class KonfigDemo {
 
         // Get notified when the key <something> changes.
         amIAllowed.register(updatedKey -> {
-            System.out.println("Hey! we're updated:: " + konfig.bool(updatedKey)));        
-            System.out.println("Also accessible from: " + amIAllowed.v());        
+            System.out.println("Hey! we're updated:: " + konfig.bool(updatedKey)));
+            System.out.println("Also accessible from: " + amIAllowed.v());
         });
 
         assert amIAllowed.v();
@@ -77,7 +77,7 @@ If you are okay with non-existing values, you may get a defaulted-konfiguration-
 ```java
 
 // Use stringD instead of usual string (same for int_, intD, long_, longD, ...)
-KonfigV<String> defValue = konfig.stringD("non.exisintg.key_hahaha_:)))_boo");
+KonfigV<String> defValue = konfig.stringD("non.existing.key_hahaha_:)))_boo");
 
 // Assuming the crazy key above does not exist in the konfiguration,
 // Instead of plain v():
@@ -87,7 +87,7 @@ assert "somethingDefault".equals(value);
 
 ```
 
-### Registering to recieve update events
+### Registering to receive update events
 
 It's possible to register on a specific key (the method register() on the `V`
 interface) or to any configuration change (on the Konfiguration interface).
@@ -102,9 +102,9 @@ Registering to multiple keys from a single listener is possible.
 
 ### Lists and Maps and Custom Types
 
-Getting a list or map  or a custom objectis possible, as long as the 
-underlying source can parse it from the actual configuration. The 
-JsonKonfigSource uses Jackson for parsing json, so if the Jackson parser can 
+Getting a list or map  or a custom object is possible, as long as the
+underlying source can parse it from the actual configuration. The
+JsonKonfigSource uses Jackson for parsing json, so if the Jackson parser can
 parse the map / list / object, so can the configuration.
 
 ### JsonKonfigSource notes
@@ -123,20 +123,20 @@ a String can span multiple lines if it's declared in an array
 ```
 
 ```java
-JsonKonfigSource js = new JsonKonfiguration(...); 
+JsonKonfigSource js = new JsonKonfiguration(...);
 Konfiguration konfig = new KonfigurationKombiner(js);
 assert "I'm very multi line." == konfig.string("someLongStr");
 ```
 
 
-### Assumptions / Limitaions:
- 
- - Currently, custom types and ALL the required fields corresponding to those 
+### Assumptions / Limitations:
+
+ - Currently, custom types and ALL the required fields corresponding to those
    read from json string, MUST be public. (jackson wont find private, protected
    and package local fields AND classes (important: both class and fields, must
    be public)). This affects list(), map() and custom() methods.
 
- - Changing a key type (such as from int to String) during an update is not recomended.
+ - Changing a key type (such as from int to String) during an update is not recommended.
    TODO: disallow this.
 
  - Removing a key or adding a new one during IS supported.

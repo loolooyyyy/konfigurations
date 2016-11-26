@@ -11,24 +11,12 @@ import java.util.NoSuchElementException;
 public class KonfigurationMissingKeyException extends NoSuchElementException {
 
     final String key;
-    final String missingPart;
 
-    public KonfigurationMissingKeyException() {
-
-        this(null, null, null);
-    }
-
-    public KonfigurationMissingKeyException(String s) {
-
-        this(s, null, null);
-    }
-
-    public KonfigurationMissingKeyException(String s, String key, String missingPart) {
+    public KonfigurationMissingKeyException(final String s) {
 
         super(s);
 
-        this.key = key;
-        this.missingPart = missingPart;
+        this.key = s;
     }
 
 }
