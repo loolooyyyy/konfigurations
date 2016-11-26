@@ -45,19 +45,17 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
     from javadoc.destinationDir
 }
 
-task allJar(type: Jar, dependsOn: subprojects.tasks["build"]) {
+task allJar(type: Jar, dependsOn: tasks["build"]) {
     baseName = 'allJar'
-    subprojects.each { subproject ->
-        from subproject.configurations.archives.artifacts.files.collect {
-            zipTree(it)
-        }
+    from configurations.archives.artifacts.files.collect {
+        zipTree(it)
     }
 }
 
 artifacts {
     archives sourcesJar
     archives javadocJar
-    archives allJar
+    //archives allJar
 }
 
 defaultTasks 'allJar'
