@@ -1,8 +1,8 @@
 package cc.koosha.konfiguration.impl;
 
+import cc.koosha.konfiguration.EverythingObserver;
 import cc.koosha.konfiguration.KonfigV;
 import cc.koosha.konfiguration.Konfiguration;
-import cc.koosha.konfigurations.core.EverythingObserver;
 import lombok.NonNull;
 import lombok.val;
 

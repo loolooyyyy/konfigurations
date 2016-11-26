@@ -1,6 +1,6 @@
 package cc.koosha.konfiguration.impl;
 
-import cc.koosha.konfigurations.core.EverythingObserver;
+import cc.koosha.konfiguration.EverythingObserver;
 import cc.koosha.konfiguration.KeyObserver;
 import lombok.NonNull;
 import lombok.val;

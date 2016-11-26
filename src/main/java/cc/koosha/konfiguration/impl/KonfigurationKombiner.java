@@ -1,9 +1,6 @@
 package cc.koosha.konfiguration.impl;
 
-import cc.koosha.konfiguration.KonfigSource;
-import cc.koosha.konfiguration.KonfigV;
-import cc.koosha.konfiguration.Konfiguration;
-import cc.koosha.konfiguration.KonfigurationException;
+import cc.koosha.konfiguration.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
@@ -12,7 +9,7 @@ import lombok.val;
 import java.util.*;
 
 
-public class KonfigurationKombiner implements Konfiguration {
+public final class KonfigurationKombiner implements Konfiguration {
 
     @Getter(AccessLevel.PACKAGE)
     private final KonfigObserversManager konfigObserversManager;
