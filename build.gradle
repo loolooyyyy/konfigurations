@@ -45,8 +45,10 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
     from javadoc.destinationDir
 }
 
-task allJar(type: Jar, dependsOn: tasks["build"]) {
-    baseName = 'allJar'
+task allJar(type: Jar, dependsOn: [sourcesJar, javadocJar, jar]) {
+    classifier = 'everything'
+    from sourceSets.main.allSource
+    from javadoc.destinationDir
     from configurations.archives.artifacts.files.collect {
         zipTree(it)
     }
@@ -55,7 +57,5 @@ task allJar(type: Jar, dependsOn: tasks["build"]) {
 artifacts {
     archives sourcesJar
     archives javadocJar
-    //archives allJar
+    archives allJar
 }
-
-defaultTasks 'allJar'
