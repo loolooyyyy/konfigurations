@@ -10,6 +10,9 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 
+/**
+ * Thread-safe, <b>NOT</b> immutable.
+ */
 final class KonfigObserversManager {
 
     private final ReadWriteLock OBSERVERS_LOCK = new ReentrantReadWriteLock();

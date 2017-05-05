@@ -14,6 +14,8 @@ import java.util.*;
  * Good for use in cases where a konfiguration source is not available but a
  * konfiguration value is needed.
  *
+ * Thread-safe and immutable.
+ *
  * @param <T> type of konfig value this object holds.
  */
 @SuppressWarnings("unused")

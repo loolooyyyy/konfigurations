@@ -8,6 +8,11 @@ import lombok.RequiredArgsConstructor;
 import static java.lang.String.format;
 
 
+/**
+ * Thread-safe, immutable.
+ *
+ * @param <T> type of the configuration value.
+ */
 @RequiredArgsConstructor
 final class KonfigVImpl<T> implements KonfigV<T> {
 

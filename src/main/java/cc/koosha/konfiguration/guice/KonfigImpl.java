@@ -7,6 +7,9 @@ import java.lang.annotation.Annotation;
 import static java.lang.String.format;
 
 
+/**
+ * Thread-safe, immutable.
+ */
 @SuppressWarnings("ClassExplicitlyAnnotation")
 public final class KonfigImpl implements Konfig {
 

@@ -4,6 +4,9 @@ import lombok.Value;
 import lombok.experimental.Accessors;
 
 
+/**
+ * Thread-safe and immutable.
+ */
 @Value
 @Accessors(fluent = true)
 final class KonfigKey {

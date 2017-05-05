@@ -18,6 +18,9 @@ import java.util.List;
 import java.util.Map;
 
 
+/**
+ * Thread-safe, immutable.
+ */
 // The code is ugly as fuck, I know.
 public final class KonfigTypeListener implements TypeListener {
 

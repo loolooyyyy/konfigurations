@@ -55,7 +55,6 @@ public final class InMemoryKonfigSource implements KonfigSource {
 
 
 
-
     /**
      * {@inheritDoc}
      */
@@ -198,7 +197,6 @@ public final class InMemoryKonfigSource implements KonfigSource {
             throw new KonfigurationBadTypeException(cce);
         }
     }
-
 
 
 

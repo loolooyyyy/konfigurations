@@ -9,6 +9,9 @@ import lombok.val;
 import java.util.*;
 
 
+/**
+ * Thread-safe, <b>NOT</b> immutable.
+ */
 public final class KonfigurationKombiner implements Konfiguration {
 
     @Getter(AccessLevel.PACKAGE)
