@@ -3,6 +3,10 @@ package cc.koosha.konfiguration;
 
 public class KonfigurationBadTypeException extends KonfigurationException {
 
+    public static void main(String[] args) {
+
+    }
+
     public KonfigurationBadTypeException() {
     }
 

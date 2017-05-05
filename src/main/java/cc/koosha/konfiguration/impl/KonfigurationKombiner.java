@@ -28,10 +28,10 @@ public final class KonfigurationKombiner implements Konfiguration {
 
     public KonfigurationKombiner(@NonNull final Collection<KonfigSource> sources) {
 
-        if (sources.size() < 1)
+        if (sources.isEmpty())
             throw new IllegalArgumentException("no source given");
 
-        konfigObserversManager = new KonfigObserversManager();
+        this.konfigObserversManager = new KonfigObserversManager();
 
         this.cache = new KonfigurationCacheSingleImpl(this, sources);
     }
