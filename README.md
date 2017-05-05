@@ -10,6 +10,7 @@ Simple, tight, small but very extendable configuration management library.
 - Live updates, with possibility of removing old keys or adding new ones.
 - Possibility of registering to configuration changes, per key or generally.
 - Configuration namespace management.
+- Support Java 1.7+, but lambda-friendly, also backportable to 1.6
 - Support Android.
 - Simple! damn simple. Simple simple simple.
 
