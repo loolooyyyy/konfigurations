@@ -1,9 +1,6 @@
 package cc.koosha.konfiguration.impl;
 
-import cc.koosha.konfiguration.KonfigSource;
-import cc.koosha.konfiguration.KonfigurationBadTypeException;
-import cc.koosha.konfiguration.KonfigurationException;
-import cc.koosha.konfiguration.KonfigurationMissingKeyException;
+import cc.koosha.konfiguration.*;
 import com.fasterxml.jackson.databind.*;
 import lombok.NonNull;
 import lombok.val;
@@ -17,36 +14,27 @@ import java.util.Set;
 
 /**
  * Reads konfig from a json source (supplied as string).
- *
+ * <p>
  * for {@link #custom(String, Class)} to work, the supplied json reader must be
  * configured to handle arbitrary types accordingly.
- *
+ * <p>
  * Thread safe and immutable.
  */
 public final class JsonKonfigSource implements KonfigSource {
 
-    /**
-     * Similar to java 8's Supplier.
-     */
-    public interface KSupplier<T> {
+    private final SupplierX<ObjectReader> readerSupplier;
 
-        T get();
-
-    }
-
-    private final KSupplier<ObjectReader> readerSupplier;
-
-    private final KSupplier<String> json;
-    private int lastHash;
-    private JsonNode root;
+    private final SupplierX<String> json;
+    private       int               lastHash;
+    private       JsonNode          root;
 
     private JsonNode node(final String key) {
 
-        if (key.length() < 1)
+        if (key.isEmpty())
             throw new IllegalArgumentException();
 
-        final String k = "/" + key.replace('.', '/');
-        val node = this.root.at(k);
+        final String k    = "/" + key.replace('.', '/');
+        val          node = this.root.at(k);
 
         if (node.isMissingNode())
             throw new KonfigurationMissingKeyException(key);
@@ -55,10 +43,9 @@ public final class JsonKonfigSource implements KonfigSource {
     }
 
 
-    @SuppressWarnings("unused")
     public JsonKonfigSource(@NonNull final String json) {
 
-        this(new KSupplier<String>() {
+        this(new SupplierX<String>() {
             @Override
             public String get() {
                 return json;
@@ -66,9 +53,9 @@ public final class JsonKonfigSource implements KonfigSource {
         });
     }
 
-    public JsonKonfigSource(@NonNull final KSupplier<String> json) {
+    public JsonKonfigSource(@NonNull final SupplierX<String> json) {
 
-        this(json, new KSupplier<ObjectReader>() {
+        this(json, new SupplierX<ObjectReader>() {
 
             private final ObjectReader reader = new ObjectMapper().reader();
 
@@ -79,8 +66,8 @@ public final class JsonKonfigSource implements KonfigSource {
         });
     }
 
-    public JsonKonfigSource(@NonNull final KSupplier<String> json,
-                            @NonNull final KSupplier<ObjectReader> objectReader) {
+    public JsonKonfigSource(@NonNull final SupplierX<String> json,
+                            @NonNull final SupplierX<ObjectReader> objectReader) {
 
         // Check early, so we're not fooled with a dummy object reader.
         try {
@@ -88,7 +75,7 @@ public final class JsonKonfigSource implements KonfigSource {
         }
         catch (final ClassNotFoundException e) {
             throw new KonfigurationException(getClass().getName() + " requires " +
-                    "jackson library to be present in the class path");
+                    "jackson library to be present in the class path", e);
         }
 
         this.json = json;
@@ -116,11 +103,6 @@ public final class JsonKonfigSource implements KonfigSource {
     }
 
 
-
-
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public Boolean bool(final String key) {
 
@@ -132,9 +114,6 @@ public final class JsonKonfigSource implements KonfigSource {
         return at.asBoolean();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public Integer int_(final String key) {
 
@@ -146,9 +125,6 @@ public final class JsonKonfigSource implements KonfigSource {
         return at.asInt();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public Long long_(final String key) {
 
@@ -162,9 +138,6 @@ public final class JsonKonfigSource implements KonfigSource {
             throw new KonfigurationBadTypeException("not a long: " + key);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public Double double_(final String key) {
 
@@ -176,9 +149,6 @@ public final class JsonKonfigSource implements KonfigSource {
         return at.asDouble();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public String string(final String key) {
 
@@ -200,9 +170,6 @@ public final class JsonKonfigSource implements KonfigSource {
         throw new KonfigurationBadTypeException("not a string: " + key);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public <T> List<T> list(final String key, final Class<T> el) {
 
@@ -224,9 +191,6 @@ public final class JsonKonfigSource implements KonfigSource {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public <T> Map<String, T> map(final String key, final Class<T> el) {
 
@@ -249,9 +213,6 @@ public final class JsonKonfigSource implements KonfigSource {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public <T> Set<T> set(final String key, final Class<T> el) {
 
@@ -276,14 +237,11 @@ public final class JsonKonfigSource implements KonfigSource {
         return new HashSet<>(l);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public <T> T custom(final String key, final Class<T> el) {
 
         val jsonNode = this.root.at(key);
-        val reader = this.readerSupplier.get();
+        val reader   = this.readerSupplier.get();
         val traverse = jsonNode.traverse();
 
         try {
@@ -298,11 +256,6 @@ public final class JsonKonfigSource implements KonfigSource {
     }
 
 
-
-
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public boolean contains(final String key) {
 
@@ -310,24 +263,15 @@ public final class JsonKonfigSource implements KonfigSource {
         return !this.root.at(k).isMissingNode();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public boolean isUpdatable() {
 
         val newJson = this.json.get();
-        if (newJson == null)
-            throw new KonfigurationException("storage is null");
-
-        return newJson.hashCode() != this.lastHash;
+        return newJson != null && newJson.hashCode() != this.lastHash;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public KonfigSource copy() {
+    public KonfigSource copyAndUpdate() {
 
         return new JsonKonfigSource(this.json, this.readerSupplier);
     }

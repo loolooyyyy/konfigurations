@@ -2,6 +2,7 @@ package cc.koosha.konfiguration.impl;
 
 import cc.koosha.konfiguration.KonfigSource;
 import cc.koosha.konfiguration.KonfigurationBadTypeException;
+import cc.koosha.konfiguration.SupplierX;
 import lombok.val;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
@@ -19,9 +20,9 @@ import static org.testng.Assert.assertTrue;
 @SuppressWarnings("Duplicates")
 public class JsonKonfigSourceTest {
 
-    private String json;
-    private String json0;
-    private String json1;
+    private String       json;
+    private String       json0;
+    private String       json1;
     private KonfigSource k;
 
     @BeforeClass
@@ -30,15 +31,17 @@ public class JsonKonfigSourceTest {
         val url0 = getClass().getResource("sample0.json");
         val url1 = getClass().getResource("sample1.json");
 
-        this.json0 = new Scanner(new File(url0.toURI()), "UTF8").useDelimiter("\\Z").next();
-        this.json1 = new Scanner(new File(url1.toURI()), "UTF8").useDelimiter("\\Z").next();
+        this.json0 = new Scanner(new File(url0.toURI()), "UTF8").useDelimiter("\\Z")
+                                                                .next();
+        this.json1 = new Scanner(new File(url1.toURI()), "UTF8").useDelimiter("\\Z")
+                                                                .next();
     }
 
     @BeforeMethod
     public void setup() throws Exception {
 
         json = json0;
-        this.k = new JsonKonfigSource(new JsonKonfigSource.KSupplier<String>() {
+        this.k = new JsonKonfigSource(new SupplierX<String>() {
             @Override
             public String get() {
                 return json;
@@ -49,7 +52,7 @@ public class JsonKonfigSourceTest {
     private void update() {
 
         json = json1;
-        k = k.copy();
+        k = k.copyAndUpdate();
     }
 
     @Test
@@ -142,7 +145,7 @@ public class JsonKonfigSourceTest {
         // Not wise to change type, but it can happen.
 
         final Map<String, Integer> before = new HashMap<>(2);
-        final Map<String, String> after = new HashMap<>(2);
+        final Map<String, String>  after  = new HashMap<>(2);
         before.put("a", 99);
         before.put("c", 22);
         after.put("a", "b");
@@ -160,7 +163,6 @@ public class JsonKonfigSourceTest {
         update();
         assertEquals(k.set("aSet", int.class), new HashSet<>(asList(1, 2, 3)));
     }
-
 
 
     // BAD CASES
@@ -195,7 +197,6 @@ public class JsonKonfigSourceTest {
     }
 
 
-
     @Test(expectedExceptions = KonfigurationBadTypeException.class,
           expectedExceptionsMessageRegExp = "not a double.*")
     public void testBadDouble0() throws Exception {
@@ -216,7 +217,6 @@ public class JsonKonfigSourceTest {
 
         k.double_("aString");
     }
-
 
 
     @Test(expectedExceptions = KonfigurationBadTypeException.class,

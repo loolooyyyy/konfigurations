@@ -3,6 +3,7 @@ package cc.koosha.konfiguration.impl;
 import cc.koosha.konfiguration.KonfigSource;
 import cc.koosha.konfiguration.KonfigurationBadTypeException;
 import cc.koosha.konfiguration.KonfigurationException;
+import cc.koosha.konfiguration.SupplierX;
 import lombok.NonNull;
 import lombok.val;
 
@@ -14,24 +15,24 @@ import java.util.Set;
 
 /**
  * Reads konfig from a plain java map.
- *
+ * <p>
  * To fulfill contract of {@link KonfigSource}, all the values put in the
  * map of konfiguration key/values supplied to the konfiguration, should be
  * immutable.
- *
+ * <p>
  * Thread safe and immutable.
  */
 public final class InMemoryKonfigSource implements KonfigSource {
 
-    public interface KonfigMapProvider {
+    private final Map<String, Object>            storage;
+    private final SupplierX<Map<String, Object>> storageProvider;
 
-        Map<String, Object> get();
-    }
-
-    private final Map<String, Object> storage;
-    private final KonfigMapProvider storageProvider;
-
-    public InMemoryKonfigSource(@NonNull final KonfigMapProvider storage) {
+    /**
+     * Important: {@link SupplierX#get()} might be called multiple
+     * times in a short period (once call to see if it's changed and if so, one
+     * mode call to get the new values afterward.
+     */
+    public InMemoryKonfigSource(@NonNull final SupplierX<Map<String, Object>> storage) {
 
         this.storageProvider = storage;
 
@@ -42,10 +43,9 @@ public final class InMemoryKonfigSource implements KonfigSource {
         this.storage = new HashMap<>(newStorage);
     }
 
-    @SuppressWarnings("unused")
     public InMemoryKonfigSource(@NonNull final Map<String, Object> storage) {
 
-        this(new KonfigMapProvider() {
+        this(new SupplierX<Map<String, Object>>() {
             @Override
             public Map<String, Object> get() {
                 return storage;
@@ -54,10 +54,6 @@ public final class InMemoryKonfigSource implements KonfigSource {
     }
 
 
-
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public Boolean bool(final String key) {
 
@@ -69,9 +65,6 @@ public final class InMemoryKonfigSource implements KonfigSource {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public Integer int_(final String key) {
 
@@ -83,9 +76,6 @@ public final class InMemoryKonfigSource implements KonfigSource {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public Long long_(final String key) {
 
@@ -103,9 +93,6 @@ public final class InMemoryKonfigSource implements KonfigSource {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public Double double_(final String key) {
 
@@ -117,9 +104,6 @@ public final class InMemoryKonfigSource implements KonfigSource {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public String string(final String key) {
 
@@ -131,9 +115,6 @@ public final class InMemoryKonfigSource implements KonfigSource {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @SuppressWarnings("unchecked")
     @Override
     public <T> List<T> list(final String key, final Class<T> type) {
@@ -148,9 +129,6 @@ public final class InMemoryKonfigSource implements KonfigSource {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @SuppressWarnings("unchecked")
     @Override
     public <T> Map<String, T> map(final String key, final Class<T> type) {
@@ -165,9 +143,6 @@ public final class InMemoryKonfigSource implements KonfigSource {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @SuppressWarnings("unchecked")
     @Override
     public <T> Set<T> set(final String key, final Class<T> type) {
@@ -182,9 +157,6 @@ public final class InMemoryKonfigSource implements KonfigSource {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @SuppressWarnings("unchecked")
     @Override
     public <T> T custom(final String key, final Class<T> type) {
@@ -199,34 +171,21 @@ public final class InMemoryKonfigSource implements KonfigSource {
     }
 
 
-
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public boolean contains(final String key) {
 
         return this.storage.containsKey(key);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public boolean isUpdatable() {
 
         val newStorage = this.storageProvider.get();
-        if (storage == null)
-            throw new KonfigurationException("storage is null");
-
-        return !this.storage.equals(newStorage);
+        return newStorage != null && !this.storage.equals(newStorage);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public KonfigSource copy() {
+    public KonfigSource copyAndUpdate() {
 
         return new InMemoryKonfigSource(this.storageProvider);
     }

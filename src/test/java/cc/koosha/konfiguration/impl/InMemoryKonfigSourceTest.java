@@ -2,6 +2,7 @@ package cc.koosha.konfiguration.impl;
 
 import cc.koosha.konfiguration.KonfigSource;
 import cc.koosha.konfiguration.KonfigurationBadTypeException;
+import cc.koosha.konfiguration.SupplierX;
 import lombok.val;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
@@ -21,7 +22,7 @@ public class InMemoryKonfigSourceTest {
     private Map<String, Object> map;
     private Map<String, Object> map0;
     private Map<String, Object> map1;
-    private KonfigSource k;
+    private KonfigSource        k;
 
     @BeforeClass
     public void classSetup() throws Exception {
@@ -74,7 +75,7 @@ public class InMemoryKonfigSourceTest {
     public void setup() throws Exception {
 
         map = map0;
-        this.k = new InMemoryKonfigSource(new InMemoryKonfigSource.KonfigMapProvider() {
+        this.k = new InMemoryKonfigSource(new SupplierX<Map<String, Object>>() {
             @Override
             public Map<String, Object> get() {
                 return map;
@@ -85,7 +86,7 @@ public class InMemoryKonfigSourceTest {
     private void update() {
 
         map = map1;
-        k = k.copy();
+        k = k.copyAndUpdate();
     }
 
     @Test
@@ -168,7 +169,7 @@ public class InMemoryKonfigSourceTest {
         // Not wise to change type, but it can happen.
 
         final Map<String, Integer> before = new HashMap<>(2);
-        final Map<String, String> after = new HashMap<>(2);
+        final Map<String, String>  after  = new HashMap<>(2);
         before.put("a", 99);
         before.put("c", 22);
         after.put("a", "b");
@@ -186,7 +187,6 @@ public class InMemoryKonfigSourceTest {
         update();
         assertEquals(k.set("aSet", int.class), new HashSet<>(asList(1, 2, 3)));
     }
-
 
 
     // BAD CASES
@@ -221,7 +221,6 @@ public class InMemoryKonfigSourceTest {
     }
 
 
-
     @Test(expectedExceptions = KonfigurationBadTypeException.class,
           expectedExceptionsMessageRegExp = "not a double.*")
     public void testBadDouble0() throws Exception {
@@ -242,7 +241,6 @@ public class InMemoryKonfigSourceTest {
 
         k.double_("aString");
     }
-
 
 
     @Test(expectedExceptions = KonfigurationBadTypeException.class,

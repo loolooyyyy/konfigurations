@@ -1,6 +1,5 @@
 package cc.koosha.konfiguration.impl;
 
-
 import cc.koosha.konfiguration.KonfigSource;
 import cc.koosha.konfiguration.KonfigurationMissingKeyException;
 import lombok.val;
@@ -10,14 +9,24 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 
+/**
+ * A {@link KonfigurationCache} implementation that caches konfiguration values
+ * in a {@link HashMap}.
+ * <p>
+ * <b>This class is ONLY used for extending konfiguration sources or
+ * implementing a new one. it must NOT be used by clients.</b>
+ * <p>
+ * TODO add expiry.
+ * <p>
+ * Thread-safe
+ */
 final class KonfigurationCacheSingleImpl implements KonfigurationCache {
 
-    private final ReadWriteLock LOCK0 = new ReentrantReadWriteLock();
+    private final ReadWriteLock LOCK = new ReentrantReadWriteLock();
 
     private final Map<KonfigKey, Object> vCache = new HashMap<>();
-    private final Collection<KonfigSource> sources;
+    private final List<KonfigSource>    sources;
     private final KonfigurationKombiner origin;
-
 
     KonfigurationCacheSingleImpl(final KonfigurationKombiner origin,
                                  final Collection<KonfigSource> sources) {
@@ -27,111 +36,107 @@ final class KonfigurationCacheSingleImpl implements KonfigurationCache {
     }
 
     @Override
-    public void create(final KonfigKey key, final boolean mustExist) {
+    public void create(final KonfigKey key) {
 
+        val readLock = LOCK.readLock();
         try {
+            readLock.lock();
+            if (vCache.containsKey(key))
+                return;
+        }
+        finally {
+            readLock.unlock();
+        }
 
-            LOCK0.readLock().lock();
-            try {
+        val writeLock = LOCK.writeLock();
+        try {
+            writeLock.lock();
 
-                LOCK0.readLock().lock();
-                if (vCache.containsKey(key))
+            // Cache was already populated between two locks.
+            if (vCache.containsKey(key))
+                return;
+
+            for (val source : sources)
+                if (source.contains(key.name())) {
+                    vCache.put(key, KonfigurationKombiner.getInSource(source, key));
+                    // Don't look any further. The first source containing
+                    // the key wins.
                     return;
-            }
-            finally {
-
-                LOCK0.readLock().unlock();
-            }
+                }
         }
         finally {
-
-            LOCK0.readLock().unlock();
+            writeLock.unlock();
         }
-
-        try {
-
-            LOCK0.writeLock().lock();
-            if (!vCache.containsKey(key))
-                for (val source : sources)
-                    if (source.contains(key.name())) {
-                        vCache.put(key, KonfigurationKombiner.getInSource(source, key));
-                        return;
-                    }
-        }
-        finally {
-
-            LOCK0.writeLock().unlock();
-        }
-
-        if (mustExist)
-            throw new KonfigurationMissingKeyException(key.name());
     }
 
+    /**
+     * This implementation calls observers after it has fully updated the cache.
+     * <p>
+     * This implementation calls everything observers before key observers.
+     */
     @Override
     public boolean update() {
 
+        // Find out if any konfiguration source is updatable.
         boolean up = false;
         for (final KonfigSource source : this.sources)
-            if(source.isUpdatable()) {
+            if (source.isUpdatable()) {
                 up = true;
                 break;
             }
 
-        if(!up)
+        if (!up)
             return false;
 
-        final List<KonfigSource> sourcesCopy = new ArrayList<>(sources.size());
-        for (final KonfigSource source : sources)
-            sourcesCopy.add(source.copy());
+        // Copy also updates.
+        final List<KonfigSource> updatedSources = new ArrayList<>(this.sources.size());
+        for (final KonfigSource source : this.sources)
+            updatedSources.add(source.copyAndUpdate());
 
-        final Map<KonfigKey, Object> newCache = new HashMap<>(vCache.size());
-        final Set<String> updatedKeys = new HashSet<>();
+        final Map<KonfigKey, Object> newCache    = new HashMap<>(vCache.size());
+        final Set<String>            updatedKeys = new HashSet<>();
 
         final KonfigObserversHolder holder;
 
+        val lock = LOCK.writeLock();
         try {
-
-            LOCK0.writeLock().lock();
-            for (val each: this.vCache.entrySet()) {
-                boolean found = false;
+            lock.lock();
+            for (val each : this.vCache.entrySet()) {
+                boolean found   = false;
                 boolean changed = false;
-                for (val source : sourcesCopy) {
+                for (val source : updatedSources)
                     if (source.contains(each.getKey().name())) {
-                        val newVal = KonfigurationKombiner.getInSource(source, each.getKey());
-                        newCache.put(each.getKey(), newVal);
                         found = true;
+                        val newVal = KonfigurationKombiner.getInSource(source, each
+                                .getKey());
+                        newCache.put(each.getKey(), newVal);
                         changed = !newVal.equals(each.getValue());
                         break;
                     }
-                }
 
-                if(!found || changed)
+                if (!found || changed)
                     updatedKeys.add(each.getKey().name());
             }
 
-            if(updatedKeys.size() == 0)
+            if (updatedKeys.isEmpty())
                 return false;
 
-            this.sources.clear();
-            this.sources.addAll(sourcesCopy);
             vCache.clear();
             vCache.putAll(newCache);
-            holder = origin.konfigObserversManager().get();
+            holder = origin.konfigObserversManager().copy();
         }
         finally {
-
-            LOCK0.writeLock().unlock();
+            lock.unlock();
         }
-
-        // Notify observers of specific keys.
-        for (val listener : holder.keyObservers().entrySet())
-            for (val updatedKey : updatedKeys)
-                if (listener.getValue().contains(updatedKey))
-                    listener.getKey().accept(updatedKey);
 
         // Notify observers of source updates.
         for (val listener : holder.everythingObservers().entrySet())
             listener.getKey().accept();
+
+        for (val observer : holder.keyObservers().entrySet())
+            for (val updatedKey : updatedKeys)
+                if (observer.getValue().contains(updatedKey))
+                    observer.getKey().accept(updatedKey);
 
         return true;
     }
@@ -139,23 +144,23 @@ final class KonfigurationCacheSingleImpl implements KonfigurationCache {
     @Override
     public <T> T v(final KonfigKey key, final T def, final boolean mustExist) {
 
+        val lock = LOCK.readLock();
         try {
-
-            LOCK0.readLock().lock();
+            lock.lock();
             if (vCache.containsKey(key)) {
                 @SuppressWarnings("unchecked")
-                final T get = (T) vCache.get(key);
+                val get = (T) vCache.get(key);
                 return get;
             }
         }
         finally {
-
-            LOCK0.readLock().unlock();
+            lock.unlock();
         }
 
-        if(mustExist)
+        if (mustExist)
             throw new KonfigurationMissingKeyException(key.name());
 
         return def;
     }
+
 }

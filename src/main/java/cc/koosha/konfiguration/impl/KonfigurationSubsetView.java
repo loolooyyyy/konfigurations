@@ -14,7 +14,7 @@ import java.util.Set;
 final class KonfigurationSubsetView implements Konfiguration {
 
     private final Konfiguration wrapped;
-    private final String baseKey;
+    private final String        baseKey;
 
     KonfigurationSubsetView(@NonNull final Konfiguration wrapped,
                             @NonNull final String baseKey) {
@@ -78,60 +78,6 @@ final class KonfigurationSubsetView implements Konfiguration {
         return wrapped.custom(baseKey + key, type);
     }
 
-
-    @Override
-    public KonfigV<Boolean> boolD(final String key) {
-
-        return wrapped.boolD(baseKey + key);
-    }
-
-    @Override
-    public KonfigV<Integer> intD(final String key) {
-
-        return wrapped.intD(baseKey + key);
-    }
-
-    @Override
-    public KonfigV<Long> longD(final String key) {
-
-        return wrapped.longD(baseKey + key);
-    }
-
-    @Override
-    public KonfigV<Double> doubleD(final String key) {
-
-        return wrapped.doubleD(baseKey + key);
-    }
-
-    @Override
-    public KonfigV<String> stringD(final String key) {
-
-        return wrapped.stringD(baseKey + key);
-    }
-
-    @Override
-    public <T> KonfigV<List<T>> listD(final String key, final Class<T> type) {
-
-        return wrapped.listD(baseKey + key, type);
-    }
-
-    @Override
-    public <T> KonfigV<Map<String, T>> mapD(final String key, final Class<T> type) {
-
-        return wrapped.mapD(baseKey + key, type);
-    }
-
-    @Override
-    public <T> KonfigV<Set<T>> setD(final String key, final Class<T> type) {
-
-        return wrapped.setD(baseKey + key, type);
-    }
-
-    @Override
-    public <T> KonfigV<T> customD(final String key, final Class<T> type) {
-
-        return wrapped.customD(baseKey + key, type);
-    }
 
     @Override
     public boolean update() {

@@ -1,6 +1,8 @@
 package cc.koosha.konfiguration.impl;
 
+import cc.koosha.konfiguration.SupplierX;
 import lombok.val;
+import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -63,14 +65,14 @@ public class KonfigurationKombinerConcurrencyTest {
     private void reset() {
 
         mapA = map0;
-        val inMemA = new InMemoryKonfigSource(new InMemoryKonfigSource.KonfigMapProvider() {
+        val inMemA = new InMemoryKonfigSource(new SupplierX<Map<String,Object>>() {
             @Override
             public Map<String, Object> get() {
                 return mapA;
             }
         });
 
-        val inMemB = new InMemoryKonfigSource(new InMemoryKonfigSource.KonfigMapProvider() {
+        val inMemB = new InMemoryKonfigSource(new SupplierX<Map<String,Object>>() {
             @Override
             public Map<String, Object> get() {
                 return mapB;
@@ -78,7 +80,7 @@ public class KonfigurationKombinerConcurrencyTest {
         });
 
         json = json0;
-        val j = new JsonKonfigSource(new JsonKonfigSource.KSupplier<String>() {
+        val j = new JsonKonfigSource(new SupplierX<String>() {
             @Override
             public String get() {
                 return json;
@@ -125,7 +127,7 @@ public class KonfigurationKombinerConcurrencyTest {
         long total = 0;
         for (int i = 0; i < loops; i++) {
             final long b = System.currentTimeMillis();
-            k.intD("xxx" + i).v(2);
+            k.int_("xxx" + i).v(2);
             k.int_("aInt").v();
             total += System.currentTimeMillis() - b;
         }
@@ -141,28 +143,36 @@ public class KonfigurationKombinerConcurrencyTest {
     @Test
     public void testMissedUpdates() {
 
-        val e = Executors.newSingleThreadExecutor();
-        e.submit(new Runnable() {
-            @Override
-            public void run() {
-                while (run) {
-                    update();
-                    k.update();
+        final int cores = Runtime.getRuntime().availableProcessors();
+        val e = Executors.newFixedThreadPool(cores * 2);
+
+        for (int i = 0; i < cores; i++) {
+            e.submit(new Runnable() {
+                @Override
+                public void run() {
+                    while (run) {
+                        update();
+                        k.update();
+                    }
                 }
-            }
-        });
+            });
+        }
 
         long total = 0;
-        for (int i = 0; i < 1_000_000; i++) {
+        for (int i = 0; i < 10_000; i++) {
             final long b = System.currentTimeMillis();
-            k.intD("xxx" + i).v(2);
-            k.int_("aInt").v();
+            k.int_("xxx" + i).v(2);
+            val value = k.int_("aInt").v();
+            // Uncomment to make sure update happens
+            // Assert.assertEquals(value, (Integer) 12);
             total += System.currentTimeMillis() - b;
+            // Add the damn Sl4j already!
+            if(i % 1000 == 0)
+                System.out.println(i);
         }
 
         run = false;
         e.shutdown();
-        e.shutdownNow();
     }
 
 }

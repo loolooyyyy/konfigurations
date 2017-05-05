@@ -11,7 +11,9 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 
 /**
- * Thread-safe, <b>NOT</b> immutable.
+ * A wrapper around {@link KonfigObserversHolder} to make it thread-safe.
+ * <p>
+ * Thread-safe.
  */
 final class KonfigObserversManager {
 
@@ -49,13 +51,16 @@ final class KonfigObserversManager {
 
         val lock = OBSERVERS_LOCK.writeLock();
 
+        // Each observer can observe multiple keys, that's why we remove from
+        // the set first.
+
         try {
             lock.lock();
             val keys = konfigObserversHolder.keyObservers().get(observer);
-            if(keys == null)
+            if (keys == null)
                 return;
             keys.remove(key);
-            if(keys.size() == 0)
+            if (keys.isEmpty())
                 konfigObserversHolder.keyObservers().remove(observer);
         }
         finally {
@@ -67,10 +72,14 @@ final class KonfigObserversManager {
 
         val lock = this.OBSERVERS_LOCK.writeLock();
 
+        // Note: Each observer can observe multiple keys, that's why a HashSet
+        // is created for each observer.
+
         try {
             lock.lock();
             if (!konfigObserversHolder.keyObservers().containsKey(observer))
-                konfigObserversHolder.keyObservers().put(observer, new HashSet<String>());
+                konfigObserversHolder.keyObservers()
+                                     .put(observer, new HashSet<String>());
             konfigObserversHolder.keyObservers().get(observer).add(key);
         }
         finally {
@@ -78,16 +87,16 @@ final class KonfigObserversManager {
         }
     }
 
-    KonfigObserversHolder get() {
+    KonfigObserversHolder copy() {
 
-        val obsLock = OBSERVERS_LOCK.readLock();
+        val lock = OBSERVERS_LOCK.readLock();
 
         try {
-            obsLock.lock();
+            lock.lock();
             return new KonfigObserversHolder(this.konfigObserversHolder);
         }
         finally {
-            obsLock.unlock();
+            lock.unlock();
         }
     }
 

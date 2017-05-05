@@ -20,7 +20,6 @@ public final class KonfigurationKombiner implements Konfiguration {
     @Getter(AccessLevel.PACKAGE)
     private final KonfigurationCache cache;
 
-    @SuppressWarnings("unused")
     public KonfigurationKombiner(@NonNull final KonfigSource... sources) {
 
         this(Arrays.asList(sources));
@@ -39,9 +38,9 @@ public final class KonfigurationKombiner implements Konfiguration {
 
     protected static Object getInSource(final KonfigSource source, final KonfigKey key) {
 
-        final String name = key.name();
-        final Class<?> dt = key.dt();
-        final Class<?> el = key.el();
+        final String   name = key.name();
+        final Class<?> dt   = key.dt();
+        final Class<?> el   = key.el();
 
         if (dt == Boolean.class)
             return source.bool(name);
@@ -66,20 +65,11 @@ public final class KonfigurationKombiner implements Konfiguration {
 
     private <T> KonfigV<T> get(@NonNull String key, @NonNull Class<?> dt, Class<?> el) {
 
-        val k = new KonfigKey(key, dt, el);
+        val                  k   = new KonfigKey(key, dt, el);
         final KonfigVImpl<T> ret = new KonfigVImpl<>(this, k);
-        cache.create(k, true);
+        cache.create(k);
         return ret;
     }
-
-    private <T> KonfigV<T> getD(@NonNull String key, @NonNull Class<?> dt, Class<?> el) {
-
-        val k = new KonfigKey(key, dt, el);
-        final KonfigVImpl<T> ret = new KonfigVImpl<>(this, k);
-        cache.create(k, false);
-        return ret;
-    }
-
 
     @Override
     public final KonfigV<Boolean> bool(final String key) {
@@ -133,22 +123,22 @@ public final class KonfigurationKombiner implements Konfiguration {
     @Override
     public final <T> KonfigV<T> custom(final String key, @NonNull final Class<T> type) {
 
-        if(Boolean.class.equals(type) || boolean.class.equals(type))
+        if (Boolean.class.equals(type) || boolean.class.equals(type))
             return (KonfigV<T>) this.bool(key);
 
-        if(Integer.class.equals(type) || int.class.equals(type))
+        if (Integer.class.equals(type) || int.class.equals(type))
             return (KonfigV<T>) this.int_(key);
 
-        if(Long.class.equals(type) || long.class.equals(type))
+        if (Long.class.equals(type) || long.class.equals(type))
             return (KonfigV<T>) this.long_(key);
 
-        if(Double.class.equals(type) || double.class.equals(type))
+        if (Double.class.equals(type) || double.class.equals(type))
             return (KonfigV<T>) this.double_(key);
 
-        if(String.class.equals(type))
+        if (String.class.equals(type))
             return (KonfigV<T>) this.string(key);
 
-        if(type.isAssignableFrom(Map.class)
+        if (type.isAssignableFrom(Map.class)
                 || type.isAssignableFrom(Set.class)
                 || type.isAssignableFrom(List.class))
             throw new KonfigurationException("for collection types, use corresponding methods");
@@ -157,88 +147,12 @@ public final class KonfigurationKombiner implements Konfiguration {
     }
 
 
-    @Override
-    public final KonfigV<Boolean> boolD(final String key) {
-
-        return getD(key, Boolean.class, null);
-    }
-
-    @Override
-    public final KonfigV<Integer> intD(final String key) {
-
-        return getD(key, Integer.class, null);
-    }
-
-    @Override
-    public final KonfigV<Long> longD(final String key) {
-
-        return getD(key, Long.class, null);
-    }
-
-    @Override
-    public final KonfigV<Double> doubleD(final String key) {
-
-        return getD(key, Double.class, null);
-    }
-
-    @Override
-    public final KonfigV<String> stringD(final String key) {
-
-        return getD(key, String.class, null);
-    }
-
-    @Override
-    public final <T> KonfigV<List<T>> listD(final String key, final Class<T> type) {
-
-        return getD(key, List.class, type);
-    }
-
-    @Override
-    public final <T> KonfigV<Map<String, T>> mapD(final String key, final Class<T> type) {
-
-        return getD(key, Map.class, type);
-    }
-
-    @Override
-    public final <T> KonfigV<Set<T>> setD(final String key, final Class<T> type) {
-
-        return getD(key, Set.class, type);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public final <T> KonfigV<T> customD(final String key, final Class<T> type) {
-
-        if(Boolean.class.equals(type) || boolean.class.equals(type))
-            return (KonfigV<T>) this.boolD(key);
-
-        if(Integer.class.equals(type) || int.class.equals(type))
-            return (KonfigV<T>) this.intD(key);
-
-        if(Long.class.equals(type) || long.class.equals(type))
-            return (KonfigV<T>) this.longD(key);
-
-        if(Double.class.equals(type) || double.class.equals(type))
-            return (KonfigV<T>) this.doubleD(key);
-
-        if(String.class.equals(type))
-            return (KonfigV<T>) this.stringD(key);
-
-        if(type.isAssignableFrom(Map.class)
-                || type.isAssignableFrom(Set.class)
-                || type.isAssignableFrom(List.class))
-            throw new KonfigurationException("for collection types, use corresponding methods");
-
-        return getD(key, null, type);
-    }
-
-
     // ________________________________________________________________________
 
     @Override
     public final Konfiguration subset(final String key) {
 
-        if(key.startsWith("."))
+        if (key.startsWith("."))
             throw new IllegalArgumentException("key must not start with a dot: " + key);
 
         return new KonfigurationSubsetView(this, key);

@@ -10,10 +10,10 @@ import java.util.*;
 
 /**
  * Dummy konfig value, holding a constant konfig value with no source.
- *
+ * <p>
  * Good for use in cases where a konfiguration source is not available but a
  * konfiguration value is needed.
- *
+ * <p>
  * Thread-safe and immutable.
  *
  * @param <T> type of konfig value this object holds.
@@ -21,8 +21,8 @@ import java.util.*;
 @SuppressWarnings("unused")
 public final class DummyV<T> implements KonfigV<T> {
 
-    private final String key;
-    private final T v;
+    private final String  key;
+    private final T       v;
     private final boolean hasValue;
 
 
@@ -34,7 +34,8 @@ public final class DummyV<T> implements KonfigV<T> {
     }
 
     /**
-     * For konfiguration value holding no actual value ({@link #v()} always fails).
+     * For konfiguration value holding no actual value ({@link #v()} always
+     * fails).
      *
      * @param key key representing this konfiguration value.
      */
@@ -47,7 +48,7 @@ public final class DummyV<T> implements KonfigV<T> {
      * For konfiguration value holding v as value and key as its key.
      *
      * @param key key representing this konfiguration value.
-     * @param v value this konfiguration holds (can be null).
+     * @param v   value this konfiguration holds (can be null).
      */
     public DummyV(@NonNull final String key, final T v) {
 
@@ -93,7 +94,7 @@ public final class DummyV<T> implements KonfigV<T> {
     @Override
     public T v() {
 
-        if(this.hasValue)
+        if (this.hasValue)
             return this.v;
 
         throw new KonfigurationMissingKeyException(this.key);
@@ -106,6 +107,12 @@ public final class DummyV<T> implements KonfigV<T> {
     public T v(final T defaultValue) {
 
         return this.hasValue ? this.v : defaultValue;
+    }
+
+    @Override
+    public KonfigV<T> c() {
+
+        return this;
     }
 
 
@@ -171,7 +178,7 @@ public final class DummyV<T> implements KonfigV<T> {
         return new DummyV<>("", m);
     }
 
-    public static <T> DummyV<Set<T>> set(final Set<T>  s) {
+    public static <T> DummyV<Set<T>> set(final Set<T> s) {
 
         return new DummyV<>("", s);
     }

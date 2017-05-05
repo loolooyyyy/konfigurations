@@ -9,7 +9,8 @@ import static java.lang.String.format;
 
 
 /**
- * Thread-safe, immutable.
+ * Thread-safe. Immutable by itself, but it's value is...? should it be?
+ * It's better if it was, take care!
  *
  * @param <T> type of the configuration value.
  */
@@ -17,7 +18,7 @@ import static java.lang.String.format;
 final class KonfigVImpl<T> implements KonfigV<T> {
 
     private final KonfigurationKombiner origin;
-    private final KonfigKey key;
+    private final KonfigKey             key;
 
     @Override
     public T v() {
@@ -29,6 +30,13 @@ final class KonfigVImpl<T> implements KonfigV<T> {
     public T v(final T defaultValue) {
 
         return origin.cache().v(this.key, defaultValue, false);
+    }
+
+    @Override
+    public KonfigV<T> c() {
+
+        this.v();
+        return this;
     }
 
     @Override
@@ -83,8 +91,8 @@ final class KonfigVImpl<T> implements KonfigV<T> {
     @Override
     public int hashCode() {
 
-        final int PRIME = 59;
-        int result = 1;
+        final int PRIME  = 59;
+        int       result = 1;
 
         result = result * PRIME + this.origin.hashCode();
         result = result * PRIME + this.key.hashCode();

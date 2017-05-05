@@ -21,7 +21,7 @@ test {
 }
 
 dependencies {
-    compile 'org.projectlombok:lombok:1.16.16'
+    compileOnly 'org.projectlombok:lombok:1.16.16'
 
     compileOnly 'com.fasterxml.jackson.core:jackson-core:2.9.0.pr3'
     compileOnly 'com.fasterxml.jackson.core:jackson-databind:2.9.0.pr3'
