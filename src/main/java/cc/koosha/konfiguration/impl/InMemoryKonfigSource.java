@@ -31,6 +31,8 @@ public final class InMemoryKonfigSource implements KonfigSource {
      * Important: {@link SupplierX#get()} might be called multiple
      * times in a short period (once call to see if it's changed and if so, one
      * mode call to get the new values afterward.
+     *
+     * @param storage konfig source.
      */
     public InMemoryKonfigSource(@NonNull final SupplierX<Map<String, Object>> storage) {
 

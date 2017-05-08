@@ -184,7 +184,6 @@ public interface Konfiguration {
      * Important: the order of calling {@link EverythingObserver}s and
      * {@link KeyObserver}s is implementation specific.
      * <p>
-     * <p>
      * <b>Not thread safe by itself!!!</b> this method is not necessarily
      * thread-safe and must not be called from multiple threads, but calling it
      * does not compromise thread safety of other methods.

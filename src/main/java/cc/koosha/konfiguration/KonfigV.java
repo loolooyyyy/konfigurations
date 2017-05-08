@@ -88,6 +88,8 @@ public interface KonfigV<T> {
      * @throws KonfigurationMissingKeyException if the value has been removed
      *                                          from original konfiguration
      *                                          source.
+     *
+     * @return itself     
      */
     KonfigV<T> c();
 

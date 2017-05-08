@@ -1,8 +1,10 @@
 apply plugin: 'java'
 apply plugin: 'idea'
+apply plugin: 'distribution'
+apply plugin: 'maven-publish'
 
 group 'cc.koosha'
-version '1.0-SNAPSHOT'
+version '2.0.0'
 
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
@@ -20,8 +22,15 @@ test {
     useTestNG()
 }
 
+idea {                                                                          
+  module{                                                                       
+    downloadJavadoc = true                                                      
+    downloadSources = true                                                      
+  }                                                                             
+}  
+
 dependencies {
-    compileOnly 'org.projectlombok:lombok:1.16.16'
+    compile 'org.projectlombok:lombok:1.16.16'
 
     compileOnly 'com.fasterxml.jackson.core:jackson-core:2.9.0.pr3'
     compileOnly 'com.fasterxml.jackson.core:jackson-databind:2.9.0.pr3'
@@ -30,9 +39,9 @@ dependencies {
     testCompile 'com.fasterxml.jackson.core:jackson-core:2.9.0.pr3'
     testCompile 'com.fasterxml.jackson.core:jackson-databind:2.9.0.pr3'
 
-    testCompile 'org.testng:testng:6.9.10'
-    testCompile 'org.slf4j:slf4j-api:1.7.21'
-    testCompile 'org.slf4j:slf4j-simple:1.7.21'
+    testCompile 'org.testng:testng:6.11'
+    testCompile 'org.slf4j:slf4j-api:1.7.25'
+    testCompile 'org.slf4j:slf4j-simple:1.7.25'
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {
@@ -49,6 +58,7 @@ task allJar(type: Jar, dependsOn: [sourcesJar, javadocJar, jar]) {
     classifier = 'everything'
     from sourceSets.main.allSource
     from javadoc.destinationDir
+    baseName = 'allJar'
     from configurations.archives.artifacts.files.collect {
         zipTree(it)
     }
@@ -57,5 +67,17 @@ task allJar(type: Jar, dependsOn: [sourcesJar, javadocJar, jar]) {
 artifacts {
     archives sourcesJar
     archives javadocJar
-    archives allJar
+//    archives allJar
 }
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            artifact sourcesJar {
+                classifier "sources"
+            }
+        }
+    }
+}
+
