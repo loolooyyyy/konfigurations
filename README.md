@@ -10,6 +10,8 @@ Simple, tight, small but very extendable configuration management library.
 - Live updates, with possibility of removing old keys or adding new ones.
 - Possibility of registering to configuration changes, per key or generally.
 - Configuration namespace management.
+- Support Java 1.7+, but lambda-friendly, also backportable to 1.6
+- Support Android.
 - Simple! damn simple. Simple simple simple.
 
 ## Usage:
@@ -17,7 +19,7 @@ Simple, tight, small but very extendable configuration management library.
 **Overrides**: Konfiguration sources can override each other. The first source 
 which contains the requested key is selected and takes precendece.
 
-**Dfault values**: For non-existing keys, default values can be passed to 
+**Default values**: For non-existing keys, default values can be passed to 
 `v(DEFAULT_VALUE)`
 
 **Multi-Line String**s in JsonKonfigSource: as it uses Jackson, it's possible
