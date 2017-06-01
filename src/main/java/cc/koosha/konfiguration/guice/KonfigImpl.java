@@ -1,5 +1,6 @@
 package cc.koosha.konfiguration.guice;
 
+import cc.koosha.konfiguration.Konfig;
 import lombok.NonNull;
 
 import java.lang.annotation.Annotation;

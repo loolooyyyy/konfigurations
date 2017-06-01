@@ -1,9 +1,6 @@
 package cc.koosha.konfiguration.guice;
 
-import cc.koosha.konfiguration.KonfigV;
-import cc.koosha.konfiguration.Konfiguration;
-import cc.koosha.konfiguration.KonfigurationBadTypeException;
-import cc.koosha.konfiguration.KonfigurationException;
+import cc.koosha.konfiguration.*;
 import com.google.inject.MembersInjector;
 import com.google.inject.TypeLiteral;
 import com.google.inject.spi.TypeEncounter;
