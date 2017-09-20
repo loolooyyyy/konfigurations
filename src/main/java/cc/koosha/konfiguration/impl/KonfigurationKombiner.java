@@ -63,7 +63,7 @@ public final class KonfigurationKombiner implements Konfiguration {
     }
 
 
-    private <T> KonfigV<T> get(@NonNull String key, @NonNull Class<?> dt, Class<?> el) {
+    private <T> KonfigV<T> get(@NonNull String key, Class<?> dt, Class<?> el) {
 
         val                  k   = new KonfigKey(key, dt, el);
         final KonfigVImpl<T> ret = new KonfigVImpl<>(this, k);
