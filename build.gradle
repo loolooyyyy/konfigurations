@@ -30,14 +30,14 @@ idea {
 }  
 
 dependencies {
-    compile 'org.projectlombok:lombok:1.16.16'
+    compile 'org.projectlombok:lombok:1.16.18'
 
-    compileOnly 'com.fasterxml.jackson.core:jackson-core:2.9.0.pr3'
-    compileOnly 'com.fasterxml.jackson.core:jackson-databind:2.9.0.pr3'
+    compileOnly 'com.fasterxml.jackson.core:jackson-core:2.9.0'
+    compileOnly 'com.fasterxml.jackson.core:jackson-databind:2.9.0'
     compileOnly 'com.google.inject:guice:4.0'
 
-    testCompile 'com.fasterxml.jackson.core:jackson-core:2.9.0.pr3'
-    testCompile 'com.fasterxml.jackson.core:jackson-databind:2.9.0.pr3'
+    testCompile 'com.fasterxml.jackson.core:jackson-core:2.9.0'
+    testCompile 'com.fasterxml.jackson.core:jackson-databind:2.9.0'
 
     testCompile 'org.testng:testng:6.11'
     testCompile 'org.slf4j:slf4j-api:1.7.25'
