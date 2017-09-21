@@ -1,7 +1,12 @@
 package cc.koosha.konfiguration.impl;
 
 import cc.koosha.konfiguration.*;
-import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.NonNull;
 import lombok.val;
 
@@ -22,8 +27,7 @@ import java.util.Set;
  */
 public final class JsonKonfigSource implements KonfigSource {
 
-    private final SupplierX<ObjectReader> readerSupplier;
-
+    private final SupplierX<ObjectMapper> mapperSupplier;
     private final SupplierX<String> json;
     private       int               lastHash;
     private       JsonNode          root;
@@ -55,19 +59,23 @@ public final class JsonKonfigSource implements KonfigSource {
 
     public JsonKonfigSource(@NonNull final SupplierX<String> json) {
 
-        this(json, new SupplierX<ObjectReader>() {
+        this(json, new SupplierX<ObjectMapper>() {
+            private final ObjectMapper mapper;
 
-            private final ObjectReader reader = new ObjectMapper().reader();
+            {
+                mapper = new ObjectMapper();
+                mapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+            }
 
             @Override
-            public ObjectReader get() {
-                return reader;
+            public ObjectMapper get() {
+                return mapper;
             }
         });
     }
 
     public JsonKonfigSource(@NonNull final SupplierX<String> json,
-                            @NonNull final SupplierX<ObjectReader> objectReader) {
+                            @NonNull final SupplierX<ObjectMapper> objectMapper) {
 
         // Check early, so we're not fooled with a dummy object reader.
         try {
@@ -79,7 +87,7 @@ public final class JsonKonfigSource implements KonfigSource {
         }
 
         this.json = json;
-        this.readerSupplier = objectReader;
+        this.mapperSupplier = objectMapper;
 
         val newJson = this.json.get();
         if (newJson == null)
@@ -89,7 +97,7 @@ public final class JsonKonfigSource implements KonfigSource {
 
         final JsonNode update;
         try {
-            update = this.readerSupplier.get().readTree(newJson);
+            update = this.mapperSupplier.get().readTree(newJson);
         }
         catch (final IOException e) {
             throw new KonfigurationException(e);
@@ -178,7 +186,7 @@ public final class JsonKonfigSource implements KonfigSource {
         if (!at.isArray())
             throw new KonfigurationBadTypeException("not a list: " + key);
 
-        val reader = this.readerSupplier.get();
+        val reader = this.mapperSupplier.get();
 
         final JavaType javaType =
                 reader.getTypeFactory().constructCollectionType(List.class, el);
@@ -199,7 +207,7 @@ public final class JsonKonfigSource implements KonfigSource {
         if (!at.isObject())
             throw new KonfigurationBadTypeException("not a map: " + key);
 
-        val reader = this.readerSupplier.get();
+        val reader = this.mapperSupplier.get();
 
         final JavaType javaType =
                 reader.getTypeFactory()
@@ -221,7 +229,7 @@ public final class JsonKonfigSource implements KonfigSource {
         if (!at.isArray())
             throw new KonfigurationBadTypeException("not a set: " + key);
 
-        val reader = this.readerSupplier.get();
+        val reader = this.mapperSupplier.get();
 
         final JavaType javaType =
                 reader.getTypeFactory().constructCollectionType(List.class, el);
@@ -240,9 +248,8 @@ public final class JsonKonfigSource implements KonfigSource {
     @Override
     public <T> T custom(final String key, final Class<T> el) {
 
-        val jsonNode = this.root.at(key);
-        val reader   = this.readerSupplier.get();
-        val traverse = jsonNode.traverse();
+        val reader   = this.mapperSupplier.get();
+        val traverse = this.node(key).traverse();
 
         try {
             return reader.readValue(traverse, el);
@@ -273,7 +280,7 @@ public final class JsonKonfigSource implements KonfigSource {
     @Override
     public KonfigSource copyAndUpdate() {
 
-        return new JsonKonfigSource(this.json, this.readerSupplier);
+        return new JsonKonfigSource(this.json, this.mapperSupplier);
     }
 
 }

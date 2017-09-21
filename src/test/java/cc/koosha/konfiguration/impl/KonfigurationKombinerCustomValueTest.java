@@ -10,13 +10,9 @@ import java.util.Map;
 
 public class KonfigurationKombinerCustomValueTest {
 
-    class DummyCustom {
-        String somethingStringy = "I'm all set";
-        int somethingInty = 99;
-    }
+    final DummyCustom value = new DummyCustom();
 
     final String key = "theKey";
-    final DummyCustom value = new DummyCustom();
 
     private KonfigurationKombiner k = new KonfigurationKombiner(new InMemoryKonfigSource(new SupplierX<Map<String, Object>>() {
         @Override

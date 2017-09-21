@@ -10,5 +10,15 @@
         "c": 22
     },
     "aSet": [1, 2, 1, 2],
-    "aString": "hello world"
+    "aString": "hello world",
+
+    "some": {
+        "nested": {
+            "key": 99,
+            "userDefined" : {
+                "str": "I'm all set",
+                "i": 99
+            }
+        }
+    }
 }

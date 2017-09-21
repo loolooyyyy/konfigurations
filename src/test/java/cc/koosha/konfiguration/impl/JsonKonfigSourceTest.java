@@ -1,7 +1,5 @@
 package cc.koosha.konfiguration.impl;
 
-import cc.koosha.konfiguration.KonfigSource;
-import cc.koosha.konfiguration.KonfigurationBadTypeException;
 import cc.koosha.konfiguration.SupplierX;
 import lombok.val;
 import org.testng.annotations.BeforeClass;
@@ -9,12 +7,13 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.io.File;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Scanner;
 
 import static java.util.Arrays.asList;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.*;
 
 
 @SuppressWarnings("Duplicates")
@@ -23,7 +22,7 @@ public class JsonKonfigSourceTest {
     private String       json;
     private String       json0;
     private String       json1;
-    private KonfigSource k;
+    private JsonKonfigSource k;
 
     @BeforeClass
     public void classSetup() throws Exception {
@@ -52,7 +51,7 @@ public class JsonKonfigSourceTest {
     private void update() {
 
         json = json1;
-        k = k.copyAndUpdate();
+        k = (JsonKonfigSource) k.copyAndUpdate();
     }
 
     @Test
@@ -164,117 +163,19 @@ public class JsonKonfigSourceTest {
         assertEquals(k.set("aSet", int.class), new HashSet<>(asList(1, 2, 3)));
     }
 
+    @Test
+    public void testNestedKeyOfPrimitive() throws Exception {
 
-    // BAD CASES
-
-
-    @Test(expectedExceptions = KonfigurationBadTypeException.class,
-          expectedExceptionsMessageRegExp = "not an int.*")
-    public void testBadInt0() throws Exception {
-
-        k.int_("aBool");
+        assertEquals(k.int_("some.nested.key"), Integer.valueOf(99));
     }
 
-    @Test(expectedExceptions = KonfigurationBadTypeException.class,
-          expectedExceptionsMessageRegExp = "not an int.*")
-    public void testBadInt1() throws Exception {
+    @Test
+    public void testNestedKeyOfCustom() throws Exception {
 
-        k.int_("aLong");
-    }
+        final DummyCustom custom =
+                k.custom("some.nested.userDefined", DummyCustom.class);
 
-    @Test(expectedExceptions = KonfigurationBadTypeException.class,
-          expectedExceptionsMessageRegExp = "not an int.*")
-    public void testBadInt2() throws Exception {
-
-        k.int_("aString");
-    }
-
-    @Test(expectedExceptions = KonfigurationBadTypeException.class,
-          expectedExceptionsMessageRegExp = "not an int.*")
-    public void testBadInt3() throws Exception {
-
-        k.int_("aDouble");
-    }
-
-
-    @Test(expectedExceptions = KonfigurationBadTypeException.class,
-          expectedExceptionsMessageRegExp = "not a double.*")
-    public void testBadDouble0() throws Exception {
-
-        k.double_("aBool");
-    }
-
-    @Test(expectedExceptions = KonfigurationBadTypeException.class,
-          expectedExceptionsMessageRegExp = "not a double.*")
-    public void testBadDouble1() throws Exception {
-
-        k.double_("aLong");
-    }
-
-    @Test(expectedExceptions = KonfigurationBadTypeException.class,
-          expectedExceptionsMessageRegExp = "not a double.*")
-    public void testBadDouble() throws Exception {
-
-        k.double_("aString");
-    }
-
-
-    @Test(expectedExceptions = KonfigurationBadTypeException.class,
-          expectedExceptionsMessageRegExp = "not a long.*")
-    public void testBadLong0() throws Exception {
-
-        k.long_("aBool");
-    }
-
-    @Test(expectedExceptions = KonfigurationBadTypeException.class,
-          expectedExceptionsMessageRegExp = "not a long.*")
-    public void testBadLong1() throws Exception {
-
-        k.long_("aString");
-    }
-
-    @Test(expectedExceptions = KonfigurationBadTypeException.class,
-          expectedExceptionsMessageRegExp = "not a long.*")
-    public void testBadLong2() throws Exception {
-
-        k.long_("aDouble");
-    }
-
-
-    @Test(expectedExceptions = KonfigurationBadTypeException.class,
-          expectedExceptionsMessageRegExp = "not a string.*")
-    public void testBadString0() throws Exception {
-
-        k.string("aInt");
-    }
-
-    @Test(expectedExceptions = KonfigurationBadTypeException.class,
-          expectedExceptionsMessageRegExp = "not a string.*")
-    public void testBadString1() throws Exception {
-
-        k.string("aBool");
-    }
-
-    @Test(expectedExceptions = KonfigurationBadTypeException.class,
-          expectedExceptionsMessageRegExp = "not a string.*")
-    public void testBadString2() throws Exception {
-
-        k.string("aIntList");
-    }
-
-
-    @Test(expectedExceptions = KonfigurationBadTypeException.class,
-          expectedExceptionsMessageRegExp = "not a list.*")
-    public void testBadList0() throws Exception {
-
-        k.list("aInt", Integer.class);
-    }
-
-    @Test(expectedExceptions = KonfigurationBadTypeException.class,
-          expectedExceptionsMessageRegExp = "not a list.*")
-    public void testBadList1() throws Exception {
-
-        k.list("aString", String.class);
+        assertEquals(custom.concat(), "I'm all set ::: 99");
     }
 
 }
