@@ -1,5 +1,7 @@
 package cc.koosha.konfiguration.impl;
 
+
+@SuppressWarnings("FieldCanBeLocal")
 public class DummyCustom {
 
     private String str = "";
@@ -9,18 +11,5 @@ public class DummyCustom {
 
         return this.str + " ::: " + this.i;
     }
-
-
-    // No getter setter, let's see if jackson can handle.
-
-//    public String _myStr() {
-//
-//        return this.str;
-//    }
-//
-//    public int _myI() {
-//
-//        return this.i;
-//    }
 
 }

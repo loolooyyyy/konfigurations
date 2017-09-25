@@ -8,6 +8,7 @@ import org.testng.annotations.Test;
 import java.util.Collections;
 import java.util.Map;
 
+
 public class KonfigurationKombinerCustomValueTest {
 
     final DummyCustom value = new DummyCustom();
