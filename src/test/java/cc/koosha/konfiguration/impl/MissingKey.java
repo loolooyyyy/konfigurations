@@ -33,7 +33,8 @@ public class MissingKey {
         this.k = new KonfigurationKombiner(new InMemoryKonfigSource(sup));
     }
 
-    @Test(expectedExceptions = KonfigurationMissingKeyException.class)
+    @Test(expectedExceptions = KonfigurationMissingKeyException.class,
+            enabled = false)
     public void testMissingKey() {
 
         k.string("i.do.not.exist");

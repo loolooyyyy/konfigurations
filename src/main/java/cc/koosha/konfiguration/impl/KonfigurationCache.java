@@ -18,9 +18,10 @@ interface KonfigurationCache {
      * <p>
      * Thread-safe.
      *
-     * @param key       key of the konfiguration being populated.
+     * @param key key of the konfiguration being populated.
+     * @return If key was found in any of sources (key exists).
      */
-    void create(KonfigKey key);
+    boolean create(KonfigKey key);
 
     /**
      * Get cached value of a konfiguration key.

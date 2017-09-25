@@ -36,13 +36,13 @@ final class KonfigurationCacheSingleImpl implements KonfigurationCache {
     }
 
     @Override
-    public void create(final KonfigKey key) {
+    public boolean create(final KonfigKey key) {
 
         val readLock = LOCK.readLock();
         try {
             readLock.lock();
             if (vCache.containsKey(key))
-                return;
+                return true;
         }
         finally {
             readLock.unlock();
@@ -54,19 +54,21 @@ final class KonfigurationCacheSingleImpl implements KonfigurationCache {
 
             // Cache was already populated between two locks.
             if (vCache.containsKey(key))
-                return;
+                return true;
 
             for (val source : sources)
                 if (source.contains(key.name())) {
                     vCache.put(key, KonfigurationKombiner.getInSource(source, key));
                     // Don't look any further. The first source containing
                     // the key wins.
-                    return;
+                    return true;
                 }
         }
         finally {
             writeLock.unlock();
         }
+
+        return false;
     }
 
     /**

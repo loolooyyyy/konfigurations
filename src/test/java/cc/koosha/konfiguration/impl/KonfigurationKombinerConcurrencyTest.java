@@ -140,7 +140,7 @@ public class KonfigurationKombinerConcurrencyTest {
         System.out.println("up: " + c);
     }
 
-    @Test
+    @Test(enabled = false)
     public void testMissedUpdates() {
 
         final int cores = Runtime.getRuntime().availableProcessors();
