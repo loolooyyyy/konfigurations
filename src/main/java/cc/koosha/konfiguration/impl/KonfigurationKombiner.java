@@ -67,6 +67,8 @@ public final class KonfigurationKombiner implements Konfiguration {
 
         val                  k   = new KonfigKey(key, dt, el);
         final KonfigVImpl<T> ret = new KonfigVImpl<>(this, k);
+        // Ensures key exists
+        ret.v();
         cache.create(k);
         return ret;
     }
