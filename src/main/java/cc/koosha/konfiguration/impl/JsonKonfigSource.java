@@ -183,7 +183,7 @@ public final class JsonKonfigSource implements KonfigSource {
         if (at.isArray()) {
             val sb = new StringBuilder();
             for (final JsonNode jsonNode : at) {
-                checkType(at.isTextual(),"string array", at, key);
+                checkType(jsonNode.isTextual(),"string array", at, key);
                 sb.append(jsonNode.textValue());
             }
             return sb.toString();
