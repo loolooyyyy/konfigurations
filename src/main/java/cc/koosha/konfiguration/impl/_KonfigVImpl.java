@@ -2,8 +2,7 @@ package cc.koosha.konfiguration.impl;
 
 import cc.koosha.konfiguration.KeyObserver;
 import cc.koosha.konfiguration.KonfigV;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 
 import static java.lang.String.format;
 
@@ -15,48 +14,49 @@ import static java.lang.String.format;
  * @param <T> type of the configuration value.
  */
 @RequiredArgsConstructor
-final class KonfigVImpl<T> implements KonfigV<T> {
+final class _KonfigVImpl<T> implements KonfigV<T> {
 
     private final KonfigurationKombiner origin;
-    private final KonfigKey             key;
+
+    private final String   name;
+
+    @Getter(AccessLevel.PACKAGE)
+    private final Class<?> dt;
+
+    @Getter(AccessLevel.PACKAGE)
+    private final Class<?> el;
+
 
     @Override
     public T v() {
 
-        return origin.cache().v(this.key, null, true);
+        return origin.getCache().get(name, null, true);
     }
 
     @Override
     public T v(final T defaultValue) {
 
-        return origin.cache().v(this.key, defaultValue, false);
-    }
-
-    @Override
-    public KonfigV<T> c() {
-
-        this.v();
-        return this;
+        return origin.getCache().get(name, defaultValue, false);
     }
 
     @Override
     public KonfigV<T> deregister(final KeyObserver observer) {
 
-        origin.konfigObserversManager().deregister(observer, this.key.name());
+        origin.getKonfigObserversManager().deregister(observer, this.name);
         return this;
     }
 
     @Override
     public KonfigV<T> register(@NonNull final KeyObserver observer) {
 
-        origin.konfigObserversManager().register(observer, this.key.name());
+        origin.getKonfigObserversManager().register(observer, this.name);
         return this;
     }
 
     @Override
     public String key() {
 
-        return this.key.name();
+        return this.name;
     }
 
     @Override
@@ -71,7 +71,7 @@ final class KonfigVImpl<T> implements KonfigV<T> {
             vs = "?";
         }
 
-        return format("KonfigV(%s=%s)", this.key, vs);
+        return format("KonfigV(%s=%s)", this.name, vs);
     }
 
     @Override
@@ -80,12 +80,12 @@ final class KonfigVImpl<T> implements KonfigV<T> {
         if (o == this)
             return true;
 
-        if (!(o instanceof KonfigVImpl))
+        if (!(o instanceof _KonfigVImpl))
             return false;
 
-        final KonfigVImpl other = (KonfigVImpl) o;
+        final _KonfigVImpl other = (_KonfigVImpl) o;
 
-        return this.key.equals(other.key) && this.origin.equals(other.origin);
+        return this.name.equals(other.name) && this.origin.equals(other.origin);
     }
 
     @Override
@@ -95,7 +95,7 @@ final class KonfigVImpl<T> implements KonfigV<T> {
         int       result = 1;
 
         result = result * PRIME + this.origin.hashCode();
-        result = result * PRIME + this.key.hashCode();
+        result = result * PRIME + this.name.hashCode();
 
         return result;
     }

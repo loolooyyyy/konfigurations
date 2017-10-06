@@ -1,7 +1,6 @@
 package cc.koosha.konfiguration.impl;
 
 import cc.koosha.konfiguration.SupplierX;
-import lombok.Getter;
 import lombok.val;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
@@ -20,7 +19,6 @@ public abstract class InMemTestBase extends KonfigValueTestMixin {
     protected Map<String, Object> map0;
     protected Map<String, Object> map1;
 
-    @Getter
     private InMemoryKonfigSource k;
 
     @BeforeClass
@@ -89,4 +87,7 @@ public abstract class InMemTestBase extends KonfigValueTestMixin {
         this.k = (InMemoryKonfigSource) this.k.copyAndUpdate();
     }
 
+    public InMemoryKonfigSource k() {
+        return this.k;
+    }
 }

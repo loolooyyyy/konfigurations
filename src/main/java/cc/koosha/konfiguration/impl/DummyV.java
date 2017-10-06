@@ -15,14 +15,17 @@ import java.util.*;
  * konfiguration value is needed.
  * <p>
  * Thread-safe and immutable.
+ * <p>
+ * {@link #deregister(KeyObserver)} and {@link #register(KeyObserver)} do NOT
+ * work.
  *
  * @param <T> type of konfig value this object holds.
  */
 @SuppressWarnings("unused")
 public final class DummyV<T> implements KonfigV<T> {
 
-    private final String  key;
-    private final T       v;
+    private final String key;
+    private final T v;
     private final boolean hasValue;
 
 
@@ -62,7 +65,8 @@ public final class DummyV<T> implements KonfigV<T> {
     @Override
     public KonfigV<T> deregister(final KeyObserver observer) {
 
-        // this.v is constant and never changes.
+        // Note that this.v is constant and never changes, but in combination
+        // to other sources, it might!
 
         return this;
     }
@@ -73,7 +77,8 @@ public final class DummyV<T> implements KonfigV<T> {
     @Override
     public KonfigV<T> register(final KeyObserver observer) {
 
-        // this.v is constant and never changes.
+        // Note that this.v is constant and never changes, but in combination
+        // to other sources, it might!
 
         return this;
     }
@@ -107,12 +112,6 @@ public final class DummyV<T> implements KonfigV<T> {
     public T v(final T defaultValue) {
 
         return this.hasValue ? this.v : defaultValue;
-    }
-
-    @Override
-    public KonfigV<T> c() {
-
-        return this;
     }
 
 
@@ -183,10 +182,9 @@ public final class DummyV<T> implements KonfigV<T> {
         return new DummyV<>("", s);
     }
 
-    @SuppressWarnings("unchecked")
     public static KonfigV<?> null_() {
 
-        return new DummyV("", null);
+        return new DummyV<>("", null);
     }
 
 }

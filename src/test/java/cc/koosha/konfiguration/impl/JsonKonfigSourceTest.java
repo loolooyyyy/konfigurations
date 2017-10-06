@@ -1,5 +1,6 @@
 package cc.koosha.konfiguration.impl;
 
+import cc.koosha.konfiguration.KonfigSource;
 import org.testng.annotations.Test;
 
 import static org.testng.Assert.assertFalse;

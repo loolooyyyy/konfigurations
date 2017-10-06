@@ -212,6 +212,10 @@ public interface Konfiguration {
      * <p>
      * Thread-safe.
      *
+     * <b>IMPORTANT:</b> Do NOT just pass in lambdas, as this method stores
+     * only weak references and the observer will be garbage collected. Keep a
+     * reference to the observer yourself.
+     *
      * @param observer the listener to register.
      *
      * @return this.
@@ -223,6 +227,10 @@ public interface Konfiguration {
      * #register(EverythingObserver)}
      * <p>
      * Thread-safe.
+     *
+     * <b>IMPORTANT:</b> Do NOT just pass in lambdas, as this method stores
+     * only weak references and the observer will be garbage collected. Keep a
+     * reference to the observer yourself.
      *
      * @param observer the listener to de-register.
      *

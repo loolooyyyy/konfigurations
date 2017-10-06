@@ -32,18 +32,45 @@ public final class JsonKonfigSource implements KonfigSource {
     private       int               lastHash;
     private       JsonNode          root;
 
+
+    private JsonNode node_(final String key) {
+
+        if (key == null || key.isEmpty())
+            throw new IllegalArgumentException("bad konfig key: " + key);
+
+        val k = "/" + key.replace('.', '/');
+        return this.root.at(k);
+    }
+
     private JsonNode node(final String key) {
 
-        if (key.isEmpty())
-            throw new IllegalArgumentException();
-
-        final String k    = "/" + key.replace('.', '/');
-        val          node = this.root.at(k);
+        val node = node_(key);
 
         if (node.isMissingNode())
             throw new KonfigurationMissingKeyException(key);
 
         return node;
+    }
+
+
+    private static ObjectMapper defaultObjectMapper() {
+
+        val mapper = new ObjectMapper();
+
+        mapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+
+        return mapper;
+    }
+
+    private static void checkType(final boolean isOk,
+                                  final String required,
+                                  final JsonNode node,
+                                  final String key) {
+
+        if(isOk)
+            return;
+
+        throw new KonfigurationBadTypeException(required, node.getNodeType().toString(), key);
     }
 
 
@@ -60,12 +87,7 @@ public final class JsonKonfigSource implements KonfigSource {
     public JsonKonfigSource(@NonNull final SupplierX<String> json) {
 
         this(json, new SupplierX<ObjectMapper>() {
-            private final ObjectMapper mapper;
-
-            {
-                mapper = new ObjectMapper();
-                mapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
-            }
+            private final ObjectMapper mapper = defaultObjectMapper();
 
             @Override
             public ObjectMapper get() {
@@ -116,8 +138,7 @@ public final class JsonKonfigSource implements KonfigSource {
 
         val at = node(key);
 
-        if (!at.isBoolean())
-            throw new KonfigurationBadTypeException("not a boolean: " + key);
+        checkType(at.isBoolean(),"boolean", at, key);
 
         return at.asBoolean();
     }
@@ -126,10 +147,7 @@ public final class JsonKonfigSource implements KonfigSource {
     public Integer int_(final String key) {
 
         val at = node(key);
-
-        if (!at.isInt())
-            throw new KonfigurationBadTypeException("not an int: " + key);
-
+        checkType(at.isInt(),"int", at, key);
         return at.asInt();
     }
 
@@ -142,8 +160,9 @@ public final class JsonKonfigSource implements KonfigSource {
             return (long) at.asInt();
         else if (at.isLong())
             return at.asLong();
-        else
-            throw new KonfigurationBadTypeException("not a long: " + key);
+
+        checkType(false,"long", at, key);
+        throw new IllegalStateException("?!!");
     }
 
     @Override
@@ -151,8 +170,7 @@ public final class JsonKonfigSource implements KonfigSource {
 
         val at = node(key);
 
-        if (!at.isDouble())
-            throw new KonfigurationBadTypeException("not a double: " + key);
+        checkType(at.isDouble(),"double", at, key);
 
         return at.asDouble();
     }
@@ -165,8 +183,7 @@ public final class JsonKonfigSource implements KonfigSource {
         if (at.isArray()) {
             val sb = new StringBuilder();
             for (final JsonNode jsonNode : at) {
-                if (!jsonNode.isTextual())
-                    throw new KonfigurationBadTypeException("not a string array: " + key);
+                checkType(at.isTextual(),"string array", at, key);
                 sb.append(jsonNode.textValue());
             }
             return sb.toString();
@@ -175,7 +192,8 @@ public final class JsonKonfigSource implements KonfigSource {
             return at.asText();
         }
 
-        throw new KonfigurationBadTypeException("not a string: " + key);
+        checkType(false,"string", at, key);
+        throw new IllegalStateException("?!!");
     }
 
     @Override
@@ -183,8 +201,7 @@ public final class JsonKonfigSource implements KonfigSource {
 
         final JsonNode at = node(key);
 
-        if (!at.isArray())
-            throw new KonfigurationBadTypeException("not a list: " + key);
+        checkType(at.isArray(),"list", at, key);
 
         val reader = this.mapperSupplier.get();
 
@@ -204,8 +221,7 @@ public final class JsonKonfigSource implements KonfigSource {
 
         final JsonNode at = node(key);
 
-        if (!at.isObject())
-            throw new KonfigurationBadTypeException("not a map: " + key);
+        checkType(at.isObject(),"map", at, key);
 
         val reader = this.mapperSupplier.get();
 
@@ -226,8 +242,7 @@ public final class JsonKonfigSource implements KonfigSource {
 
         final JsonNode at = node(key);
 
-        if (!at.isArray())
-            throw new KonfigurationBadTypeException("not a set: " + key);
+        checkType(at.isArray(),"set", at, key);
 
         val reader = this.mapperSupplier.get();
 
@@ -266,15 +281,20 @@ public final class JsonKonfigSource implements KonfigSource {
     @Override
     public boolean contains(final String key) {
 
-        final String k = "/" + key.replace('.', '/');
-        return !this.root.at(k).isMissingNode();
+        return !this.node_(key).isMissingNode();
     }
+
 
     @Override
     public boolean isUpdatable() {
 
         val newJson = this.json.get();
-        return newJson != null && newJson.hashCode() != this.lastHash;
+
+        if(newJson == null)
+            return false;
+
+        final int newHash = newJson.hashCode();
+        return newHash != this.lastHash;
     }
 
     @Override

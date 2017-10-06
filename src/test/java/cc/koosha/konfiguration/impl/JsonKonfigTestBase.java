@@ -1,7 +1,6 @@
 package cc.koosha.konfiguration.impl;
 
 import cc.koosha.konfiguration.SupplierX;
-import lombok.Getter;
 import lombok.val;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
@@ -15,7 +14,6 @@ public abstract class JsonKonfigTestBase extends KonfigValueTestMixin {
     protected String json0;
     protected String json1;
 
-    @Getter
     private JsonKonfigSource k;
 
     @BeforeClass
@@ -52,4 +50,7 @@ public abstract class JsonKonfigTestBase extends KonfigValueTestMixin {
         this.k = (JsonKonfigSource) this.k.copyAndUpdate();
     }
 
+    public JsonKonfigSource k() {
+        return this.k;
+    }
 }

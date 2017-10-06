@@ -11,15 +11,15 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 
 /**
- * A wrapper around {@link KonfigObserversHolder} to make it thread-safe.
+ * A wrapper around {@link _KonfigObserversHolder} to make it thread-safe.
  * <p>
  * Thread-safe.
  */
-final class KonfigObserversManager {
+final class _KonfigObserversManager {
 
     private final ReadWriteLock OBSERVERS_LOCK = new ReentrantReadWriteLock();
 
-    private final KonfigObserversHolder konfigObserversHolder = new KonfigObserversHolder();
+    private final _KonfigObserversHolder konfigObserversHolder = new _KonfigObserversHolder();
 
     void register(final EverythingObserver observer) {
 
@@ -87,13 +87,13 @@ final class KonfigObserversManager {
         }
     }
 
-    KonfigObserversHolder copy() {
+    _KonfigObserversHolder copy() {
 
         val lock = OBSERVERS_LOCK.readLock();
 
         try {
             lock.lock();
-            return new KonfigObserversHolder(this.konfigObserversHolder);
+            return new _KonfigObserversHolder(this.konfigObserversHolder);
         }
         finally {
             lock.unlock();

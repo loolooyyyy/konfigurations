@@ -97,6 +97,17 @@ assert amIAllowed.v() == false;
 ```
 
 ### Assumptions / Limitations:
+ - First source containing a key takes priority over others.
+
+ - First call to get a konfig value, defines type for it's key. further calls
+   must comply.
+
+ - A value returned from KonfigV.v() must be immutable. Care must be taken
+   when using custom types.
+
+ - KonvigV.v() will return new values if the konfiguration source is updated,
+   while konfig key observers are still waiting to be notified (are not 
+   notified *yet*).
 
  - Currently, custom types and ALL the required fields corresponding to those
    read from json string, MUST be public. (This is actually a jackson limitation  
@@ -106,7 +117,7 @@ assert amIAllowed.v() == false;
 
  - Changing a key type (such as from int to String) during an update is not 
    recommended and might cause unexpected behaviour.
-   TODO: disallow this?
+   TODO: how to disallow this?
 
  - TODO: Do not call isUpdatable on a source twice.
 

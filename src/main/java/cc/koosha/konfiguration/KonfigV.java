@@ -23,6 +23,10 @@ public interface KonfigV<T> {
      * <p>
      * Thread-safe.
      *
+     * <b>IMPORTANT:</b> Do NOT just pass in lambdas, as this method stores
+     * only weak references and the observer will be garbage collected. Keep a
+     * reference to the observer yourself.
+     *
      * @param observer listener being registered for key {@link #key()}
      *
      * @return this
@@ -37,6 +41,10 @@ public interface KonfigV<T> {
      * previously registered at all has no effect.
      * <p>
      * Thread-safe.
+     *
+     * <b>IMPORTANT:</b> Do NOT just pass in lambdas, as this method stores
+     * only weak references and the observer will be garbage collected. Keep a
+     * reference to the observer yourself.
      *
      * @param observer listener being registered for key {@link #key()}
      *
@@ -79,18 +87,5 @@ public interface KonfigV<T> {
      * this konfiguration has been removed from the original source.
      */
     T v(T defaultValue);
-
-    /**
-     * Ensures that the konfiguration key exists.
-     * <p>
-     * Thread-safe.
-     *
-     * @throws KonfigurationMissingKeyException if the value has been removed
-     *                                          from original konfiguration
-     *                                          source.
-     *
-     * @return itself     
-     */
-    KonfigV<T> c();
 
 }

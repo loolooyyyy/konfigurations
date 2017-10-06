@@ -45,14 +45,6 @@ public abstract class KonfigValueTestMixin {
     }
 
     @Test
-    public void testLongOfInt() throws Exception {
-
-        assertEquals(this.k().long_("aInt"), (Object) 12L);
-        this.update();
-        assertEquals(this.k().long_("aInt"), (Object) 99L);
-    }
-
-    @Test
     public void testDouble() throws Exception {
 
         assertEquals(this.k().double_("aDouble"), 3.14);
@@ -110,28 +102,28 @@ public abstract class KonfigValueTestMixin {
 
 
     @Test(expectedExceptions = KonfigurationBadTypeException.class,
-            expectedExceptionsMessageRegExp = "not an int.*")
+            expectedExceptionsMessageRegExp = "is not int.*")
     public void testBadInt0() throws Exception {
 
         this.k().int_("aBool");
     }
 
     @Test(expectedExceptions = KonfigurationBadTypeException.class,
-            expectedExceptionsMessageRegExp = "not an int.*")
+            expectedExceptionsMessageRegExp = "is not int.*")
     public void testBadInt1() throws Exception {
 
         this.k().int_("aLong");
     }
 
     @Test(expectedExceptions = KonfigurationBadTypeException.class,
-            expectedExceptionsMessageRegExp = "not an int.*")
+            expectedExceptionsMessageRegExp = "is not int.*")
     public void testBadInt2() throws Exception {
 
         this.k().int_("aString");
     }
 
     @Test(expectedExceptions = KonfigurationBadTypeException.class,
-            expectedExceptionsMessageRegExp = "not an int.*")
+            expectedExceptionsMessageRegExp = "is not int.*")
     public void testBadInt3() throws Exception {
 
         this.k().int_("aDouble");
@@ -139,21 +131,21 @@ public abstract class KonfigValueTestMixin {
 
 
     @Test(expectedExceptions = KonfigurationBadTypeException.class,
-            expectedExceptionsMessageRegExp = "not a double.*")
+            expectedExceptionsMessageRegExp = "is not double.*")
     public void testBadDouble0() throws Exception {
 
         this.k().double_("aBool");
     }
 
     @Test(expectedExceptions = KonfigurationBadTypeException.class,
-            expectedExceptionsMessageRegExp = "not a double.*")
+            expectedExceptionsMessageRegExp = "is not double.*")
     public void testBadDouble1() throws Exception {
 
         this.k().double_("aLong");
     }
 
     @Test(expectedExceptions = KonfigurationBadTypeException.class,
-            expectedExceptionsMessageRegExp = "not a double.*")
+            expectedExceptionsMessageRegExp = "is not double.*")
     public void testBadDouble() throws Exception {
 
         this.k().double_("aString");
@@ -161,21 +153,21 @@ public abstract class KonfigValueTestMixin {
 
 
     @Test(expectedExceptions = KonfigurationBadTypeException.class,
-            expectedExceptionsMessageRegExp = "not a long.*")
+            expectedExceptionsMessageRegExp = "is not long.*")
     public void testBadLong0() throws Exception {
 
         this.k().long_("aBool");
     }
 
     @Test(expectedExceptions = KonfigurationBadTypeException.class,
-            expectedExceptionsMessageRegExp = "not a long.*")
+            expectedExceptionsMessageRegExp = "is not long.*")
     public void testBadLong1() throws Exception {
 
         this.k().long_("aString");
     }
 
     @Test(expectedExceptions = KonfigurationBadTypeException.class,
-            expectedExceptionsMessageRegExp = "not a long.*")
+            expectedExceptionsMessageRegExp = "is not long.*")
     public void testBadLong2() throws Exception {
 
         this.k().long_("aDouble");
@@ -183,21 +175,21 @@ public abstract class KonfigValueTestMixin {
 
 
     @Test(expectedExceptions = KonfigurationBadTypeException.class,
-            expectedExceptionsMessageRegExp = "not a string.*")
+            expectedExceptionsMessageRegExp = "is not string.*")
     public void testBadString0() throws Exception {
 
         this.k().string("aInt");
     }
 
     @Test(expectedExceptions = KonfigurationBadTypeException.class,
-            expectedExceptionsMessageRegExp = "not a string.*")
+            expectedExceptionsMessageRegExp = "is not string.*")
     public void testBadString1() throws Exception {
 
         this.k().string("aBool");
     }
 
     @Test(expectedExceptions = KonfigurationBadTypeException.class,
-            expectedExceptionsMessageRegExp = "not a string.*")
+            expectedExceptionsMessageRegExp = "is not string.*")
     public void testBadString2() throws Exception {
 
         this.k().string("aIntList");
@@ -205,14 +197,14 @@ public abstract class KonfigValueTestMixin {
 
 
     @Test(expectedExceptions = KonfigurationBadTypeException.class,
-            expectedExceptionsMessageRegExp = "not a list.*")
+            expectedExceptionsMessageRegExp = "is not list.*")
     public void testBadList0() throws Exception {
 
         this.k().list("aInt", Integer.class);
     }
 
     @Test(expectedExceptions = KonfigurationBadTypeException.class,
-            expectedExceptionsMessageRegExp = "not a list.*")
+            expectedExceptionsMessageRegExp = "is not list.*")
     public void testBadList1() throws Exception {
 
         this.k().list("aString", String.class);

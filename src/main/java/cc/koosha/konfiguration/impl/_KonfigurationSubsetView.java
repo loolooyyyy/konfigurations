@@ -11,13 +11,13 @@ import java.util.Map;
 import java.util.Set;
 
 
-final class KonfigurationSubsetView implements Konfiguration {
+final class _KonfigurationSubsetView implements Konfiguration {
 
     private final Konfiguration wrapped;
     private final String        baseKey;
 
-    KonfigurationSubsetView(@NonNull final Konfiguration wrapped,
-                            @NonNull final String baseKey) {
+    _KonfigurationSubsetView(@NonNull final Konfiguration wrapped,
+                             @NonNull final String baseKey) {
 
         this.wrapped = wrapped;
         this.baseKey = baseKey.endsWith(".") ? baseKey : baseKey + ".";
@@ -89,7 +89,7 @@ final class KonfigurationSubsetView implements Konfiguration {
     public Konfiguration subset(@NonNull final String key) {
 
         val newKey = this.baseKey + "." + key;
-        return new KonfigurationSubsetView(this.wrapped, newKey);
+        return new _KonfigurationSubsetView(this.wrapped, newKey);
     }
 
     @Override

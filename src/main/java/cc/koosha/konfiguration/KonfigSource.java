@@ -207,10 +207,11 @@ public interface KonfigSource {
      */
     boolean contains(String key);
 
+
     /**
      * Indicates whether if anything is actually updated in the origin of this
      * source (that is, the source returned by {@link #copyAndUpdate()} differs from this
-     * source.
+     * source.)
      * <p>
      * This action must <b>NOT</b> modify this source.
      * <p>
@@ -224,7 +225,7 @@ public interface KonfigSource {
      * update the values. If this method is called during KonfigurationKombiner
      * is also calling it, this might interfere and lost updates may happen.
      * <p>
-     * Thread-safe.
+     * NOT Thread-safe.
      *
      * @return true if the source obtained via {@link #copyAndUpdate()} will differ from
      * this source.
@@ -237,7 +238,7 @@ public interface KonfigSource {
      * A call to this method must <b>NOT</b> modify this source, but the newly
      * created source must contain the updated values.
      * <p>
-     * Thread-safe.
+     * NOT Thread-safe.
      *
      * @return an updated copy of this source.
      */

@@ -7,10 +7,7 @@ import cc.koosha.konfiguration.SupplierX;
 import lombok.NonNull;
 import lombok.val;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 
 /**
@@ -24,7 +21,7 @@ import java.util.Set;
  */
 public final class InMemoryKonfigSource implements KonfigSource {
 
-    private final Map<String, Object>            storage;
+    private final Map<String, Object> storage;
     private final SupplierX<Map<String, Object>> storageProvider;
 
     /**
@@ -48,14 +45,19 @@ public final class InMemoryKonfigSource implements KonfigSource {
     public InMemoryKonfigSource(@NonNull final Map<String, Object> storage) {
 
         this(new SupplierX<Map<String, Object>>() {
+            private final Map<String, Object> s = new HashMap<>(storage);
+
             @Override
             public Map<String, Object> get() {
-                return storage;
+                return s;
             }
         });
     }
 
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Boolean bool(final String key) {
 
@@ -63,10 +65,14 @@ public final class InMemoryKonfigSource implements KonfigSource {
             return (Boolean) this.storage.get(key);
         }
         catch (final ClassCastException cce) {
-            throw new KonfigurationBadTypeException("not a boolean: " + key);
+            throw new KonfigurationBadTypeException(
+                    "boolean", this.storage.get(key).getClass().toString(), key);
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Integer int_(final String key) {
 
@@ -74,10 +80,14 @@ public final class InMemoryKonfigSource implements KonfigSource {
             return (Integer) this.storage.get(key);
         }
         catch (final ClassCastException cce) {
-            throw new KonfigurationBadTypeException("not an int: " + key);
+            throw new KonfigurationBadTypeException(
+                    "int", this.storage.get(key).getClass().toString(), key);
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Long long_(final String key) {
 
@@ -85,16 +95,14 @@ public final class InMemoryKonfigSource implements KonfigSource {
             return (Long) this.storage.get(key);
         }
         catch (final ClassCastException cce) {
-            try {
-                final int i = (Integer) this.storage.get(key);
-                return (long) i;
-            }
-            catch (final ClassCastException cce0) {
-                throw new KonfigurationBadTypeException("not a long: " + key);
-            }
+            throw new KonfigurationBadTypeException(
+                    "long", this.storage.get(key).getClass().toString(), key);
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Double double_(final String key) {
 
@@ -102,10 +110,14 @@ public final class InMemoryKonfigSource implements KonfigSource {
             return (Double) this.storage.get(key);
         }
         catch (final ClassCastException cce) {
-            throw new KonfigurationBadTypeException("not a double: " + key);
+            throw new KonfigurationBadTypeException(
+                    "double", this.storage.get(key).getClass().toString(), key);
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String string(final String key) {
 
@@ -113,10 +125,14 @@ public final class InMemoryKonfigSource implements KonfigSource {
             return (String) this.storage.get(key);
         }
         catch (final ClassCastException cce) {
-            throw new KonfigurationBadTypeException("not a string: " + key);
+            throw new KonfigurationBadTypeException(
+                    "string", this.storage.get(key).getClass().toString(), key);
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @SuppressWarnings("unchecked")
     @Override
     public <T> List<T> list(final String key, final Class<T> type) {
@@ -127,10 +143,14 @@ public final class InMemoryKonfigSource implements KonfigSource {
             return (List<T>) this.storage.get(key);
         }
         catch (final ClassCastException cce) {
-            throw new KonfigurationBadTypeException("not a list: " + key);
+
+            throw new KonfigurationBadTypeException("list", this.storage.get(key).getClass().toString(), key);
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @SuppressWarnings("unchecked")
     @Override
     public <T> Map<String, T> map(final String key, final Class<T> type) {
@@ -141,10 +161,14 @@ public final class InMemoryKonfigSource implements KonfigSource {
             return (Map<String, T>) this.storage.get(key);
         }
         catch (final ClassCastException cce) {
-            throw new KonfigurationBadTypeException("not a map: " + key);
+            throw new KonfigurationBadTypeException(
+                    "map", this.storage.get(key).getClass().toString(), key);
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @SuppressWarnings("unchecked")
     @Override
     public <T> Set<T> set(final String key, final Class<T> type) {
@@ -155,10 +179,21 @@ public final class InMemoryKonfigSource implements KonfigSource {
             return (Set<T>) this.storage.get(key);
         }
         catch (final ClassCastException cce) {
-            throw new KonfigurationBadTypeException("not a set: " + key);
+            try {
+                final List<T> l = (List<T>) this.storage.get(key);
+                final HashSet<T> s = new HashSet<>(l);
+                return Collections.unmodifiableSet(s);
+            }
+            catch (final ClassCastException cceList) {
+                throw new KonfigurationBadTypeException(
+                        "set", this.storage.get(key).getClass().toString(), key);
+            }
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @SuppressWarnings("unchecked")
     @Override
     public <T> T custom(final String key, final Class<T> type) {
@@ -168,17 +203,25 @@ public final class InMemoryKonfigSource implements KonfigSource {
             return (T) this.storage.get(key);
         }
         catch (final ClassCastException cce) {
-            throw new KonfigurationBadTypeException(cce);
+            throw new KonfigurationBadTypeException(
+                    type.toString(), this.storage.get(key).getClass().toString(), key);
         }
     }
 
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean contains(final String key) {
 
         return this.storage.containsKey(key);
     }
 
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isUpdatable() {
 
@@ -186,6 +229,9 @@ public final class InMemoryKonfigSource implements KonfigSource {
         return newStorage != null && !this.storage.equals(newStorage);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public KonfigSource copyAndUpdate() {
 

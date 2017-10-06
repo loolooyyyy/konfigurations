@@ -15,10 +15,11 @@ import java.util.*;
 public final class KonfigurationKombiner implements Konfiguration {
 
     @Getter(AccessLevel.PACKAGE)
-    private final KonfigObserversManager konfigObserversManager;
+    private final _KonfigObserversManager konfigObserversManager =
+            new _KonfigObserversManager();
 
     @Getter(AccessLevel.PACKAGE)
-    private final KonfigurationCache cache;
+    private final _KonfigurationCache cache;
 
     public KonfigurationKombiner(@NonNull final KonfigSource... sources) {
 
@@ -27,53 +28,18 @@ public final class KonfigurationKombiner implements Konfiguration {
 
     public KonfigurationKombiner(@NonNull final Collection<KonfigSource> sources) {
 
-        if (sources.isEmpty())
+        val sources_ = new ArrayList<KonfigSource>(sources);
+
+        if (sources_.isEmpty())
             throw new IllegalArgumentException("no source given");
 
-        this.konfigObserversManager = new KonfigObserversManager();
-
-        this.cache = new KonfigurationCacheSingleImpl(this, sources);
-    }
-
-
-    protected static Object getInSource(final KonfigSource source, final KonfigKey key) {
-
-        final String   name = key.name();
-        final Class<?> dt   = key.dt();
-        final Class<?> el   = key.el();
-
-        if (dt == Boolean.class)
-            return source.bool(name);
-        else if (dt == Integer.class)
-            return source.int_(name);
-        else if (dt == Long.class)
-            return source.long_(name);
-        else if (dt == Double.class)
-            return source.double_(name);
-        else if (dt == String.class)
-            return source.string(name);
-        else if (dt == List.class)
-            return source.list(name, el);
-        else if (dt == Map.class)
-            return source.map(name, el);
-        else if (dt == Set.class)
-            return source.set(name, el);
-        else
-            return source.custom(name, el);
+        this.cache = new _KonfigurationCache(sources_, konfigObserversManager);
     }
 
 
     private <T> KonfigV<T> get(@NonNull String key, Class<?> dt, Class<?> el) {
 
-        val                  k   = new KonfigKey(key, dt, el);
-        final KonfigVImpl<T> ret = new KonfigVImpl<>(this, k);
-        cache.create(k);
-
-        // We can not do this, in order to support default values.
-        //        if(!cache.create(k))
-        //            throw new KonfigurationMissingKeyException(key);
-
-        return ret;
+        return cache.create(this, key, dt, el);
     }
 
     @Override
@@ -160,7 +126,7 @@ public final class KonfigurationKombiner implements Konfiguration {
         if (key.startsWith("."))
             throw new IllegalArgumentException("key must not start with a dot: " + key);
 
-        return new KonfigurationSubsetView(this, key);
+        return new _KonfigurationSubsetView(this, key);
     }
 
     @Override

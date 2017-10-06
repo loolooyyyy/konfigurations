@@ -3,10 +3,6 @@ package cc.koosha.konfiguration;
 
 public class KonfigurationBadTypeException extends KonfigurationException {
 
-    public static void main(String[] args) {
-
-    }
-
     public KonfigurationBadTypeException() {
     }
 
@@ -20,6 +16,14 @@ public class KonfigurationBadTypeException extends KonfigurationException {
 
     public KonfigurationBadTypeException(Throwable cause) {
         super(cause);
+    }
+
+
+    public KonfigurationBadTypeException(final String required,
+                                         final String actual,
+                                         final String key) {
+
+        this("is not " + required + ", is " + actual + ": " + key);
     }
 
 }

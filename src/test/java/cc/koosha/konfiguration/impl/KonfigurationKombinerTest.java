@@ -46,30 +46,10 @@ public final class KonfigurationKombinerTest {
         assertEquals(k.int_("xxx").v(), (Integer) 99);
     }
 
-    @Test
-    public void testV2() throws Exception {
-
-        val xxx = k.long_("xxx");
-
-        assertEquals(xxx.v(), (Long) 12L);
-
-        returnFourTaee = !returnFourTaee;
-        k.update();
-
-        assertEquals(xxx.v(), (Long) 99L);
-    }
-
     @Test(expectedExceptions = KonfigurationBadTypeException.class)
     public void testV3() throws Exception {
 
         k.string("xxx");
-    }
-
-    @Test
-    public void testLongOfInt() {
-
-        k.int_("xxx").v();  // cache the value
-        assertEquals(k.long_("xxx").v(), (Long) 12L);
     }
 
     @Test(expectedExceptions = KonfigurationMissingKeyException.class)
