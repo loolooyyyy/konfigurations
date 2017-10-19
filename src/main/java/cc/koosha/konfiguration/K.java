@@ -11,7 +11,7 @@ package cc.koosha.konfiguration;
  *
  * @param <T> type of value being wrapped
  */
-public interface KonfigV<T> {
+public interface K<T> {
 
     /**
      * Register to receive update notifications for changes in value of this
@@ -31,7 +31,7 @@ public interface KonfigV<T> {
      *
      * @return this
      */
-    KonfigV<T> register(KeyObserver observer);
+    K<T> register(KeyObserver observer);
 
     /**
      * De-register a listener previously registered via
@@ -50,7 +50,7 @@ public interface KonfigV<T> {
      *
      * @return this
      */
-    KonfigV<T> deregister(KeyObserver observer);
+    K<T> deregister(KeyObserver observer);
 
     /**
      * Unique key of this konfiguration.

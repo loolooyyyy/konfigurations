@@ -1,7 +1,7 @@
 package cc.koosha.konfiguration.impl;
 
+import cc.koosha.konfiguration.K;
 import cc.koosha.konfiguration.KeyObserver;
-import cc.koosha.konfiguration.KonfigV;
 import cc.koosha.konfiguration.KonfigurationMissingKeyException;
 import lombok.NonNull;
 
@@ -18,11 +18,15 @@ import java.util.*;
  * <p>
  * {@link #deregister(KeyObserver)} and {@link #register(KeyObserver)} do NOT
  * work.
+ * <p>
+ * Regarding equals and hashcode: Each instance of DummyV is considered to be
+ * from a different origin (in contrast to {@link _KonfigVImpl}, so only each
+ * object is equal to itself only, even with same key and values.
  *
  * @param <T> type of konfig value this object holds.
  */
 @SuppressWarnings("unused")
-public final class DummyV<T> implements KonfigV<T> {
+public final class DummyV<T> implements K<T> {
 
     private final String key;
     private final T v;
@@ -63,7 +67,7 @@ public final class DummyV<T> implements KonfigV<T> {
      * No-op. does nothing.
      */
     @Override
-    public KonfigV<T> deregister(final KeyObserver observer) {
+    public K<T> deregister(final KeyObserver observer) {
 
         // Note that this.v is constant and never changes, but in combination
         // to other sources, it might!
@@ -75,7 +79,7 @@ public final class DummyV<T> implements KonfigV<T> {
      * No-op. does nothing.
      */
     @Override
-    public KonfigV<T> register(final KeyObserver observer) {
+    public K<T> register(final KeyObserver observer) {
 
         // Note that this.v is constant and never changes, but in combination
         // to other sources, it might!
@@ -117,32 +121,32 @@ public final class DummyV<T> implements KonfigV<T> {
 
     // ________________________________________________ PREDEFINED CONST VALUES
 
-    public static KonfigV<Boolean> false_() {
+    public static K<Boolean> false_() {
 
         return new DummyV<>("", false);
     }
 
-    public static KonfigV<Boolean> true_() {
+    public static K<Boolean> true_() {
 
         return new DummyV<>("", true);
     }
 
-    public static KonfigV<Integer> int_(final Integer i) {
+    public static K<Integer> int_(final Integer i) {
 
         return new DummyV<>("", i);
     }
 
-    public static KonfigV<Long> long_(final Long l) {
+    public static K<Long> long_(final Long l) {
 
         return new DummyV<>("", l);
     }
 
-    public static KonfigV<Double> double_(final Double d) {
+    public static K<Double> double_(final Double d) {
 
         return new DummyV<>("", d);
     }
 
-    public static KonfigV<String> string(final String s) {
+    public static K<String> string(final String s) {
 
         return new DummyV<>("", s);
     }
@@ -182,7 +186,7 @@ public final class DummyV<T> implements KonfigV<T> {
         return new DummyV<>("", s);
     }
 
-    public static KonfigV<?> null_() {
+    public static K<?> null_() {
 
         return new DummyV<>("", null);
     }

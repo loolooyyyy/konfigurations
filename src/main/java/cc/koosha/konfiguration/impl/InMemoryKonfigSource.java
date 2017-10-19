@@ -9,6 +9,8 @@ import lombok.val;
 
 import java.util.*;
 
+import static cc.koosha.konfiguration.impl.TypeName.*;
+
 
 /**
  * Reads konfig from a plain java map.
@@ -23,6 +25,19 @@ public final class InMemoryKonfigSource implements KonfigSource {
 
     private final Map<String, Object> storage;
     private final SupplierX<Map<String, Object>> storageProvider;
+
+    private KonfigurationBadTypeException checkType(final String required,
+                                                    final String key) {
+
+        return new KonfigurationBadTypeException(
+                required, this.storage.get(key).getClass().toString(), key);
+    }
+
+    private KonfigurationBadTypeException checkType(final TypeName required,
+                                                    final String key) {
+
+        return this.checkType(required.getTName(), key);
+    }
 
     /**
      * Important: {@link SupplierX#get()} might be called multiple
@@ -42,6 +57,7 @@ public final class InMemoryKonfigSource implements KonfigSource {
         this.storage = new HashMap<>(newStorage);
     }
 
+    @SuppressWarnings("unused")
     public InMemoryKonfigSource(@NonNull final Map<String, Object> storage) {
 
         this(new SupplierX<Map<String, Object>>() {
@@ -65,8 +81,7 @@ public final class InMemoryKonfigSource implements KonfigSource {
             return (Boolean) this.storage.get(key);
         }
         catch (final ClassCastException cce) {
-            throw new KonfigurationBadTypeException(
-                    "boolean", this.storage.get(key).getClass().toString(), key);
+            throw checkType(BOOLEAN, key);
         }
     }
 
@@ -80,8 +95,7 @@ public final class InMemoryKonfigSource implements KonfigSource {
             return (Integer) this.storage.get(key);
         }
         catch (final ClassCastException cce) {
-            throw new KonfigurationBadTypeException(
-                    "int", this.storage.get(key).getClass().toString(), key);
+            throw checkType(INT, key);
         }
     }
 
@@ -95,8 +109,7 @@ public final class InMemoryKonfigSource implements KonfigSource {
             return (Long) this.storage.get(key);
         }
         catch (final ClassCastException cce) {
-            throw new KonfigurationBadTypeException(
-                    "long", this.storage.get(key).getClass().toString(), key);
+            throw checkType(LONG, key);
         }
     }
 
@@ -110,8 +123,7 @@ public final class InMemoryKonfigSource implements KonfigSource {
             return (Double) this.storage.get(key);
         }
         catch (final ClassCastException cce) {
-            throw new KonfigurationBadTypeException(
-                    "double", this.storage.get(key).getClass().toString(), key);
+            throw checkType(DOUBLE, key);
         }
     }
 
@@ -125,8 +137,7 @@ public final class InMemoryKonfigSource implements KonfigSource {
             return (String) this.storage.get(key);
         }
         catch (final ClassCastException cce) {
-            throw new KonfigurationBadTypeException(
-                    "string", this.storage.get(key).getClass().toString(), key);
+            throw checkType(STRING, key);
         }
     }
 
@@ -143,8 +154,7 @@ public final class InMemoryKonfigSource implements KonfigSource {
             return (List<T>) this.storage.get(key);
         }
         catch (final ClassCastException cce) {
-
-            throw new KonfigurationBadTypeException("list", this.storage.get(key).getClass().toString(), key);
+            throw checkType(LIST, key);
         }
     }
 
@@ -161,8 +171,7 @@ public final class InMemoryKonfigSource implements KonfigSource {
             return (Map<String, T>) this.storage.get(key);
         }
         catch (final ClassCastException cce) {
-            throw new KonfigurationBadTypeException(
-                    "map", this.storage.get(key).getClass().toString(), key);
+            throw checkType(MAP, key);
         }
     }
 
@@ -185,8 +194,7 @@ public final class InMemoryKonfigSource implements KonfigSource {
                 return Collections.unmodifiableSet(s);
             }
             catch (final ClassCastException cceList) {
-                throw new KonfigurationBadTypeException(
-                        "set", this.storage.get(key).getClass().toString(), key);
+                throw checkType(SET, key);
             }
         }
     }
@@ -203,8 +211,7 @@ public final class InMemoryKonfigSource implements KonfigSource {
             return (T) this.storage.get(key);
         }
         catch (final ClassCastException cce) {
-            throw new KonfigurationBadTypeException(
-                    type.toString(), this.storage.get(key).getClass().toString(), key);
+            throw checkType(type.toString(), key);
         }
     }
 

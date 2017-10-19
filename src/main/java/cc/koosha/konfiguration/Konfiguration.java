@@ -24,7 +24,7 @@ public interface Konfiguration {
      * @throws KonfigurationMissingKeyException if the requested key does not
      *                                          exist in any source.
      */
-    KonfigV<Boolean> bool(String key);
+    K<Boolean> bool(String key);
 
     /**
      * Get an int konfiguration value.
@@ -40,7 +40,7 @@ public interface Konfiguration {
      * @throws KonfigurationMissingKeyException if the requested key does not
      *                                          exist in any source.
      */
-    KonfigV<Integer> int_(String key);
+    K<Integer> int_(String key);
 
     /**
      * Get a long konfiguration value.
@@ -56,7 +56,7 @@ public interface Konfiguration {
      * @throws KonfigurationMissingKeyException if the requested key does not
      *                                          exist in any source.
      */
-    KonfigV<Long> long_(String key);
+    K<Long> long_(String key);
 
     /**
      * Get a double konfiguration value.
@@ -72,7 +72,7 @@ public interface Konfiguration {
      * @throws KonfigurationMissingKeyException if the requested key does not
      *                                          exist in any source.
      */
-    KonfigV<Double> double_(String key);
+    K<Double> double_(String key);
 
     /**
      * Get a string konfiguration value.
@@ -88,7 +88,7 @@ public interface Konfiguration {
      * @throws KonfigurationMissingKeyException if the requested key does not
      *                                          exist in any source.
      */
-    KonfigV<String> string(String key);
+    K<String> string(String key);
 
     /**
      * Get a list of T konfiguration value.
@@ -106,7 +106,7 @@ public interface Konfiguration {
      * @throws KonfigurationMissingKeyException if the requested key does not
      *                                          exist in any source.
      */
-    <T> KonfigV<List<T>> list(String key, Class<T> type);
+    <T> K<List<T>> list(String key, Class<T> type);
 
     /**
      * Get a map of String to T konfiguration value. Keys are always of type
@@ -126,7 +126,7 @@ public interface Konfiguration {
      * @throws KonfigurationMissingKeyException if the requested key does not
      *                                          exist in any source.
      */
-    <T> KonfigV<Map<String, T>> map(String key, Class<T> type);
+    <T> K<Map<String, T>> map(String key, Class<T> type);
 
     /**
      * Get a set of T konfiguration value.
@@ -144,7 +144,7 @@ public interface Konfiguration {
      * @throws KonfigurationMissingKeyException if the requested key does not
      *                                          exist in any source.
      */
-    <T> KonfigV<Set<T>> set(String key, Class<T> type);
+    <T> K<Set<T>> set(String key, Class<T> type);
 
     /**
      * Get a custom object of type T konfiguration value.
@@ -170,7 +170,7 @@ public interface Konfiguration {
      * @throws KonfigurationMissingKeyException if the requested key does not
      *                                          exist in any source.
      */
-    <T> KonfigV<T> custom(String key, Class<T> type);
+    <T> K<T> custom(String key, Class<T> type);
 
 
     /**
@@ -178,7 +178,7 @@ public interface Konfiguration {
      * <p>
      * Important: the key observers might be notified <em>after</em> the cache
      * update, and it is implementation specific. So it's possible that a call
-     * to {@link KonfigV#v()} returns the new value, while the observer is not
+     * to {@link K#v()} returns the new value, while the observer is not
      * notified yet.
      * <p>
      * Important: the order of calling {@link EverythingObserver}s and

@@ -1,8 +1,11 @@
 package cc.koosha.konfiguration.impl;
 
+import cc.koosha.konfiguration.K;
 import cc.koosha.konfiguration.KeyObserver;
-import cc.koosha.konfiguration.KonfigV;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 import static java.lang.String.format;
 
@@ -14,11 +17,11 @@ import static java.lang.String.format;
  * @param <T> type of the configuration value.
  */
 @RequiredArgsConstructor
-final class _KonfigVImpl<T> implements KonfigV<T> {
+final class _KonfigVImpl<T> implements K<T> {
 
     private final KonfigurationKombiner origin;
 
-    private final String   name;
+    private final String name;
 
     @Getter(AccessLevel.PACKAGE)
     private final Class<?> dt;
@@ -40,16 +43,16 @@ final class _KonfigVImpl<T> implements KonfigV<T> {
     }
 
     @Override
-    public KonfigV<T> deregister(final KeyObserver observer) {
+    public K<T> deregister(final KeyObserver observer) {
 
-        origin.getKonfigObserversManager().deregister(observer, this.name);
+        origin.getKonfigObserversHolder().deregister(observer, this.name);
         return this;
     }
 
     @Override
-    public KonfigV<T> register(@NonNull final KeyObserver observer) {
+    public K<T> register(@NonNull final KeyObserver observer) {
 
-        origin.getKonfigObserversManager().register(observer, this.name);
+        origin.getKonfigObserversHolder().register(observer, this.name);
         return this;
     }
 
@@ -91,8 +94,8 @@ final class _KonfigVImpl<T> implements KonfigV<T> {
     @Override
     public int hashCode() {
 
-        final int PRIME  = 59;
-        int       result = 1;
+        final int PRIME = 59;
+        int result = 1;
 
         result = result * PRIME + this.origin.hashCode();
         result = result * PRIME + this.name.hashCode();

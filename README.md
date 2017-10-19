@@ -61,7 +61,7 @@ Map<String, Integer> map  = konfig.map ("my.map", int.class).v()
 
 // --------------
 
-KonfigV<Integer> defValue = konfig.int_("non.existing.key");
+K<Integer> defValue = konfig.int_("non.existing.key");
 Integer value = defValue.v(42);
 assert value == 42;
 
@@ -80,7 +80,7 @@ private static Konfiguration konfig =
 
 // ...
 
-KonfigV<Boolean> amIAllowed = konfig.bool("isAllowed");
+K<Boolean> amIAllowed = konfig.bool("isAllowed");
 amIAllowed.register(updatedKey -> {
     System.out.println("Hey! we're updated:: " + konfig.bool(updatedKey)));
     System.out.println("Also accessible from: " + amIAllowed.v());
@@ -102,7 +102,7 @@ assert amIAllowed.v() == false;
  - First call to get a konfig value, defines type for it's key. further calls
    must comply.
 
- - A value returned from KonfigV.v() must be immutable. Care must be taken
+ - A value returned from K.v() must be immutable. Care must be taken
    when using custom types.
 
  - KonvigV.v() will return new values if the konfiguration source is updated,

@@ -1,13 +1,15 @@
 package cc.koosha.konfiguration.impl;
 
+import cc.koosha.konfiguration.K;
 import cc.koosha.konfiguration.KonfigSource;
-import cc.koosha.konfiguration.KonfigV;
 import cc.koosha.konfiguration.KonfigurationBadTypeException;
 import cc.koosha.konfiguration.KonfigurationMissingKeyException;
+import lombok.Cleanup;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 
 import java.util.*;
+import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -38,38 +40,21 @@ final class _KonfigurationCache {
     private final Map<String, _KonfigVImpl<?>> kvalCache = new HashMap<>();
 
     private final Collection<KonfigSource> sources;
-    private final _KonfigObserversManager konfigObserversManager;
+    private final _KonfigObserversHolder konfigObserversHolder;
 
 
-    private static String typeName(Class<?> base, Class<?> aux) {
-
-        if (base == null && aux == null)
-            return "?";
-        if (base == null)
-            return aux.getName();
-        if (aux == null)
-            return base.getName();
-        else
-            return base.getName() + " / " + aux.getName();
-    }
-
-    private boolean contains(final String key) {
-
-        return this.kvalCache.containsKey(key);
-    }
-
-    private <T> KonfigV<T> getK(String name, Class<?> dt, Class<?> el) {
+    private <T> K<T> getK(String name, Class<?> dt, Class<?> el) {
 
         final _KonfigVImpl<?> r = this.kvalCache.get(name);
 
         if (Objects.equals(r.getDt(), dt) && Objects.equals(r.getEl(), el)) {
             @SuppressWarnings("unchecked")
-            final KonfigV<T> cast = (KonfigV<T>) r;
+            final K<T> cast = (K<T>) r;
             return cast;
         }
         else {
             throw new KonfigurationBadTypeException(
-                    typeName(dt, el), typeName(r.getDt(), r.getEl()), name);
+                    TypeName.typeName(dt, el), TypeName.typeName(r.getDt(), r.getEl()), name);
         }
     }
 
@@ -100,24 +85,7 @@ final class _KonfigurationCache {
         return result;
     }
 
-    private <T> _KonfigVImpl<T> putK(KonfigurationKombiner origin, String name, Class<?> dt, Class<?> el) {
-
-        final _KonfigVImpl<T> rr = new _KonfigVImpl<>(origin, name, dt, el);
-        kvalCache.put(name, rr);
-        return rr;
-    }
-
-    private boolean isUpdatable() {
-
-        for (final KonfigSource source : this.sources)
-            if (source.isUpdatable())
-                return true;
-
-        return false;
-    }
-
-
-    <T> KonfigV<T> create(KonfigurationKombiner origin, String name, Class<?> dt, Class<?> el) {
+    <T> K<T> create(KonfigurationKombiner origin, String name, Class<?> dt, Class<?> el) {
 
         // We can not do this, in order to support default values.
         //    if(does not exist) throw new KonfigurationMissingKeyException(key);
@@ -125,7 +93,8 @@ final class _KonfigurationCache {
         val readLock = LOCK.readLock();
         try {
             readLock.lock();
-            if (this.contains(name))
+
+            if (this.kvalCache.containsKey(name))
                 return this.getK(name, dt, el);
         }
         finally {
@@ -137,7 +106,8 @@ final class _KonfigurationCache {
             writeLock.lock();
 
             // Cache was already populated between two locks.
-            if (this.contains(name))
+
+            if (this.kvalCache.containsKey(name))
                 return this.getK(name, dt, el);
 
             for (val source : sources)
@@ -146,7 +116,9 @@ final class _KonfigurationCache {
                     break;
                 }
 
-            return this.putK(origin, name, dt, el);
+            val rr = new _KonfigVImpl<T>(origin, name, dt, el);
+            kvalCache.put(name, rr);
+            return rr;
         }
         finally {
             writeLock.unlock();
@@ -155,54 +127,77 @@ final class _KonfigurationCache {
 
     boolean update() {
 
-        if(!this.isUpdatable())
+        boolean isUpdatable = false;
+        for (val source : this.sources)
+            if (source.isUpdatable()) {
+                isUpdatable = true;
+                break;
+            }
+        if (!isUpdatable)
             return false;
 
-        // Copy also updates.
-        final List<KonfigSource> updatedSources = new ArrayList<>(this.sources.size());
-        for (final KonfigSource source : this.sources)
+        val updatedSources = new ArrayList<KonfigSource>(this.sources.size());
+        for (val source : this.sources)
             updatedSources.add(source.copyAndUpdate());
 
         final Map<String, Object> newCache = new HashMap<>();
         final Set<String> updatedKeys = new HashSet<>();
-        final _KonfigObserversHolder holder;
 
-        val lock = LOCK.writeLock();
-        try {
-            lock.lock();
-            for (val each : this.valuCache.entrySet()) {
-                val name = each.getKey();
-                val value = each.getValue();
-                boolean found = false;
-                boolean changed = false;
-                for (val source : updatedSources)
-                    if (source.contains(name)) {
-                        found = true;
-                        val kVal = kvalCache.get(name);
-                        val newVal = this.putV(source, name, kVal.getDt(), kVal.getEl());
-                        newCache.put(name, newVal);
-                        changed = !newVal.equals(value);
-                        break;
-                    }
+        val holder = _update(updatedSources, newCache, updatedKeys);
+        if (holder == null)
+            return false;
 
-                if (!found || changed)
-                    updatedKeys.add(name);
-            }
-
-            if (updatedKeys.isEmpty())
-                return false;
-
-            valuCache.clear();
-            valuCache.putAll(newCache);
-            holder = this.konfigObserversManager.copy();
-        }
-        finally {
-            lock.unlock();
-        }
-
-        holder.notifyOfUpdate(updatedKeys);
+        for (val listener : holder.getEverythingObservers().entrySet())
+            listener.getKey().accept();
+        for (val observer : holder.getKeyObservers().entrySet())
+            for (val updatedKey : updatedKeys)
+                if (observer.getValue().contains(updatedKey))
+                    observer.getKey().accept(updatedKey);
+        holder.getKeyObservers().clear();
+        holder.getEverythingObservers().clear();
 
         return true;
+    }
+
+    _KonfigObserversHolder _update(ArrayList<KonfigSource> updatedSources,
+                                   Map<String, Object> newCache,
+                                   Set<String> updatedKeys) {
+
+        @Cleanup("unlock")
+        Lock lock = LOCK.writeLock();
+        lock.lock();
+
+        // Bad idea, I know.
+        @Cleanup("unlock")
+        Lock oLock = this.konfigObserversHolder.getOBSERVERS_LOCK().writeLock();
+        oLock.lock();
+
+        for (val each : this.valuCache.entrySet()) {
+            val name = each.getKey();
+            val value = each.getValue();
+            boolean found = false;
+            boolean changed = false;
+            for (val source : updatedSources) {
+                if (source.contains(name)) {
+                    found = true;
+                    val kVal = kvalCache.get(name);
+                    val newVal = this.putV(source, name, kVal.getDt(), kVal.getEl());
+                    newCache.put(name, newVal);
+                    changed = !newVal.equals(value);
+                    break;
+                }
+            }
+
+            if (!found || changed)
+                updatedKeys.add(name);
+        }
+
+        if (updatedKeys.isEmpty())
+            return null;
+
+        valuCache.clear();
+        valuCache.putAll(newCache);
+        return this.konfigObserversHolder.copy();
     }
 
     /**

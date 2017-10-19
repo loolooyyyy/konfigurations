@@ -3,8 +3,6 @@ package cc.koosha.konfiguration.impl;
 import cc.koosha.konfiguration.*;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.NonNull;
@@ -15,6 +13,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import static cc.koosha.konfiguration.impl.TypeName.*;
 
 
 /**
@@ -29,8 +29,8 @@ public final class JsonKonfigSource implements KonfigSource {
 
     private final SupplierX<ObjectMapper> mapperSupplier;
     private final SupplierX<String> json;
-    private       int               lastHash;
-    private       JsonNode          root;
+    private int lastHash;
+    private JsonNode root;
 
 
     private JsonNode node_(final String key) {
@@ -63,17 +63,18 @@ public final class JsonKonfigSource implements KonfigSource {
     }
 
     private static void checkType(final boolean isOk,
-                                  final String required,
+                                  final TypeName required,
                                   final JsonNode node,
                                   final String key) {
 
-        if(isOk)
+        if (isOk)
             return;
 
-        throw new KonfigurationBadTypeException(required, node.getNodeType().toString(), key);
+        throw new KonfigurationBadTypeException(required.getTName(), node.getNodeType().toString(), key);
     }
 
 
+    @SuppressWarnings("unused")
     public JsonKonfigSource(@NonNull final String json) {
 
         this(new SupplierX<String>() {
@@ -105,17 +106,15 @@ public final class JsonKonfigSource implements KonfigSource {
         }
         catch (final ClassNotFoundException e) {
             throw new KonfigurationException(getClass().getName() + " requires " +
-                    "jackson library to be present in the class path", e);
+                                                     "jackson library to be present in the class path", e);
         }
 
         this.json = json;
         this.mapperSupplier = objectMapper;
 
-        val newJson = this.json.get();
+        final String newJson = this.json.get();
         if (newJson == null)
             throw new KonfigurationException("storage is null");
-
-        val newHash = newJson.hashCode();
 
         final JsonNode update;
         try {
@@ -129,7 +128,7 @@ public final class JsonKonfigSource implements KonfigSource {
             throw new KonfigurationException("root element is null");
 
         this.root = update;
-        this.lastHash = newHash;
+        this.lastHash = newJson.hashCode();
     }
 
 
@@ -137,9 +136,7 @@ public final class JsonKonfigSource implements KonfigSource {
     public Boolean bool(final String key) {
 
         val at = node(key);
-
-        checkType(at.isBoolean(),"boolean", at, key);
-
+        checkType(at.isBoolean(), BOOLEAN, at, key);
         return at.asBoolean();
     }
 
@@ -147,7 +144,7 @@ public final class JsonKonfigSource implements KonfigSource {
     public Integer int_(final String key) {
 
         val at = node(key);
-        checkType(at.isInt(),"int", at, key);
+        checkType(at.isInt(), INT, at, key);
         return at.asInt();
     }
 
@@ -161,7 +158,8 @@ public final class JsonKonfigSource implements KonfigSource {
         else if (at.isLong())
             return at.asLong();
 
-        checkType(false,"long", at, key);
+        //noinspection ConstantConditions
+        checkType(false, LONG, at, key);
         throw new IllegalStateException("?!!");
     }
 
@@ -169,9 +167,7 @@ public final class JsonKonfigSource implements KonfigSource {
     public Double double_(final String key) {
 
         val at = node(key);
-
-        checkType(at.isDouble(),"double", at, key);
-
+        checkType(at.isDouble(), DOUBLE, at, key);
         return at.asDouble();
     }
 
@@ -183,7 +179,7 @@ public final class JsonKonfigSource implements KonfigSource {
         if (at.isArray()) {
             val sb = new StringBuilder();
             for (final JsonNode jsonNode : at) {
-                checkType(jsonNode.isTextual(),"string array", at, key);
+                checkType(jsonNode.isTextual(), STRING_ARRAY, at, key);
                 sb.append(jsonNode.textValue());
             }
             return sb.toString();
@@ -192,21 +188,18 @@ public final class JsonKonfigSource implements KonfigSource {
             return at.asText();
         }
 
-        checkType(false,"string", at, key);
+        //noinspection ConstantConditions
+        checkType(false, STRING, at, key);
         throw new IllegalStateException("?!!");
     }
 
     @Override
     public <T> List<T> list(final String key, final Class<T> el) {
 
-        final JsonNode at = node(key);
-
-        checkType(at.isArray(),"list", at, key);
-
+        val at = node(key);
+        checkType(at.isArray(), LIST, at, key);
         val reader = this.mapperSupplier.get();
-
-        final JavaType javaType =
-                reader.getTypeFactory().constructCollectionType(List.class, el);
+        val javaType = reader.getTypeFactory().constructCollectionType(List.class, el);
 
         try {
             return reader.readValue(at.traverse(), javaType);
@@ -220,14 +213,9 @@ public final class JsonKonfigSource implements KonfigSource {
     public <T> Map<String, T> map(final String key, final Class<T> el) {
 
         final JsonNode at = node(key);
-
-        checkType(at.isObject(),"map", at, key);
-
+        checkType(at.isObject(), MAP, at, key);
         val reader = this.mapperSupplier.get();
-
-        final JavaType javaType =
-                reader.getTypeFactory()
-                      .constructMapType(Map.class, String.class, el);
+        val javaType = reader.getTypeFactory().constructMapType(Map.class, String.class, el);
 
         try {
             return reader.readValue(at.traverse(), javaType);
@@ -241,13 +229,9 @@ public final class JsonKonfigSource implements KonfigSource {
     public <T> Set<T> set(final String key, final Class<T> el) {
 
         final JsonNode at = node(key);
-
-        checkType(at.isArray(),"set", at, key);
-
+        checkType(at.isArray(), SET, at, key);
         val reader = this.mapperSupplier.get();
-
-        final JavaType javaType =
-                reader.getTypeFactory().constructCollectionType(List.class, el);
+        val javaType = reader.getTypeFactory().constructCollectionType(List.class, el);
 
         final List<T> l;
         try {
@@ -263,17 +247,14 @@ public final class JsonKonfigSource implements KonfigSource {
     @Override
     public <T> T custom(final String key, final Class<T> el) {
 
-        val reader   = this.mapperSupplier.get();
+        val reader = this.mapperSupplier.get();
         val traverse = this.node(key).traverse();
 
         try {
             return reader.readValue(traverse, el);
         }
-        catch (final JsonMappingException e) {
-            throw new KonfigurationBadTypeException(e);
-        }
         catch (final IOException e) {
-            throw new KonfigurationException(e);
+            throw new KonfigurationBadTypeException(e);
         }
     }
 
@@ -290,7 +271,7 @@ public final class JsonKonfigSource implements KonfigSource {
 
         val newJson = this.json.get();
 
-        if(newJson == null)
+        if (newJson == null)
             return false;
 
         final int newHash = newJson.hashCode();

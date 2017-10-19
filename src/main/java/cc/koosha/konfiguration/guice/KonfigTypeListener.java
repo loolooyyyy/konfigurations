@@ -35,7 +35,7 @@ public final class KonfigTypeListener implements TypeListener {
 
         while (clazz != null && clazz != Object.class) {
             for (val field : clazz.getDeclaredFields())
-                if (field.getType().isAssignableFrom(KonfigV.class) && field.isAnnotationPresent(Konfig.class))
+                if (field.getType().isAssignableFrom(K.class) && field.isAnnotationPresent(Konfig.class))
                     this.processField(field, encounter, field.getAnnotation(Konfig.class));
 
             clazz = clazz.getSuperclass();
@@ -53,8 +53,9 @@ public final class KonfigTypeListener implements TypeListener {
             throw new KonfigurationException("Generic type declared for config value is unknown");
 
         val actual = ((ParameterizedType) type).getActualTypeArguments();
-        if(actual.length != 1)
-            throw new KonfigurationException("invalid number of generic types declared, needed 1, got: " +  actual.length);
+        if (actual.length != 1)
+            throw new KonfigurationException(
+                    "invalid number of generic types declared, needed 1, got: " + actual.length);
 
         val neededType = actual[0];
 
@@ -84,7 +85,7 @@ public final class KonfigTypeListener implements TypeListener {
 
     // String, Integer, ....
     private Object injectByBaseType(final Type neededType,
-                                    final Konfig konfig)  {
+                                    final Konfig konfig) {
 
         return this.cfg.custom(konfig.value(), (Class<?>) neededType);
     }

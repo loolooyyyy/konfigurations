@@ -1,6 +1,6 @@
 package cc.koosha.konfiguration.impl;
 
-import cc.koosha.konfiguration.KonfigV;
+import cc.koosha.konfiguration.K;
 import cc.koosha.konfiguration.SupplierX;
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -25,7 +25,7 @@ public class KonfigurationKombinerCustomValueTest {
     @Test
     public void testCustomValue() {
 
-        KonfigV<DummyCustom> custom = k.custom(key, DummyCustom.class);
+        K<DummyCustom> custom = k.custom(key, DummyCustom.class);
         Assert.assertSame(custom.v(), value);
     }
 

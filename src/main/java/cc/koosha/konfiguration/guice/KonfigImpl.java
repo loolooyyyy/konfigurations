@@ -69,8 +69,8 @@ public final class KonfigImpl implements Konfig {
     public String toString() {
 
         return format("@%s(value=%s)",
-                Konfig.class.getName(),
-                this.value
+                      Konfig.class.getName(),
+                      this.value
         );
     }
 

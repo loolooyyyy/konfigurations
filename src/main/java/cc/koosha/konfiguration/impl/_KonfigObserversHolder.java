@@ -2,12 +2,14 @@ package cc.koosha.konfiguration.impl;
 
 import cc.koosha.konfiguration.EverythingObserver;
 import cc.koosha.konfiguration.KeyObserver;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NonNull;
 import lombok.val;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.WeakHashMap;
+import java.util.*;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 
 /**
@@ -19,8 +21,11 @@ import java.util.WeakHashMap;
 final class _KonfigObserversHolder {
 
     /**
+     * Observers mapped to the keys they are observing.
+     * <p>
      * Reference to KeyObserver must be weak.
      */
+    @Getter(AccessLevel.PACKAGE)
     private final Map<KeyObserver, Collection<String>> keyObservers;
 
     /**
@@ -28,7 +33,11 @@ final class _KonfigObserversHolder {
      * <p>
      * Reference to EverythingObserver must be weak, and that's why a map.
      */
+    @Getter(AccessLevel.PACKAGE)
     private final Map<EverythingObserver, Void> everythingObservers;
+
+    @Getter(AccessLevel.PACKAGE)
+    private final ReadWriteLock OBSERVERS_LOCK = new ReentrantReadWriteLock();
 
     _KonfigObserversHolder() {
 
@@ -36,45 +45,92 @@ final class _KonfigObserversHolder {
         keyObservers = new WeakHashMap<>();
     }
 
-    _KonfigObserversHolder(final _KonfigObserversHolder from) {
+    /**
+     * This constructor is used to create temporary snapshots of another
+     * instance (and will be entirely GCed shortly after) so it's ok not to
+     * use weak hash map.
+     */
+    private _KonfigObserversHolder(final _KonfigObserversHolder from) {
 
         this.keyObservers = new HashMap<>(from.keyObservers);
         this.everythingObservers = new HashMap<>(from.everythingObservers);
     }
 
-    /**
-     * Observers mapped to the keys they are observing.
-     *
-     * @return Observers mapped to the keys they are observing.
-     */
-    Map<KeyObserver, Collection<String>> keyObservers() {
+    void register(final EverythingObserver observer) {
 
-        return keyObservers;
+        val lock = this.OBSERVERS_LOCK.writeLock();
+
+        try {
+            lock.lock();
+            this.everythingObservers.put(observer, null);
+        }
+        finally {
+            lock.unlock();
+        }
     }
 
-    /**
-     * Observers who observe everything, aka all the keys.
-     *
-     * @return Observers who observe everything, aka all the keys.
-     */
-    Map<EverythingObserver, Void> everythingObservers() {
+    void deregister(final EverythingObserver observer) {
 
-        return everythingObservers;
+        val lock = this.OBSERVERS_LOCK.writeLock();
+
+        try {
+            lock.lock();
+            this.everythingObservers.remove(observer);
+        }
+        finally {
+            lock.unlock();
+        }
     }
 
-    void notifyOfUpdate(final Collection<String> updatedKeys) {
+    void deregister(final KeyObserver observer, final String key) {
 
-        // Notify observers of source updates.
-        for (val listener : this.everythingObservers().entrySet())
-            listener.getKey().accept();
+        val lock = OBSERVERS_LOCK.writeLock();
 
-        for (val observer : this.keyObservers().entrySet())
-            for (val updatedKey : updatedKeys)
-                if (observer.getValue().contains(updatedKey))
-                    observer.getKey().accept(updatedKey);
+        try {
+            lock.lock();
+            val keys = this.keyObservers.get(observer);
+            if (keys == null)
+                return;
+            keys.remove(key);
+            if (keys.isEmpty())
+                this.keyObservers.remove(observer);
+        }
+        finally {
+            lock.unlock();
+        }
+    }
 
-        this.keyObservers.clear();
-        this.everythingObservers.clear();
+    void register(@NonNull final KeyObserver observer, final String key) {
+
+        val lock = this.OBSERVERS_LOCK.writeLock();
+
+        try {
+            lock.lock();
+            if (!this.keyObservers.containsKey(observer)) {
+                val put = new HashSet<String>();
+                put.add(key);
+                this.keyObservers.put(observer, put);
+            }
+            else {
+                this.keyObservers.get(observer).add(key);
+            }
+        }
+        finally {
+            lock.unlock();
+        }
+    }
+
+    _KonfigObserversHolder copy() {
+
+        val lock = OBSERVERS_LOCK.readLock();
+
+        try {
+            lock.lock();
+            return new _KonfigObserversHolder(this);
+        }
+        finally {
+            lock.unlock();
+        }
     }
 
 }

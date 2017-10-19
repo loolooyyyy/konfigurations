@@ -1,8 +1,9 @@
 package cc.koosha.konfiguration.impl;
 
 import cc.koosha.konfiguration.EverythingObserver;
-import cc.koosha.konfiguration.KonfigV;
+import cc.koosha.konfiguration.K;
 import cc.koosha.konfiguration.Konfiguration;
+import cc.koosha.konfiguration.KonfigurationException;
 import lombok.NonNull;
 import lombok.val;
 
@@ -14,7 +15,7 @@ import java.util.Set;
 final class _KonfigurationSubsetView implements Konfiguration {
 
     private final Konfiguration wrapped;
-    private final String        baseKey;
+    private final String baseKey;
 
     _KonfigurationSubsetView(@NonNull final Konfiguration wrapped,
                              @NonNull final String baseKey) {
@@ -25,55 +26,55 @@ final class _KonfigurationSubsetView implements Konfiguration {
 
 
     @Override
-    public KonfigV<Boolean> bool(final String key) {
+    public K<Boolean> bool(final String key) {
 
         return wrapped.bool(baseKey + key);
     }
 
     @Override
-    public KonfigV<Integer> int_(final String key) {
+    public K<Integer> int_(final String key) {
 
         return wrapped.int_(baseKey + key);
     }
 
     @Override
-    public KonfigV<Long> long_(final String key) {
+    public K<Long> long_(final String key) {
 
         return wrapped.long_(baseKey + key);
     }
 
     @Override
-    public KonfigV<Double> double_(final String key) {
+    public K<Double> double_(final String key) {
 
         return wrapped.double_(baseKey + key);
     }
 
     @Override
-    public KonfigV<String> string(final String key) {
+    public K<String> string(final String key) {
 
         return wrapped.string(baseKey + key);
     }
 
     @Override
-    public <T> KonfigV<List<T>> list(final String key, final Class<T> type) {
+    public <T> K<List<T>> list(final String key, final Class<T> type) {
 
         return wrapped.list(baseKey + key, type);
     }
 
     @Override
-    public <T> KonfigV<Map<String, T>> map(final String key, final Class<T> type) {
+    public <T> K<Map<String, T>> map(final String key, final Class<T> type) {
 
         return wrapped.map(baseKey + key, type);
     }
 
     @Override
-    public <T> KonfigV<Set<T>> set(final String key, final Class<T> type) {
+    public <T> K<Set<T>> set(final String key, final Class<T> type) {
 
         return wrapped.set(baseKey + key, type);
     }
 
     @Override
-    public <T> KonfigV<T> custom(final String key, final Class<T> type) {
+    public <T> K<T> custom(final String key, final Class<T> type) {
 
         return wrapped.custom(baseKey + key, type);
     }
@@ -82,8 +83,9 @@ final class _KonfigurationSubsetView implements Konfiguration {
     @Override
     public boolean update() {
 
-        return wrapped.update();
+        throw new KonfigurationException("update is not available from subset view");
     }
+
 
     @Override
     public Konfiguration subset(@NonNull final String key) {
