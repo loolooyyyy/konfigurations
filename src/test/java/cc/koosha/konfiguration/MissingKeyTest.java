@@ -1,7 +1,5 @@
-package cc.koosha.konfiguration.impl;
+package cc.koosha.konfiguration;
 
-import cc.koosha.konfiguration.KonfigurationMissingKeyException;
-import cc.koosha.konfiguration.SupplierX;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -10,7 +8,7 @@ import java.util.Map;
 import static java.util.Collections.singletonMap;
 
 
-public class MissingKey {
+public class MissingKeyTest {
 
 
     private boolean returnFourTaee = true;
@@ -33,11 +31,16 @@ public class MissingKey {
         this.k = new KonfigurationKombiner(new InMemoryKonfigSource(sup));
     }
 
-    @Test(expectedExceptions = KonfigurationMissingKeyException.class,
-            enabled = false)
-    public void testMissingKey() {
+    @Test
+    public void testMissingKeyNotRaisedUntilVIsNotCalled() {
 
         k.string("i.do.not.exist");
+    }
+
+    @Test(expectedExceptions = KonfigurationMissingKeyException.class)
+    public void testMissingKey() {
+
+        k.string("i.do.not.exist").v();
     }
 
 }

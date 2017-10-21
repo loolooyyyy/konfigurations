@@ -1,4 +1,4 @@
-package cc.koosha.konfiguration.impl;
+package cc.koosha.konfiguration;
 
 /**
  * To create consistent error messages, name of types are taken from here.

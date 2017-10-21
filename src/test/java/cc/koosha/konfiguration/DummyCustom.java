@@ -1,4 +1,4 @@
-package cc.koosha.konfiguration.impl;
+package cc.koosha.konfiguration;
 
 
 @SuppressWarnings("FieldCanBeLocal")

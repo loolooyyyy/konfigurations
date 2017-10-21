@@ -1,6 +1,5 @@
-package cc.koosha.konfiguration.impl;
+package cc.koosha.konfiguration;
 
-import cc.koosha.konfiguration.*;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -14,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static cc.koosha.konfiguration.impl.TypeName.*;
+import static cc.koosha.konfiguration.TypeName.*;
 
 
 /**

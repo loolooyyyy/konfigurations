@@ -1,7 +1,5 @@
-package cc.koosha.konfiguration.impl;
+package cc.koosha.konfiguration;
 
-import cc.koosha.konfiguration.KonfigSource;
-import cc.koosha.konfiguration.KonfigurationBadTypeException;
 import lombok.val;
 import org.testng.annotations.Test;
 
@@ -78,7 +76,7 @@ public abstract class KonfigValueTestMixin {
         // Not wise to change type, but it can happen.
 
         final Map<String, Integer> before = new HashMap<>(2);
-        final Map<String, String>  after  = new HashMap<>(2);
+        final Map<String, String> after = new HashMap<>(2);
         before.put("a", 99);
         before.put("c", 22);
         after.put("a", "b");

@@ -1,14 +1,18 @@
-package cc.koosha.konfiguration.impl;
+package cc.koosha.konfiguration;
 
-import cc.koosha.konfiguration.SupplierX;
 import lombok.val;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 import java.io.File;
 import java.util.Scanner;
 
-public abstract class JsonKonfigTestBase extends KonfigValueTestMixin {
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertTrue;
+
+
+public class JsonKonfigTestBase extends KonfigValueTestMixin {
 
     protected String json;
     protected String json0;
@@ -53,4 +57,18 @@ public abstract class JsonKonfigTestBase extends KonfigValueTestMixin {
     public JsonKonfigSource k() {
         return this.k;
     }
+
+    @Test
+    public void testNotUpdatable() throws Exception {
+
+        assertFalse(this.k().isUpdatable());
+    }
+
+    @Test
+    public void testUpdatable() throws Exception {
+
+        json = json1;
+        assertTrue(this.k().isUpdatable());
+    }
+
 }

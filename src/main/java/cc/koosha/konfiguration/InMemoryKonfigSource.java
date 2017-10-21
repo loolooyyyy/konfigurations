@@ -1,15 +1,11 @@
-package cc.koosha.konfiguration.impl;
+package cc.koosha.konfiguration;
 
-import cc.koosha.konfiguration.KonfigSource;
-import cc.koosha.konfiguration.KonfigurationBadTypeException;
-import cc.koosha.konfiguration.KonfigurationException;
-import cc.koosha.konfiguration.SupplierX;
 import lombok.NonNull;
 import lombok.val;
 
 import java.util.*;
 
-import static cc.koosha.konfiguration.impl.TypeName.*;
+import static cc.koosha.konfiguration.TypeName.*;
 
 
 /**

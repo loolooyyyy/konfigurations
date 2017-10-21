@@ -1,7 +1,5 @@
-package cc.koosha.konfiguration.impl;
+package cc.koosha.konfiguration;
 
-import cc.koosha.konfiguration.K;
-import cc.koosha.konfiguration.SupplierX;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -15,12 +13,13 @@ public class KonfigurationKombinerCustomValueTest {
 
     final String key = "theKey";
 
-    private KonfigurationKombiner k = new KonfigurationKombiner(new InMemoryKonfigSource(new SupplierX<Map<String, Object>>() {
-        @Override
-        public Map<String, Object> get() {
-            return Collections.<String, Object>singletonMap(key, value);
-        }
-    }));
+    private KonfigurationKombiner k = new KonfigurationKombiner(
+            new InMemoryKonfigSource(new SupplierX<Map<String, Object>>() {
+                @Override
+                public Map<String, Object> get() {
+                    return Collections.<String, Object>singletonMap(key, value);
+                }
+            }));
 
     @Test
     public void testCustomValue() {

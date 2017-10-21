@@ -1,8 +1,5 @@
-package cc.koosha.konfiguration.impl;
+package cc.koosha.konfiguration;
 
-import cc.koosha.konfiguration.K;
-import cc.koosha.konfiguration.KeyObserver;
-import cc.koosha.konfiguration.KonfigurationMissingKeyException;
 import lombok.NonNull;
 
 import java.util.*;
@@ -20,7 +17,7 @@ import java.util.*;
  * work.
  * <p>
  * Regarding equals and hashcode: Each instance of DummyV is considered to be
- * from a different origin (in contrast to {@link _KonfigVImpl}, so only each
+ * from a different origin (in contrast to _KonfigVImpl, so only each
  * object is equal to itself only, even with same key and values.
  *
  * @param <T> type of konfig value this object holds.
@@ -92,7 +89,7 @@ public final class DummyV<T> implements K<T> {
      * {@inheritDoc}
      */
     @Override
-    public String key() {
+    public String getKey() {
 
         return this.key;
     }

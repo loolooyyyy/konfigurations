@@ -1,13 +1,10 @@
-package cc.koosha.konfiguration.impl;
+package cc.koosha.konfiguration;
 
-import cc.koosha.konfiguration.KonfigurationBadTypeException;
-import cc.koosha.konfiguration.KonfigurationMissingKeyException;
-import cc.koosha.konfiguration.SupplierX;
-import lombok.val;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.Collections.singletonMap;
 import static org.testng.Assert.assertEquals;
@@ -15,12 +12,12 @@ import static org.testng.Assert.assertEquals;
 
 public final class KonfigurationKombinerTest {
 
-    private boolean returnFourTaee = true;
+    private AtomicBoolean flag = new AtomicBoolean(true);
 
     private final SupplierX<Map<String, Object>> sup = new SupplierX<Map<String, Object>>() {
         @Override
         public Map<String, Object> get() {
-            return returnFourTaee
+            return flag.get()
                    ? singletonMap("xxx", (Object) 12)
                    : singletonMap("xxx", (Object) 99);
         }
@@ -31,7 +28,7 @@ public final class KonfigurationKombinerTest {
     @BeforeMethod
     public void setup() {
 
-        this.returnFourTaee = true;
+        this.flag.set(true);
         this.k = new KonfigurationKombiner(new InMemoryKonfigSource(sup));
     }
 
@@ -40,7 +37,7 @@ public final class KonfigurationKombinerTest {
 
         assertEquals(k.int_("xxx").v(), (Integer) 12);
 
-        returnFourTaee = !returnFourTaee;
+        flag.set(!flag.get());
         k.update();
 
         assertEquals(k.int_("xxx").v(), (Integer) 99);

@@ -216,7 +216,7 @@ public interface KonfigSource {
      * This action must <b>NOT</b> modify this source.
      * <p>
      * <b>VERY VERY IMPORTANT:</b> This method is to be called only from
-     * {@link cc.koosha.konfiguration.impl.KonfigurationKombiner} or
+     * {@link KonfigurationKombiner} or
      * concurrency issues will arise
      * .<p>
      * Why? To check and see if it's updatable, a source might ask it's origin

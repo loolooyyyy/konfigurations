@@ -1,9 +1,9 @@
-package cc.koosha.konfiguration.impl;
+package cc.koosha.konfiguration;
 
-import cc.koosha.konfiguration.SupplierX;
 import lombok.val;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -11,9 +11,11 @@ import java.util.HashSet;
 import java.util.Map;
 
 import static java.util.Arrays.asList;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertTrue;
 
 
-public abstract class InMemTestBase extends KonfigValueTestMixin {
+public class InMemTestBase extends KonfigValueTestMixin {
 
     protected Map<String, Object> map;
     protected Map<String, Object> map0;
@@ -90,4 +92,18 @@ public abstract class InMemTestBase extends KonfigValueTestMixin {
     public InMemoryKonfigSource k() {
         return this.k;
     }
+
+    @Test
+    public void testNotUpdatable() throws Exception {
+
+        assertFalse(this.k().isUpdatable());
+    }
+
+    @Test
+    public void testUpdatable() throws Exception {
+
+        map = map1;
+        assertTrue(this.k().isUpdatable());
+    }
+
 }

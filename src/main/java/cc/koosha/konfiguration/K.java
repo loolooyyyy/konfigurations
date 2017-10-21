@@ -27,7 +27,7 @@ public interface K<T> {
      * only weak references and the observer will be garbage collected. Keep a
      * reference to the observer yourself.
      *
-     * @param observer listener being registered for key {@link #key()}
+     * @param observer listener being registered for key {@link #getKey()}
      *
      * @return this
      */
@@ -46,7 +46,7 @@ public interface K<T> {
      * only weak references and the observer will be garbage collected. Keep a
      * reference to the observer yourself.
      *
-     * @param observer listener being registered for key {@link #key()}
+     * @param observer listener being registered for key {@link #getKey()}
      *
      * @return this
      */
@@ -59,7 +59,7 @@ public interface K<T> {
      *
      * @return unique key of this konfiguration.
      */
-    String key();
+    String getKey();
 
     /**
      * Actual value of this konfiguration.
