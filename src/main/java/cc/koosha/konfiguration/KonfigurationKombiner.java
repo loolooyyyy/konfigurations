@@ -30,49 +30,49 @@ public final class KonfigurationKombiner implements Konfiguration {
     @Override
     public final K<Boolean> bool(final String key) {
 
-        return create(key, Boolean.class, null);
+        return _getOrCreateWrappedValue(key, Boolean.class, null);
     }
 
     @Override
     public final K<Integer> int_(final String key) {
 
-        return create(key, Integer.class, null);
+        return _getOrCreateWrappedValue(key, Integer.class, null);
     }
 
     @Override
     public final K<Long> long_(final String key) {
 
-        return create(key, Long.class, null);
+        return _getOrCreateWrappedValue(key, Long.class, null);
     }
 
     @Override
     public final K<Double> double_(final String key) {
 
-        return create(key, Double.class, null);
+        return _getOrCreateWrappedValue(key, Double.class, null);
     }
 
     @Override
     public final K<String> string(final String key) {
 
-        return create(key, String.class, null);
+        return _getOrCreateWrappedValue(key, String.class, null);
     }
 
     @Override
     public final <T> K<List<T>> list(final String key, final Class<T> type) {
 
-        return create(key, List.class, type);
+        return _getOrCreateWrappedValue(key, List.class, type);
     }
 
     @Override
     public final <T> K<Map<String, T>> map(final String key, final Class<T> type) {
 
-        return create(key, Map.class, type);
+        return _getOrCreateWrappedValue(key, Map.class, type);
     }
 
     @Override
     public final <T> K<Set<T>> set(final String key, final Class<T> type) {
 
-        return create(key, Set.class, type);
+        return _getOrCreateWrappedValue(key, Set.class, type);
     }
 
     @SuppressWarnings("unchecked")
@@ -99,12 +99,12 @@ public final class KonfigurationKombiner implements Konfiguration {
                 || type.isAssignableFrom(List.class))
             throw new KonfigurationException("for collection types, use corresponding methods");
 
-        return create(key, null, type);
+        return _getOrCreateWrappedValue(key, null, type);
     }
 
 
     @Override
-    public final Konfiguration subset(final String key) {
+    public final Konfiguration subset(@NonNull final String key) {
 
         if (key.startsWith("."))
             throw new IllegalArgumentException("key must not start with a dot: " + key);
@@ -184,7 +184,7 @@ public final class KonfigurationKombiner implements Konfiguration {
                 if (source.contains(name)) {
                     found = true;
                     val kVal = kvalCache.get(name);
-                    val newVal = this._putV_calledByCreate(source, name, kVal.getDataType(), kVal.getElementType());
+                    val newVal = this._putValue(source, name, kVal.getDataType(), kVal.getElementType());
                     newCache.put(name, newVal);
                     changed = !newVal.equals(value);
                     break;
@@ -217,7 +217,7 @@ public final class KonfigurationKombiner implements Konfiguration {
     private final _KonfigObserversHolder konfigObserversHolder = new _KonfigObserversHolder();
     private final Collection<KonfigSource> sources;
 
-    private Object _putV_calledByCreate(KonfigSource source, String name, Class<?> dataType, Class<?> elementType) {
+    private Object _putValue(KonfigSource source, String name, Class<?> dataType, Class<?> elementType) {
 
         Object result;
 
@@ -244,7 +244,7 @@ public final class KonfigurationKombiner implements Konfiguration {
         return result;
     }
 
-    private <T> T _get_calledByKonfigVImpl(String name, T def, boolean mustExist) {
+    private <T> T _getValue(String name, T def, boolean mustExist) {
 
         val lock = LOCK.readLock();
         try {
@@ -265,7 +265,7 @@ public final class KonfigurationKombiner implements Konfiguration {
         return def;
     }
 
-    private <T> K<T> _getK_calledByCreate(String name, Class<?> dataType, Class<?> elementType) {
+    private <T> K<T> _getWrappedValue(String name, Class<?> dataType, Class<?> elementType) {
 
         final _KonfigVImpl<?> r = this.kvalCache.get(name);
 
@@ -283,7 +283,7 @@ public final class KonfigurationKombiner implements Konfiguration {
         }
     }
 
-    private <T> K<T> create(String name, Class<?> dataType, Class<?> elementType) {
+    private <T> K<T> _getOrCreateWrappedValue(String name, Class<?> dataType, Class<?> elementType) {
 
         // We can not do this, in order to support default values.
         //    if(does not exist) throw new KonfigurationMissingKeyException(key);
@@ -292,7 +292,7 @@ public final class KonfigurationKombiner implements Konfiguration {
         try {
             readLock.lock();
             if (this.kvalCache.containsKey(name))
-                return this._getK_calledByCreate(name, dataType, elementType);
+                return this._getWrappedValue(name, dataType, elementType);
         }
         finally {
             readLock.unlock();
@@ -304,11 +304,11 @@ public final class KonfigurationKombiner implements Konfiguration {
 
             // Cache was already populated between two locks.
             if (this.kvalCache.containsKey(name))
-                return this._getK_calledByCreate(name, dataType, elementType);
+                return this._getWrappedValue(name, dataType, elementType);
 
             for (val source : sources)
                 if (source.contains(name)) {
-                    this._putV_calledByCreate(source, name, dataType, elementType);
+                    this._putValue(source, name, dataType, elementType);
                     break;
                 }
 
@@ -347,13 +347,13 @@ public final class KonfigurationKombiner implements Konfiguration {
         @Override
         public T v() {
 
-            return this.origin._get_calledByKonfigVImpl(key, null, true);
+            return this.origin._getValue(key, null, true);
         }
 
         @Override
         public T v(final T defaultValue) {
 
-            return this.origin._get_calledByKonfigVImpl(key, defaultValue, false);
+            return this.origin._getValue(key, defaultValue, false);
         }
 
         @Override
