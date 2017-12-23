@@ -10,7 +10,8 @@ public interface KeyObserver {
     /**
      * Called when the konfiguration for the {@code key} is changed (updated).
      *
-     * @param key the konfiguration key that it's value was updated.
+     * @param key the konfiguration key that it's value was updated. use empty
+     *            key (that is "") to receive update on all keys.
      */
     void accept(String key);
 

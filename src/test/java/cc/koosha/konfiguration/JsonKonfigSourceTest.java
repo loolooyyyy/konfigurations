@@ -12,7 +12,7 @@ import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
 
-public class JsonKonfigTestBase extends KonfigValueTestMixin {
+public class JsonKonfigSourceTest extends KonfigValueTestMixin {
 
     protected String json;
     protected String json0;

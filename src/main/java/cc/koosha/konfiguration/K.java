@@ -22,14 +22,14 @@ public interface K<T> {
      * effect (it's only registered once).
      * <p>
      * Thread-safe.
-     *
+     * <p>
      * <b>IMPORTANT:</b> Do NOT just pass in lambdas, as this method stores
      * only weak references and the observer will be garbage collected. Keep a
      * reference to the observer yourself.
      *
      * @param observer listener being registered for key {@link #getKey()}
-     *
      * @return this
+     * @see #deregister(KeyObserver)
      */
     K<T> register(KeyObserver observer);
 
@@ -41,14 +41,14 @@ public interface K<T> {
      * previously registered at all has no effect.
      * <p>
      * Thread-safe.
-     *
+     * <p>
      * <b>IMPORTANT:</b> Do NOT just pass in lambdas, as this method stores
      * only weak references and the observer will be garbage collected. Keep a
      * reference to the observer yourself.
      *
      * @param observer listener being registered for key {@link #getKey()}
-     *
      * @return this
+     * @see #register(KeyObserver)
      */
     K<T> deregister(KeyObserver observer);
 
@@ -67,10 +67,10 @@ public interface K<T> {
      * Thread-safe.
      *
      * @return Actual value of this konfiguration.
-     *
      * @throws KonfigurationMissingKeyException if the value has been removed
      *                                          from original konfiguration
      *                                          source.
+     * @see #v(Object)
      */
     T v();
 
@@ -82,9 +82,9 @@ public interface K<T> {
      *
      * @param defaultValue default value to use if key of this konfiguration has
      *                     been removed from the original source.
-     *
      * @return actual value of this konfiguration, or defaultValue if the key of
      * this konfiguration has been removed from the original source.
+     * @see #v()
      */
     T v(T defaultValue);
 

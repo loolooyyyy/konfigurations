@@ -30,10 +30,8 @@ public interface KonfigSource {
      * Thread-safe.
      *
      * @param key the unique key of the konfiguration being requested.
-     *
      * @return the value of konfiguration represented by supplied key in the
      * source.
-     *
      * @throws KonfigurationMissingKeyException if the requested key is not
      *                                          present in this source.
      * @throws KonfigurationBadTypeException    if the request key does not
@@ -48,10 +46,8 @@ public interface KonfigSource {
      * Thread-safe.
      *
      * @param key the unique key of the konfiguration being requested.
-     *
      * @return the value of konfiguration represented by supplied key in the
      * source.
-     *
      * @throws KonfigurationMissingKeyException if the requested key is not
      *                                          present in this source.
      * @throws KonfigurationBadTypeException    if the request key does not
@@ -66,10 +62,8 @@ public interface KonfigSource {
      * Thread-safe.
      *
      * @param key the unique key of the konfiguration being requested.
-     *
      * @return the value of konfiguration represented by supplied key in the
      * source.
-     *
      * @throws KonfigurationMissingKeyException if the requested key is not
      *                                          present in this source.
      * @throws KonfigurationBadTypeException    if the request key does not
@@ -84,10 +78,8 @@ public interface KonfigSource {
      * Thread-safe.
      *
      * @param key the unique key of the konfiguration being requested.
-     *
      * @return the value of konfiguration represented by supplied key in the
      * source.
-     *
      * @throws KonfigurationMissingKeyException if the requested key is not
      *                                          present in this source.
      * @throws KonfigurationBadTypeException    if the request key does not
@@ -102,10 +94,8 @@ public interface KonfigSource {
      * Thread-safe.
      *
      * @param key the unique key of the konfiguration being requested.
-     *
      * @return the value of konfiguration represented by supplied key in the
      * source.
-     *
      * @throws KonfigurationMissingKeyException if the requested key is not
      *                                          present in this source.
      * @throws KonfigurationBadTypeException    if the request key does not
@@ -123,10 +113,8 @@ public interface KonfigSource {
      * @param key  the unique key of the konfiguration being requested.
      * @param type type of elements in the list.
      * @param <T>  generic type of elements in the list.
-     *
      * @return the value of konfiguration represented by supplied key in the
      * source.
-     *
      * @throws KonfigurationMissingKeyException if the requested key is not
      *                                          present in this source.
      * @throws KonfigurationBadTypeException    if the request key does not
@@ -143,10 +131,8 @@ public interface KonfigSource {
      * @param key  the unique key of the konfiguration being requested.
      * @param type type of values of the map.
      * @param <T>  generic type of value elements in the map.
-     *
      * @return the value of konfiguration represented by supplied key in the
      * source.
-     *
      * @throws KonfigurationMissingKeyException if the requested key is not
      *                                          present in this source.
      * @throws KonfigurationBadTypeException    if the request key does not
@@ -163,10 +149,8 @@ public interface KonfigSource {
      * @param key  the unique key of the konfiguration being requested.
      * @param type type of elements in the set.
      * @param <T>  generic type of elements in the set.
-     *
      * @return the value of konfiguration represented by supplied key in the
      * source.
-     *
      * @throws KonfigurationMissingKeyException if the requested key is not
      *                                          present in this source.
      * @throws KonfigurationBadTypeException    if the request key does not
@@ -183,10 +167,8 @@ public interface KonfigSource {
      * @param key  the unique key of the konfiguration being requested.
      * @param type type of the custom object requested.
      * @param <T>  generic type of the custom object requested.
-     *
      * @return the value of konfiguration represented by supplied key in the
      * source.
-     *
      * @throws KonfigurationMissingKeyException if the requested key is not
      *                                          present in this source.
      * @throws KonfigurationBadTypeException    if the request key does not
@@ -202,7 +184,6 @@ public interface KonfigSource {
      * Thread-safe.
      *
      * @param key the key to check.
-     *
      * @return true if the requested key exists in this source.
      */
     boolean contains(String key);

@@ -4,7 +4,6 @@ package cc.koosha.konfiguration;
  * To create consistent error messages, name of types are taken from here.
  */
 enum TypeName {
-
     BOOLEAN,
     INT,
     STRING,
@@ -18,22 +17,18 @@ enum TypeName {
     private final String tName;
 
     TypeName() {
-
         this.tName = this.name().toLowerCase();
     }
 
     TypeName(String tName) {
-
         this.tName = tName;
     }
 
     public String getTName() {
-
         return this.tName;
     }
 
     static String typeName(Class<?> base, Class<?> aux) {
-
         if (base == null && aux == null)
             return "?";
         if (base == null)
@@ -41,7 +36,7 @@ enum TypeName {
         if (aux == null)
             return base.getName();
         else
-            return base.getName() + " / " + aux.getName();
+            return base.getName() + "/" + aux.getName();
     }
 
 }

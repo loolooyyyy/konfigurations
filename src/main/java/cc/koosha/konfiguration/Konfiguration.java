@@ -16,13 +16,7 @@ public interface Konfiguration {
      * Thread-safe.
      *
      * @param key unique key of the konfiguration being requested.
-     *
      * @return konfiguration value wrapper for the requested key.
-     *
-     * @throws KonfigurationBadTypeException    if the requested key does not
-     *                                          match the requested type.
-     * @throws KonfigurationMissingKeyException if the requested key does not
-     *                                          exist in any source.
      */
     K<Boolean> bool(String key);
 
@@ -32,13 +26,7 @@ public interface Konfiguration {
      * Thread-safe.
      *
      * @param key unique key of the konfiguration being requested.
-     *
      * @return konfiguration value wrapper for the requested key.
-     *
-     * @throws KonfigurationBadTypeException    if the requested key does not
-     *                                          match the requested type.
-     * @throws KonfigurationMissingKeyException if the requested key does not
-     *                                          exist in any source.
      */
     K<Integer> int_(String key);
 
@@ -48,13 +36,7 @@ public interface Konfiguration {
      * Thread-safe.
      *
      * @param key unique key of the konfiguration being requested.
-     *
      * @return konfiguration value wrapper for the requested key.
-     *
-     * @throws KonfigurationBadTypeException    if the requested key does not
-     *                                          match the requested type.
-     * @throws KonfigurationMissingKeyException if the requested key does not
-     *                                          exist in any source.
      */
     K<Long> long_(String key);
 
@@ -64,13 +46,7 @@ public interface Konfiguration {
      * Thread-safe.
      *
      * @param key unique key of the konfiguration being requested.
-     *
      * @return konfiguration value wrapper for the requested key.
-     *
-     * @throws KonfigurationBadTypeException    if the requested key does not
-     *                                          match the requested type.
-     * @throws KonfigurationMissingKeyException if the requested key does not
-     *                                          exist in any source.
      */
     K<Double> double_(String key);
 
@@ -80,13 +56,7 @@ public interface Konfiguration {
      * Thread-safe.
      *
      * @param key unique key of the konfiguration being requested.
-     *
      * @return konfiguration value wrapper for the requested key.
-     *
-     * @throws KonfigurationBadTypeException    if the requested key does not
-     *                                          match the requested type.
-     * @throws KonfigurationMissingKeyException if the requested key does not
-     *                                          exist in any source.
      */
     K<String> string(String key);
 
@@ -98,13 +68,7 @@ public interface Konfiguration {
      * @param key  unique key of the konfiguration being requested.
      * @param type type object of values in the list.
      * @param <T>  generic type of elements in the list.
-     *
      * @return konfiguration value wrapper for the requested key.
-     *
-     * @throws KonfigurationBadTypeException    if the requested key does not
-     *                                          match the requested type.
-     * @throws KonfigurationMissingKeyException if the requested key does not
-     *                                          exist in any source.
      */
     <T> K<List<T>> list(String key, Class<T> type);
 
@@ -118,13 +82,7 @@ public interface Konfiguration {
      * @param type type object of map values. (keys are always of type
      *             String.class).
      * @param <T>  generic type of elements in the map (for map values).
-     *
      * @return konfiguration value wrapper for the requested key.
-     *
-     * @throws KonfigurationBadTypeException    if the requested key does not
-     *                                          match the requested type.
-     * @throws KonfigurationMissingKeyException if the requested key does not
-     *                                          exist in any source.
      */
     <T> K<Map<String, T>> map(String key, Class<T> type);
 
@@ -136,13 +94,7 @@ public interface Konfiguration {
      * @param key  unique key of the konfiguration being requested.
      * @param type type object of values in the set.
      * @param <T>  generic type of elements in the set.
-     *
      * @return konfiguration value wrapper for the requested key.
-     *
-     * @throws KonfigurationBadTypeException    if the requested key does not
-     *                                          match the requested type.
-     * @throws KonfigurationMissingKeyException if the requested key does not
-     *                                          exist in any source.
      */
     <T> K<Set<T>> set(String key, Class<T> type);
 
@@ -162,13 +114,7 @@ public interface Konfiguration {
      * @param key  unique key of the konfiguration being requested.
      * @param type type object of the requested value.
      * @param <T>  generic type of requested value.
-     *
      * @return konfiguration value wrapper for the requested key.
-     *
-     * @throws KonfigurationBadTypeException    if the requested key does not
-     *                                          match the requested type.
-     * @throws KonfigurationMissingKeyException if the requested key does not
-     *                                          exist in any source.
      */
     <T> K<T> custom(String key, Class<T> type);
 
@@ -181,14 +127,10 @@ public interface Konfiguration {
      * to {@link K#v()} returns the new value, while the observer is not
      * notified yet.
      * <p>
-     * Important: the order of calling {@link EverythingObserver}s and
-     * {@link KeyObserver}s is implementation specific.
+     * Important: order of calling {@link KeyObserver}s is implementation
+     * specific.
      * <p>
-     * <b>Not thread safe by itself!!!</b> this method is not necessarily
-     * thread-safe and must not be called from multiple threads, but calling it
-     * does not compromise thread safety of other methods.
-     * <p>
-     * <b>NOT</b> thread-safe.
+     * Thread safe.
      *
      * @return true if anything was changed during this update.
      */
@@ -202,40 +144,38 @@ public interface Konfiguration {
      *
      * @param key the key to which the scope of returned konfiguration is
      *            limited.
-     *
      * @return a konfiguration whose scope is limited to the supplied key.
      */
+    @SuppressWarnings("unused")
     Konfiguration subset(String key);
 
     /**
      * Register a listener to be notified of any updates to this konfiguration.
+     * register to empty key (that is "") to receive update on all keys.
      * <p>
      * Thread-safe.
-     *
+     * <p>
      * <b>IMPORTANT:</b> Do NOT just pass in lambdas, as this method stores
      * only weak references and the observer will be garbage collected. Keep a
      * reference to the observer yourself.
      *
      * @param observer the listener to register.
-     *
      * @return this.
      */
-    Konfiguration register(EverythingObserver observer);
+    Konfiguration register(KeyObserver observer);
 
     /**
-     * De-Register a previously registered listener via {@link
-     * #register(EverythingObserver)}
+     * De-Register a previously registered listener via
+     * {@link #register(KeyObserver)}.
+     * register to empty key (that is "") to receive update on all keys.
      * <p>
      * Thread-safe.
-     *
-     * <b>IMPORTANT:</b> Do NOT just pass in lambdas, as this method stores
-     * only weak references and the observer will be garbage collected. Keep a
-     * reference to the observer yourself.
+     * <p>
      *
      * @param observer the listener to de-register.
-     *
      * @return this.
+     * @see #register(KeyObserver)
      */
-    Konfiguration deregister(EverythingObserver observer);
+    Konfiguration deregister(KeyObserver observer);
 
 }

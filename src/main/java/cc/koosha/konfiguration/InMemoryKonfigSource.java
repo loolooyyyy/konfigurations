@@ -24,14 +24,12 @@ public final class InMemoryKonfigSource implements KonfigSource {
 
     private KonfigurationBadTypeException checkType(final String required,
                                                     final String key) {
-
         return new KonfigurationBadTypeException(
                 required, this.storage.get(key).getClass().toString(), key);
     }
 
     private KonfigurationBadTypeException checkType(final TypeName required,
                                                     final String key) {
-
         return this.checkType(required.getTName(), key);
     }
 
@@ -43,7 +41,6 @@ public final class InMemoryKonfigSource implements KonfigSource {
      * @param storage konfig source.
      */
     public InMemoryKonfigSource(@NonNull final SupplierX<Map<String, Object>> storage) {
-
         this.storageProvider = storage;
 
         val newStorage = this.storageProvider.get();
@@ -55,7 +52,6 @@ public final class InMemoryKonfigSource implements KonfigSource {
 
     @SuppressWarnings("unused")
     public InMemoryKonfigSource(@NonNull final Map<String, Object> storage) {
-
         this(new SupplierX<Map<String, Object>>() {
             private final Map<String, Object> s = new HashMap<>(storage);
 
@@ -72,7 +68,6 @@ public final class InMemoryKonfigSource implements KonfigSource {
      */
     @Override
     public Boolean bool(final String key) {
-
         try {
             return (Boolean) this.storage.get(key);
         }
@@ -86,7 +81,6 @@ public final class InMemoryKonfigSource implements KonfigSource {
      */
     @Override
     public Integer int_(final String key) {
-
         try {
             return (Integer) this.storage.get(key);
         }
@@ -100,7 +94,6 @@ public final class InMemoryKonfigSource implements KonfigSource {
      */
     @Override
     public Long long_(final String key) {
-
         try {
             return (Long) this.storage.get(key);
         }
@@ -114,7 +107,6 @@ public final class InMemoryKonfigSource implements KonfigSource {
      */
     @Override
     public Double double_(final String key) {
-
         try {
             return (Double) this.storage.get(key);
         }
@@ -128,7 +120,6 @@ public final class InMemoryKonfigSource implements KonfigSource {
      */
     @Override
     public String string(final String key) {
-
         try {
             return (String) this.storage.get(key);
         }
@@ -143,7 +134,6 @@ public final class InMemoryKonfigSource implements KonfigSource {
     @SuppressWarnings("unchecked")
     @Override
     public <T> List<T> list(final String key, final Class<T> type) {
-
         // TODO check type
 
         try {
@@ -160,7 +150,6 @@ public final class InMemoryKonfigSource implements KonfigSource {
     @SuppressWarnings("unchecked")
     @Override
     public <T> Map<String, T> map(final String key, final Class<T> type) {
-
         // TODO check type
 
         try {
@@ -177,7 +166,6 @@ public final class InMemoryKonfigSource implements KonfigSource {
     @SuppressWarnings("unchecked")
     @Override
     public <T> Set<T> set(final String key, final Class<T> type) {
-
         // TODO check type
 
         try {
@@ -201,7 +189,6 @@ public final class InMemoryKonfigSource implements KonfigSource {
     @SuppressWarnings("unchecked")
     @Override
     public <T> T custom(final String key, final Class<T> type) {
-
         // TODO check type
         try {
             return (T) this.storage.get(key);
@@ -217,7 +204,6 @@ public final class InMemoryKonfigSource implements KonfigSource {
      */
     @Override
     public boolean contains(final String key) {
-
         return this.storage.containsKey(key);
     }
 
@@ -227,7 +213,6 @@ public final class InMemoryKonfigSource implements KonfigSource {
      */
     @Override
     public boolean isUpdatable() {
-
         val newStorage = this.storageProvider.get();
         return newStorage != null && !this.storage.equals(newStorage);
     }
@@ -237,7 +222,6 @@ public final class InMemoryKonfigSource implements KonfigSource {
      */
     @Override
     public KonfigSource copyAndUpdate() {
-
         return new InMemoryKonfigSource(this.storageProvider);
     }
 

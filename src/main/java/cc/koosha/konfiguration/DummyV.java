@@ -29,9 +29,7 @@ public final class DummyV<T> implements K<T> {
     private final T v;
     private final boolean hasValue;
 
-
     private DummyV(final String key, final T v, final boolean hasValue) {
-
         this.key = key;
         this.v = v;
         this.hasValue = hasValue;
@@ -44,7 +42,6 @@ public final class DummyV<T> implements K<T> {
      * @param key key representing this konfiguration value.
      */
     public DummyV(@NonNull final String key) {
-
         this(key, null, false);
     }
 
@@ -55,7 +52,6 @@ public final class DummyV<T> implements K<T> {
      * @param v   value this konfiguration holds (can be null).
      */
     public DummyV(@NonNull final String key, final T v) {
-
         this(key, v, true);
     }
 
@@ -65,10 +61,8 @@ public final class DummyV<T> implements K<T> {
      */
     @Override
     public K<T> deregister(final KeyObserver observer) {
-
         // Note that this.v is constant and never changes, but in combination
         // to other sources, it might!
-
         return this;
     }
 
@@ -77,10 +71,8 @@ public final class DummyV<T> implements K<T> {
      */
     @Override
     public K<T> register(final KeyObserver observer) {
-
         // Note that this.v is constant and never changes, but in combination
         // to other sources, it might!
-
         return this;
     }
 
@@ -90,7 +82,6 @@ public final class DummyV<T> implements K<T> {
      */
     @Override
     public String getKey() {
-
         return this.key;
     }
 
@@ -99,7 +90,6 @@ public final class DummyV<T> implements K<T> {
      */
     @Override
     public T v() {
-
         if (this.hasValue)
             return this.v;
 
@@ -111,7 +101,6 @@ public final class DummyV<T> implements K<T> {
      */
     @Override
     public T v(final T defaultValue) {
-
         return this.hasValue ? this.v : defaultValue;
     }
 
@@ -119,72 +108,58 @@ public final class DummyV<T> implements K<T> {
     // ________________________________________________ PREDEFINED CONST VALUES
 
     public static K<Boolean> false_() {
-
         return new DummyV<>("", false);
     }
 
     public static K<Boolean> true_() {
-
         return new DummyV<>("", true);
     }
 
     public static K<Integer> int_(final Integer i) {
-
         return new DummyV<>("", i);
     }
 
     public static K<Long> long_(final Long l) {
-
         return new DummyV<>("", l);
     }
 
     public static K<Double> double_(final Double d) {
-
         return new DummyV<>("", d);
     }
 
     public static K<String> string(final String s) {
-
         return new DummyV<>("", s);
     }
 
     public static <T> DummyV<Collection<T>> emptyCollection() {
-
         return new DummyV<Collection<T>>("", Collections.<T>emptyList());
     }
 
     public static <T> DummyV<List<T>> emptyList() {
-
         return new DummyV<>("", Collections.<T>emptyList());
     }
 
     public static <K, V> DummyV<Map<K, V>> emptyMap() {
-
         return new DummyV<>("", Collections.<K, V>emptyMap());
     }
 
     public static <T> DummyV<Set<T>> emptySet() {
-
         return new DummyV<>("", Collections.<T>emptySet());
     }
 
     public static <T> DummyV<List<T>> list(final List<T> l) {
-
         return new DummyV<>("", l);
     }
 
     public static <K, V> DummyV<Map<K, V>> map(final Map<K, V> m) {
-
         return new DummyV<>("", m);
     }
 
     public static <T> DummyV<Set<T>> set(final Set<T> s) {
-
         return new DummyV<>("", s);
     }
 
-    public static K<?> null_() {
-
+    public static <T> K<T> null_() {
         return new DummyV<>("", null);
     }
 

@@ -15,7 +15,8 @@ import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
 
-public class InMemTestBase extends KonfigValueTestMixin {
+@SuppressWarnings("RedundantThrows")
+public class InMemoryKonfigSourceTest extends KonfigValueTestMixin {
 
     protected Map<String, Object> map;
     protected Map<String, Object> map0;
@@ -25,7 +26,6 @@ public class InMemTestBase extends KonfigValueTestMixin {
 
     @BeforeClass
     public void classSetup() throws Exception {
-
         this.map0 = new HashMap<>();
 
         this.map0.put("aInt", 12);
@@ -41,8 +41,7 @@ public class InMemTestBase extends KonfigValueTestMixin {
         m0.put("c", 22);
         this.map0.put("aMap", m0);
 
-        val s0 = new HashSet<Integer>();
-        s0.addAll(asList(1, 2));
+        val s0 = new HashSet<Integer>(asList(1, 2));
         this.map0.put("aSet", s0);
         this.map0 = Collections.unmodifiableMap(this.map0);
 
@@ -63,8 +62,7 @@ public class InMemTestBase extends KonfigValueTestMixin {
         m1.put("c", "e");
         this.map1.put("aMap", m1);
 
-        val s1 = new HashSet<Integer>();
-        s1.addAll(asList(1, 2, 3));
+        val s1 = new HashSet<Integer>(asList(1, 2, 3));
         this.map1.put("aSet", s1);
 
         this.map1 = Collections.unmodifiableMap(this.map1);
@@ -84,7 +82,6 @@ public class InMemTestBase extends KonfigValueTestMixin {
 
     @Override
     protected void update() {
-
         this.map = this.map1;
         this.k = (InMemoryKonfigSource) this.k.copyAndUpdate();
     }
@@ -95,13 +92,11 @@ public class InMemTestBase extends KonfigValueTestMixin {
 
     @Test
     public void testNotUpdatable() throws Exception {
-
         assertFalse(this.k().isUpdatable());
     }
 
     @Test
     public void testUpdatable() throws Exception {
-
         map = map1;
         assertTrue(this.k().isUpdatable());
     }

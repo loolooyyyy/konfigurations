@@ -33,7 +33,6 @@ public final class JsonKonfigSource implements KonfigSource {
 
 
     private JsonNode node_(final String key) {
-
         if (key == null || key.isEmpty())
             throw new IllegalArgumentException("bad konfig key: " + key);
 
@@ -42,7 +41,6 @@ public final class JsonKonfigSource implements KonfigSource {
     }
 
     private JsonNode node(final String key) {
-
         val node = node_(key);
 
         if (node.isMissingNode())
@@ -53,7 +51,6 @@ public final class JsonKonfigSource implements KonfigSource {
 
 
     private static ObjectMapper defaultObjectMapper() {
-
         val mapper = new ObjectMapper();
 
         mapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
@@ -65,7 +62,6 @@ public final class JsonKonfigSource implements KonfigSource {
                                   final TypeName required,
                                   final JsonNode node,
                                   final String key) {
-
         if (isOk)
             return;
 
@@ -75,7 +71,6 @@ public final class JsonKonfigSource implements KonfigSource {
 
     @SuppressWarnings("unused")
     public JsonKonfigSource(@NonNull final String json) {
-
         this(new SupplierX<String>() {
             @Override
             public String get() {
@@ -85,7 +80,6 @@ public final class JsonKonfigSource implements KonfigSource {
     }
 
     public JsonKonfigSource(@NonNull final SupplierX<String> json) {
-
         this(json, new SupplierX<ObjectMapper>() {
             private final ObjectMapper mapper = defaultObjectMapper();
 
@@ -98,7 +92,6 @@ public final class JsonKonfigSource implements KonfigSource {
 
     public JsonKonfigSource(@NonNull final SupplierX<String> json,
                             @NonNull final SupplierX<ObjectMapper> objectMapper) {
-
         // Check early, so we're not fooled with a dummy object reader.
         try {
             Class.forName("com.fasterxml.jackson.databind.JsonNode");
@@ -131,25 +124,31 @@ public final class JsonKonfigSource implements KonfigSource {
     }
 
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Boolean bool(final String key) {
-
         val at = node(key);
         checkType(at.isBoolean(), BOOLEAN, at, key);
         return at.asBoolean();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Integer int_(final String key) {
-
         val at = node(key);
         checkType(at.isInt(), INT, at, key);
         return at.asInt();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Long long_(final String key) {
-
         val at = node(key);
 
         if (at.isInt())
@@ -162,17 +161,21 @@ public final class JsonKonfigSource implements KonfigSource {
         throw new IllegalStateException("?!!");
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Double double_(final String key) {
-
         val at = node(key);
         checkType(at.isDouble(), DOUBLE, at, key);
         return at.asDouble();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String string(final String key) {
-
         val at = node(key);
 
         if (at.isArray()) {
@@ -192,9 +195,11 @@ public final class JsonKonfigSource implements KonfigSource {
         throw new IllegalStateException("?!!");
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <T> List<T> list(final String key, final Class<T> el) {
-
         val at = node(key);
         checkType(at.isArray(), LIST, at, key);
         val reader = this.mapperSupplier.get();
@@ -208,9 +213,11 @@ public final class JsonKonfigSource implements KonfigSource {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <T> Map<String, T> map(final String key, final Class<T> el) {
-
         final JsonNode at = node(key);
         checkType(at.isObject(), MAP, at, key);
         val reader = this.mapperSupplier.get();
@@ -224,9 +231,11 @@ public final class JsonKonfigSource implements KonfigSource {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <T> Set<T> set(final String key, final Class<T> el) {
-
         final JsonNode at = node(key);
         checkType(at.isArray(), SET, at, key);
         val reader = this.mapperSupplier.get();
@@ -243,9 +252,11 @@ public final class JsonKonfigSource implements KonfigSource {
         return new HashSet<>(l);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <T> T custom(final String key, final Class<T> el) {
-
         val reader = this.mapperSupplier.get();
         val traverse = this.node(key).traverse();
 
@@ -258,16 +269,20 @@ public final class JsonKonfigSource implements KonfigSource {
     }
 
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean contains(final String key) {
-
         return !this.node_(key).isMissingNode();
     }
 
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isUpdatable() {
-
         val newJson = this.json.get();
 
         if (newJson == null)
@@ -277,9 +292,11 @@ public final class JsonKonfigSource implements KonfigSource {
         return newHash != this.lastHash;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public KonfigSource copyAndUpdate() {
-
         return new JsonKonfigSource(this.json, this.mapperSupplier);
     }
 
