@@ -105,6 +105,9 @@ assert amIAllowed.v() == false;
  - A value returned from K.v() must be immutable. Care must be taken
    when using custom types.
 
+ - Every object returned by konfiguration, including custom types, MUST 
+   implement equals(), otherwise calls to update() will not work properly/
+
  - KonvigV.v() will return new values if the konfiguration source is updated,
    while konfig key observers are still waiting to be notified (are not 
    notified *yet*).
