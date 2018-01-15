@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.Collections.singletonMap;
-import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.*;
 
 
 public final class KonfigurationKombinerTest {
@@ -48,6 +48,21 @@ public final class KonfigurationKombinerTest {
 
         k.string("xxx");
     }
+
+
+    @Test
+    public void testDoublyUpdate() throws Exception {
+
+        assertEquals(k.int_("xxx").v(), (Integer) 12);
+
+        flag.set(!flag.get());
+        assertTrue(k.update());
+        assertFalse(k.update());
+
+        assertEquals(k.int_("xxx").v(), (Integer) 99);
+
+    }
+
 
     @Test(expectedExceptions = KonfigurationMissingKeyException.class)
     public void testNoDefaultValue() {
