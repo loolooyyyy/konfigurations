@@ -6,7 +6,6 @@ import java.util.*;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-@RequiredArgsConstructor
 final class KonfigurationKombinerHelper {
 
     private final Collection<KonfigSource> sources;
@@ -19,6 +18,10 @@ final class KonfigurationKombinerHelper {
 
     private final WeakHashMap<KeyObserver, Collection<String>> keyObservers =
             new WeakHashMap<>();
+
+    public KonfigurationKombinerHelper(Collection<KonfigSource> sources) {
+        this.sources = sources;
+    }
 
     // --------------------
 
@@ -206,6 +209,9 @@ final class KonfigurationKombinerHelper {
 
         valueCache.clear();
         valueCache.putAll(newCache);
+
+        this.sources.clear();
+        this.sources.addAll(updatedSources);
 
         return new HashMap<>(this.keyObservers);
     }

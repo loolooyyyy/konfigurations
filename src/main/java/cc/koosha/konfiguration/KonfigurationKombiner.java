@@ -34,7 +34,7 @@ public final class KonfigurationKombiner implements Konfiguration {
         if (sources_.isEmpty())
             throw new IllegalArgumentException("no source given");
 
-        kh = new KonfigurationKombinerHelper(sources);
+        kh = new KonfigurationKombinerHelper(sources_);
     }
 
     @SuppressWarnings("unused")
