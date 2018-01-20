@@ -1,6 +1,5 @@
 package cc.koosha.konfiguration;
 
-import lombok.val;
 import org.testng.annotations.Test;
 
 import java.util.*;
@@ -32,14 +31,14 @@ public class DummyVTest {
 
     @Test
     public void testV() throws Exception {
-        val value = 99L;
+        long value = 99L;
         DummyV<?> dummyV = new DummyV<>(key, value);
         assertSame(dummyV.v(), value);
     }
 
     @Test
     public void testVWithDefaultValue() throws Exception {
-        val value = 99L;
+        long value = 99L;
         DummyV<Long> dummyV = new DummyV<>(key);
         assertSame(dummyV.v(value), value);
     }
@@ -77,7 +76,7 @@ public class DummyVTest {
 
     @Test
     public void testString() throws Exception {
-        val value = "haha";
+        String value = "haha";
         assertEquals(DummyV.string(value).v(), value);
         assertEquals(DummyV.string(value).v("something"), value);
     }

@@ -1,10 +1,10 @@
 package cc.koosha.konfiguration;
 
-import lombok.val;
 import org.testng.annotations.Test;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 
 import static java.util.Arrays.asList;
@@ -61,12 +61,12 @@ public abstract class KonfigValueTestMixin {
     @Test
     public void testList() throws Exception {
 
-        val before = this.k().list("aIntList", int.class);
+        final List<Integer> before = this.k().list("aIntList", int.class);
         assertEquals(before, asList(1, 0, 2));
 
         this.update();
 
-        val after = this.k().list("aIntList", int.class);
+        List<Integer> after = this.k().list("aIntList", int.class);
         assertEquals(after, asList(2, 2));
     }
 

@@ -1,7 +1,5 @@
 package cc.koosha.konfiguration;
 
-import lombok.NonNull;
-
 import java.util.*;
 
 
@@ -30,6 +28,8 @@ public final class DummyV<T> implements K<T> {
     private final boolean hasValue;
 
     private DummyV(final String key, final T v, final boolean hasValue) {
+        if(key == null)
+            throw new NullPointerException("key");
         this.key = key;
         this.v = v;
         this.hasValue = hasValue;
@@ -41,7 +41,7 @@ public final class DummyV<T> implements K<T> {
      *
      * @param key key representing this konfiguration value.
      */
-    public DummyV(@NonNull final String key) {
+    public DummyV(final String key) {
         this(key, null, false);
     }
 
@@ -51,8 +51,8 @@ public final class DummyV<T> implements K<T> {
      * @param key key representing this konfiguration value.
      * @param v   value this konfiguration holds (can be null).
      */
-    public DummyV(@NonNull final String key, final T v) {
-        this(key, v, true);
+    public DummyV(final String key, final T v) {
+        this(Objects.requireNonNull(key, "key"), v, true);
     }
 
 
@@ -132,7 +132,7 @@ public final class DummyV<T> implements K<T> {
     }
 
     public static <T> DummyV<Collection<T>> emptyCollection() {
-        return new DummyV<Collection<T>>("", Collections.<T>emptyList());
+        return new DummyV<>("", Collections.<T>emptyList());
     }
 
     public static <T> DummyV<List<T>> emptyList() {

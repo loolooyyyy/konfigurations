@@ -1,7 +1,6 @@
 package cc.koosha.konfiguration.guice;
 
 import cc.koosha.konfiguration.Konfig;
-import lombok.NonNull;
 
 import java.lang.annotation.Annotation;
 
@@ -20,8 +19,9 @@ public final class KonfigImpl implements Konfig {
 
     private final Class<? extends Annotation> annotationType = Konfig.class;
 
-    public KonfigImpl(@NonNull final String value) {
-
+    public KonfigImpl(final String value) {
+        if(value == null)
+            throw new NullPointerException("value");
         this.value = value;
     }
 

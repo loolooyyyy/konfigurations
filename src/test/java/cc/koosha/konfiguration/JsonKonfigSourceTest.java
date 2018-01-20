@@ -1,16 +1,15 @@
 package cc.koosha.konfiguration;
 
-import lombok.val;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.io.File;
+import java.net.URL;
 import java.util.Scanner;
 
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
-
 
 public class JsonKonfigSourceTest extends KonfigValueTestMixin {
 
@@ -23,14 +22,14 @@ public class JsonKonfigSourceTest extends KonfigValueTestMixin {
     @BeforeClass
     public void classSetup() throws Exception {
 
-        val url0 = getClass().getResource("sample0.json");
-        val file0 = new File(url0.toURI());
+        URL url0 = getClass().getResource("sample0.json");
+        File file0 = new File(url0.toURI());
         this.json0 = new Scanner(file0, "UTF8")
                 .useDelimiter("\\Z")
                 .next();
 
-        val url1 = getClass().getResource("sample1.json");
-        val file1 = new File(url1.toURI());
+        URL url1 = getClass().getResource("sample1.json");
+        File file1 = new File(url1.toURI());
         this.json1 = new Scanner(file1, "UTF8")
                 .useDelimiter("\\Z")
                 .next();
@@ -40,12 +39,7 @@ public class JsonKonfigSourceTest extends KonfigValueTestMixin {
     public void setup() throws Exception {
 
         json = json0;
-        this.k = new JsonKonfigSource(new SupplierX<String>() {
-            @Override
-            public String get() {
-                return json;
-            }
-        });
+        this.k = new JsonKonfigSource(() -> json);
     }
 
     protected void update() {

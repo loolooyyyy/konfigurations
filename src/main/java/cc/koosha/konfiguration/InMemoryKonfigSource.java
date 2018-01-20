@@ -1,8 +1,5 @@
 package cc.koosha.konfiguration;
 
-import lombok.NonNull;
-import lombok.val;
-
 import java.util.*;
 
 import static cc.koosha.konfiguration.TypeName.*;
@@ -40,10 +37,12 @@ public final class InMemoryKonfigSource implements KonfigSource {
      *
      * @param storage konfig source.
      */
-    public InMemoryKonfigSource(@NonNull final SupplierX<Map<String, Object>> storage) {
+    public InMemoryKonfigSource(final SupplierX<Map<String, Object>> storage) {
+        if (storage == null)
+            throw new NullPointerException("storage");
         this.storageProvider = storage;
 
-        val newStorage = this.storageProvider.get();
+        final Map<String, Object> newStorage = this.storageProvider.get();
         if (newStorage == null)
             throw new KonfigurationException("storage is null");
 
@@ -51,9 +50,9 @@ public final class InMemoryKonfigSource implements KonfigSource {
     }
 
     @SuppressWarnings("unused")
-    public InMemoryKonfigSource(@NonNull final Map<String, Object> storage) {
+    public InMemoryKonfigSource(final Map<String, Object> storage) {
         this(new SupplierX<Map<String, Object>>() {
-            private final Map<String, Object> s = new HashMap<>(storage);
+            private final Map<String, Object> s = new HashMap<>(Objects.requireNonNull(storage));
 
             @Override
             public Map<String, Object> get() {
@@ -213,7 +212,7 @@ public final class InMemoryKonfigSource implements KonfigSource {
      */
     @Override
     public boolean isUpdatable() {
-        val newStorage = this.storageProvider.get();
+        final Map<String, Object> newStorage = this.storageProvider.get();
         return newStorage != null && !this.storage.equals(newStorage);
     }
 

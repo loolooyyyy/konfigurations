@@ -5,8 +5,6 @@ import com.google.inject.MembersInjector;
 import com.google.inject.TypeLiteral;
 import com.google.inject.spi.TypeEncounter;
 import com.google.inject.spi.TypeListener;
-import lombok.NonNull;
-import lombok.val;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
@@ -28,13 +26,17 @@ public final class KonfigTypeListener implements TypeListener {
         this.cfg = cfg;
     }
 
-    public <T> void hear(@NonNull final TypeLiteral<T> literal,
-                         @NonNull final TypeEncounter<T> encounter) {
+    public <T> void hear(final TypeLiteral<T> literal,
+                         final TypeEncounter<T> encounter) {
 
+        if(literal == null)
+            throw new NullPointerException("literal");
+        if(encounter == null)
+            throw new NullPointerException("encounter");
         Class<?> clazz = literal.getRawType();
 
         while (clazz != null && clazz != Object.class) {
-            for (val field : clazz.getDeclaredFields())
+            for (final Field field : clazz.getDeclaredFields())
                 if (field.getType().isAssignableFrom(K.class) && field.isAnnotationPresent(Konfig.class))
                     this.processField(field, encounter, field.getAnnotation(Konfig.class));
 
@@ -46,18 +48,18 @@ public final class KonfigTypeListener implements TypeListener {
                                   final TypeEncounter<T> encounter,
                                   final Konfig konfig) {
 
-        val type = field.getGenericType();
+        final Type type = field.getGenericType();
 
         // Get the T from V<T> declared in the injected instance.
         if (!(type instanceof ParameterizedType))
             throw new KonfigurationException("Generic type declared for config value is unknown");
 
-        val actual = ((ParameterizedType) type).getActualTypeArguments();
+        final Type[] actual = ((ParameterizedType) type).getActualTypeArguments();
         if (actual.length != 1)
             throw new KonfigurationException(
                     "invalid number of generic types declared, needed 1, got: " + actual.length);
 
-        val neededType = actual[0];
+        final Type neededType = actual[0];
 
         // Inject
         encounter.register(new MembersInjector<T>() {
@@ -94,9 +96,9 @@ public final class KonfigTypeListener implements TypeListener {
     private Object injectByComplexType(final Type neededType,
                                        final Konfig konfig) {
 
-        val kast = (ParameterizedType) neededType;
-        val rawType = kast.getRawType();
-        val actual = kast.getActualTypeArguments();
+        final ParameterizedType kast = (ParameterizedType) neededType;
+       final  Type rawType = kast.getRawType();
+        final Type[] actual = kast.getActualTypeArguments();
 
         final Object value;
 

@@ -1,8 +1,7 @@
 package cc.koosha.konfiguration;
 
-import lombok.*;
-
 import java.util.*;
+import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -57,20 +56,26 @@ final class KonfigurationKombinerHelper {
     private <T> T getValue(String name,
                            T def,
                            boolean mustExist) {
-        @Cleanup("unlock")
-        val lock = VALUES_LOCK.readLock();
-        lock.lock();
+        Lock lock = null;
+        try {
+            lock = VALUES_LOCK.readLock();
+            lock.lock();
 
-        if (valueCache.containsKey(name)) {
-            @SuppressWarnings("unchecked")
-            val get = (T) valueCache.get(name);
-            return get;
+            if (valueCache.containsKey(name)) {
+                @SuppressWarnings("unchecked")
+                final T get = (T) valueCache.get(name);
+                return get;
+            }
+
+            if (mustExist)
+                throw new KonfigurationMissingKeyException(name);
+
+            return def;
         }
-
-        if (mustExist)
-            throw new KonfigurationMissingKeyException(name);
-
-        return def;
+        finally {
+            if (lock != null)
+                lock.unlock();
+        }
     }
 
     // --------------------
@@ -82,33 +87,41 @@ final class KonfigurationKombinerHelper {
         // We can not do this, in order to support default values.
         //    if(does not exist) throw new KonfigurationMissingKeyException(key);
 
-        val readLock = VALUES_LOCK.readLock();
+        Lock readLock = null;
         try {
+            readLock = VALUES_LOCK.readLock();
             readLock.lock();
             if (this.kvalCache.containsKey(name))
                 return this.getWrappedValue0(name, dataType, elementType);
         }
         finally {
-            readLock.unlock();
+            if (readLock != null)
+                readLock.unlock();
         }
 
-        @Cleanup("unlock")
-        val writeLock = VALUES_LOCK.writeLock();
-        writeLock.lock();
+        Lock writeLock = null;
+        try {
+            writeLock = VALUES_LOCK.writeLock();
+            writeLock.lock();
 
-        // Cache was already populated between two locks.
-        if (this.kvalCache.containsKey(name))
-            return this.getWrappedValue0(name, dataType, elementType);
+            // Cache was already populated between two locks.
+            if (this.kvalCache.containsKey(name))
+                return this.getWrappedValue0(name, dataType, elementType);
 
-        for (val source : sources)
-            if (source.contains(name)) {
-                this.putValue(source, name, dataType, elementType);
-                break;
-            }
+            for (final KonfigSource source : sources)
+                if (source.contains(name)) {
+                    this.putValue(source, name, dataType, elementType);
+                    break;
+                }
 
-        val rr = new KonfigVImpl<T>(this, name, dataType, elementType);
-        this.kvalCache.put(name, rr);
-        return rr;
+            final KonfigVImpl<T> rr = new KonfigVImpl<>(this, name, dataType, elementType);
+            this.kvalCache.put(name, rr);
+            return rr;
+        }
+        finally {
+            if (writeLock != null)
+                writeLock.unlock();
+        }
     }
 
     private <T> K<T> getWrappedValue0(String name,
@@ -133,40 +146,44 @@ final class KonfigurationKombinerHelper {
 
     // --------------------
 
-    @Synchronized
+
+    private final Object UPDATE_LOCK = new Object();
+
     boolean update() {
-        boolean isUpdatable = false;
-        for (val source : this.sources)
-            if (source.isUpdatable()) {
-                isUpdatable = true;
-                break;
+        synchronized (UPDATE_LOCK) {
+            boolean isUpdatable = false;
+            for (final KonfigSource source : this.sources)
+                if (source.isUpdatable()) {
+                    isUpdatable = true;
+                    break;
+                }
+            if (!isUpdatable)
+                return false;
+
+            final List<KonfigSource> updatedSources = new ArrayList<>(this.sources.size());
+            for (final KonfigSource source : this.sources)
+                updatedSources.add(source.copyAndUpdate());
+
+            final Map<String, Object> newCache = new HashMap<>();
+            final Set<String> updatedKeys = new HashSet<>();
+
+            final Map<KeyObserver, Collection<String>> observers = update0(updatedSources, newCache, updatedKeys);
+            if (observers == null)
+                return false;
+
+            for (final Map.Entry<KeyObserver, Collection<String>> o : observers.entrySet()) {
+                // Never empty or null.
+                final Collection<String> interestedKeys = o.getValue();
+                final KeyObserver observer = o.getKey();
+                for (final String updatedKey : updatedKeys)
+                    if (interestedKeys.contains(updatedKey))
+                        observer.accept(updatedKey);
+                if (interestedKeys.contains(""))
+                    observer.accept("");
             }
-        if (!isUpdatable)
-            return false;
 
-        val updatedSources = new ArrayList<KonfigSource>(this.sources.size());
-        for (val source : this.sources)
-            updatedSources.add(source.copyAndUpdate());
-
-        final Map<String, Object> newCache = new HashMap<>();
-        final Set<String> updatedKeys = new HashSet<>();
-
-        val observers = update0(updatedSources, newCache, updatedKeys);
-        if (observers == null)
-            return false;
-
-        for (val o : observers.entrySet()) {
-            // Never empty or null.
-            val interestedKeys = o.getValue();
-            val observer = o.getKey();
-            for (val updatedKey : updatedKeys)
-                if (interestedKeys.contains(updatedKey))
-                    observer.accept(updatedKey);
-            if (interestedKeys.contains(""))
-                observer.accept("");
+            return true;
         }
-
-        return true;
     }
 
     /**
@@ -175,94 +192,124 @@ final class KonfigurationKombinerHelper {
     private Map<KeyObserver, Collection<String>> update0(List<KonfigSource> updatedSources,
                                                          Map<String, Object> newCache,
                                                          Set<String> updatedKeys) {
-        @Cleanup("unlock")
-        val vLock = VALUES_LOCK.writeLock();
-        vLock.lock();
+        Lock vLock = null;
+        try {
+            vLock = VALUES_LOCK.writeLock();
+            vLock.lock();
 
-        // Bad idea, I know. Dead locks?
-        @Cleanup("unlock")
-        val oLock = this.OBSERVERS_LOCK.writeLock();
-        oLock.lock();
+            // Bad idea, I know. Dead locks?
+            Lock oLock = null;
+            try {
+                oLock = this.OBSERVERS_LOCK.writeLock();
+                oLock.lock();
 
-        for (val each : this.valueCache.entrySet()) {
-            val name = each.getKey();
-            val value = each.getValue();
-            boolean found = false;
-            boolean changed = false;
-            for (val source : updatedSources) {
-                if (source.contains(name)) {
-                    found = true;
-                    val kVal = kvalCache.get(name);
-                    val newVal = this.putValue(source, name, kVal.getDataType(), kVal.getElementType());
-                    newCache.put(name, newVal);
-                    changed = !newVal.equals(value);
-                    break;
+                for (final Map.Entry<String, Object> each : this.valueCache.entrySet()) {
+                    final String name = each.getKey();
+                    final Object value = each.getValue();
+                    boolean found = false;
+                    boolean changed = false;
+                    for (final KonfigSource source : updatedSources) {
+                        if (source.contains(name)) {
+                            found = true;
+                            final KonfigVImpl kVal = kvalCache.get(name);
+                            final Object newVal = this.putValue(source, name, kVal.getDataType(),
+                                                                kVal.getElementType());
+                            newCache.put(name, newVal);
+                            changed = !newVal.equals(value);
+                            break;
+                        }
+                    }
+
+                    if (!found || changed)
+                        updatedKeys.add(name);
                 }
+
+                if (updatedKeys.isEmpty())
+                    return null;
+
+                valueCache.clear();
+                valueCache.putAll(newCache);
+
+                this.sources.clear();
+                this.sources.addAll(updatedSources);
+
+                return new HashMap<>(this.keyObservers);
             }
-
-            if (!found || changed)
-                updatedKeys.add(name);
+            finally {
+                if (oLock != null)
+                    oLock.unlock();
+            }
         }
-
-        if (updatedKeys.isEmpty())
-            return null;
-
-        valueCache.clear();
-        valueCache.putAll(newCache);
-
-        this.sources.clear();
-        this.sources.addAll(updatedSources);
-
-        return new HashMap<>(this.keyObservers);
+        finally {
+            if (vLock != null)
+                vLock.unlock();
+        }
     }
 
     // --------------------
 
     void deregister(final KeyObserver observer, final String key) {
-        @Cleanup("unlock")
-        val lock = this.OBSERVERS_LOCK.writeLock();
-        lock.lock();
+        Lock lock = null;
+        try {
+            lock = this.OBSERVERS_LOCK.writeLock();
+            lock.lock();
 
-        val keys = this.keyObservers.get(observer);
-        if (keys == null)
-            return;
-        keys.remove(key);
-        if (keys.isEmpty())
-            this.keyObservers.remove(observer);
+            final Collection<String> keys = this.keyObservers.get(observer);
+            if (keys == null)
+                return;
+            keys.remove(key);
+            if (keys.isEmpty())
+                this.keyObservers.remove(observer);
+        }
+        finally {
+            if (lock != null)
+                lock.unlock();
+        }
     }
 
-    void register(@NonNull final KeyObserver observer, final String key) {
-        @Cleanup("unlock")
-        val lock = this.OBSERVERS_LOCK.writeLock();
-        lock.lock();
+    void register(final KeyObserver observer, final String key) {
+        Objects.requireNonNull(observer, "observer");
+        Objects.requireNonNull(key, "key");
 
-        if (!this.keyObservers.containsKey(observer)) {
-            val put = new HashSet<String>(1);
-            put.add(key);
-            this.keyObservers.put(observer, put);
+        Lock lock = null;
+        try {
+            lock = this.OBSERVERS_LOCK.writeLock();
+            lock.lock();
+
+            if (!this.keyObservers.containsKey(observer)) {
+                final HashSet<String> put = new HashSet<>(1);
+                put.add(key);
+                this.keyObservers.put(observer, put);
+            }
+            else {
+                this.keyObservers.get(observer).add(key);
+            }
         }
-        else {
-            this.keyObservers.get(observer).add(key);
+        finally {
+            if (lock != null)
+                lock.unlock();
         }
     }
 
 
     // --------------------
 
-    @RequiredArgsConstructor
-    @EqualsAndHashCode(of = {"key", "origin"})
     private static final class KonfigVImpl<T> implements K<T> {
 
         private final KonfigurationKombinerHelper origin;
-
-        @Getter
         private final String key;
-
-        @Getter(AccessLevel.PACKAGE)
         private final Class<?> dataType;
-
-        @Getter(AccessLevel.PACKAGE)
         private final Class<?> elementType;
+
+        private KonfigVImpl(KonfigurationKombinerHelper origin,
+                            String key,
+                            Class<?> dataType,
+                            Class<?> elementType) {
+            this.origin = origin;
+            this.key = key;
+            this.dataType = dataType;
+            this.elementType = elementType;
+        }
 
 
         boolean isSameAs(Class<?> dataType, Class<?> elementType) {
@@ -270,6 +317,19 @@ final class KonfigurationKombinerHelper {
                     Objects.equals(this.getElementType(), elementType);
         }
 
+        Class<?> getDataType() {
+            return this.dataType;
+        }
+
+        Class<?> getElementType() {
+            return this.elementType;
+        }
+
+
+        @Override
+        public String getKey() {
+            return this.key;
+        }
 
         @Override
         public T v() {
@@ -288,7 +348,8 @@ final class KonfigurationKombinerHelper {
         }
 
         @Override
-        public K<T> register(@NonNull final KeyObserver observer) {
+        public K<T> register(final KeyObserver observer) {
+            Objects.requireNonNull(observer, "observer");
             this.origin.register(observer, this.key);
             return this;
         }
@@ -303,6 +364,22 @@ final class KonfigurationKombinerHelper {
             }
         }
 
+        @Override
+        public boolean equals(Object o) {
+            if (this == o)
+                return true;
+            if (o == null || getClass() != o.getClass())
+                return false;
+            KonfigVImpl<?> konfigV = (KonfigVImpl<?>) o;
+            return Objects.equals(origin, konfigV.origin) &&
+                    Objects.equals(key, konfigV.key);
+        }
+
+        @Override
+        public int hashCode() {
+
+            return Objects.hash(origin, key);
+        }
     }
 
 }

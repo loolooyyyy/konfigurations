@@ -1,6 +1,5 @@
 package cc.koosha.konfiguration;
 
-import lombok.val;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -13,7 +12,6 @@ import java.util.Map;
 import static java.util.Arrays.asList;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
-
 
 @SuppressWarnings("RedundantThrows")
 public class InMemoryKonfigSourceTest extends KonfigValueTestMixin {
@@ -36,12 +34,12 @@ public class InMemoryKonfigSourceTest extends KonfigValueTestMixin {
         this.map0.put("aDouble", 3.14D);
         this.map0.put("aString", "hello world");
 
-        val m0 = new HashMap<Object, Object>();
+        HashMap<Object, Object> m0 = new HashMap<>();
         m0.put("a", 99);
         m0.put("c", 22);
         this.map0.put("aMap", m0);
 
-        val s0 = new HashSet<Integer>(asList(1, 2));
+        HashSet<Integer> s0 = new HashSet<>(asList(1, 2));
         this.map0.put("aSet", s0);
         this.map0 = Collections.unmodifiableMap(this.map0);
 
@@ -57,12 +55,12 @@ public class InMemoryKonfigSourceTest extends KonfigValueTestMixin {
         this.map1.put("aDouble", 4.14D);
         this.map1.put("aString", "goodbye world");
 
-        val m1 = new HashMap<Object, Object>();
+        HashMap<Object, Object> m1 = new HashMap<>();
         m1.put("a", "b");
         m1.put("c", "e");
         this.map1.put("aMap", m1);
 
-        val s1 = new HashSet<Integer>(asList(1, 2, 3));
+        HashSet<Integer> s1 = new HashSet<>(asList(1, 2, 3));
         this.map1.put("aSet", s1);
 
         this.map1 = Collections.unmodifiableMap(this.map1);
@@ -72,12 +70,7 @@ public class InMemoryKonfigSourceTest extends KonfigValueTestMixin {
     public void setup() throws Exception {
 
         this.map = this.map0;
-        this.k = new InMemoryKonfigSource(new SupplierX<Map<String, Object>>() {
-            @Override
-            public Map<String, Object> get() {
-                return map;
-            }
-        });
+        this.k = new InMemoryKonfigSource(() -> map);
     }
 
     @Override

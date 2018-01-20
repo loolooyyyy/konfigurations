@@ -14,9 +14,6 @@ repositories {
     mavenLocal()
 }
 
-compileJava {
-    options.compilerArgs << '-Xlint:unchecked'
-}
 
 test {
     useTestNG()
@@ -30,8 +27,6 @@ idea {
 }  
 
 dependencies {
-    compile 'org.projectlombok:lombok:1.16.18'
-
     compileOnly 'com.fasterxml.jackson.core:jackson-core:2.9.0'
     compileOnly 'com.fasterxml.jackson.core:jackson-databind:2.9.0'
     compileOnly 'com.google.inject:guice:4.0'

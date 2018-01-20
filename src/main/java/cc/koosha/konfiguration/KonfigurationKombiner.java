@@ -1,8 +1,5 @@
 package cc.koosha.konfiguration;
 
-import lombok.NonNull;
-import lombok.val;
-
 import java.util.*;
 
 
@@ -24,12 +21,13 @@ public final class KonfigurationKombiner implements Konfiguration {
 
     private final KonfigurationKombinerHelper kh;
 
-    public KonfigurationKombiner(@NonNull final KonfigSource... sources) {
-        this(Arrays.asList(sources));
+    public KonfigurationKombiner(final KonfigSource... sources) {
+        this(Arrays.asList(Objects.requireNonNull(sources)));
     }
 
-    public KonfigurationKombiner(@NonNull final Collection<KonfigSource> sources) {
-        val sources_ = new ArrayList<KonfigSource>(sources);
+    public KonfigurationKombiner(final Collection<KonfigSource> sources) {
+        final List<KonfigSource> sources_ =
+                new ArrayList<>(Objects.requireNonNull(sources));
 
         if (sources_.isEmpty())
             throw new IllegalArgumentException("no source given");
@@ -112,7 +110,9 @@ public final class KonfigurationKombiner implements Konfiguration {
      */
     @SuppressWarnings("unchecked")
     @Override
-    public final <T> K<T> custom(final String key, @NonNull final Class<T> type) {
+    public final <T> K<T> custom(final String key, final Class<T> type) {
+        Objects.requireNonNull(type);
+
         if (Boolean.class.equals(type))
             return (K<T>) this.bool(key);
 
@@ -141,7 +141,8 @@ public final class KonfigurationKombiner implements Konfiguration {
      * {@inheritDoc}
      */
     @Override
-    public final Konfiguration subset(@NonNull final String key) {
+    public final Konfiguration subset(final String key) {
+        Objects.requireNonNull(key, "key");
         if (key.startsWith("."))
             throw new IllegalArgumentException("key must not start with a dot: " + key);
         return new KonfigurationSubsetView(this, key);
@@ -186,14 +187,15 @@ public final class KonfigurationKombiner implements Konfiguration {
         private final Konfiguration wrapped;
         private final String baseKey;
 
-        KonfigurationSubsetView(@NonNull final Konfiguration wrapped,
-                                @NonNull final String baseKey) {
-            this.wrapped = wrapped;
+        KonfigurationSubsetView(final Konfiguration wrapped,
+                                final String baseKey) {
+            Objects.requireNonNull(baseKey, "baseKey");
+            this.wrapped = Objects.requireNonNull(wrapped, "wrapped");
             this.baseKey = baseKey.endsWith(".") ? baseKey : baseKey + ".";
         }
 
-        KonfigurationSubsetView(@NonNull final Konfiguration wrapped) {
-            this.wrapped = wrapped;
+        KonfigurationSubsetView(final Konfiguration wrapped) {
+            this.wrapped = Objects.requireNonNull(wrapped, "wrapped");
             this.baseKey = "";
         }
 
@@ -285,8 +287,9 @@ public final class KonfigurationKombiner implements Konfiguration {
          * {@inheritDoc}
          */
         @Override
-        public Konfiguration subset(@NonNull final String key) {
-            val newKey = this.baseKey + "." + key;
+        public Konfiguration subset(final String key) {
+            Objects.requireNonNull(key, "key");
+            final String newKey = this.baseKey + "." + key;
             return new KonfigurationSubsetView(this.wrapped, newKey);
         }
 

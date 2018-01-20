@@ -14,14 +14,9 @@ public final class KonfigurationKombinerTest {
 
     private AtomicBoolean flag = new AtomicBoolean(true);
 
-    private final SupplierX<Map<String, Object>> sup = new SupplierX<Map<String, Object>>() {
-        @Override
-        public Map<String, Object> get() {
-            return flag.get()
-                   ? singletonMap("xxx", (Object) 12)
-                   : singletonMap("xxx", (Object) 99);
-        }
-    };
+    private final SupplierX<Map<String, Object>> sup = () -> flag.get()
+           ? singletonMap("xxx", (Object) 12)
+           : singletonMap("xxx", (Object) 99);
 
     private KonfigurationKombiner k;
 

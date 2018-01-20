@@ -2,16 +2,14 @@ package cc.koosha.konfiguration;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.NonNull;
-import lombok.val;
+import com.fasterxml.jackson.databind.type.CollectionType;
+import com.fasterxml.jackson.databind.type.MapType;
 
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static cc.koosha.konfiguration.TypeName.*;
 
@@ -36,12 +34,12 @@ public final class JsonKonfigSource implements KonfigSource {
         if (key == null || key.isEmpty())
             throw new IllegalArgumentException("bad konfig key: " + key);
 
-        val k = "/" + key.replace('.', '/');
+        final String k = "/" + key.replace('.', '/');
         return this.root.at(k);
     }
 
     private JsonNode node(final String key) {
-        val node = node_(key);
+        final JsonNode node = node_(key);
 
         if (node.isMissingNode())
             throw new KonfigurationMissingKeyException(key);
@@ -51,7 +49,7 @@ public final class JsonKonfigSource implements KonfigSource {
 
 
     private static ObjectMapper defaultObjectMapper() {
-        val mapper = new ObjectMapper();
+        final ObjectMapper mapper = new ObjectMapper();
 
         mapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
 
@@ -70,16 +68,11 @@ public final class JsonKonfigSource implements KonfigSource {
 
 
     @SuppressWarnings("unused")
-    public JsonKonfigSource(@NonNull final String json) {
-        this(new SupplierX<String>() {
-            @Override
-            public String get() {
-                return json;
-            }
-        });
+    public JsonKonfigSource(final String json) {
+        this(() -> json);
     }
 
-    public JsonKonfigSource(@NonNull final SupplierX<String> json) {
+    public JsonKonfigSource(final SupplierX<String> json) {
         this(json, new SupplierX<ObjectMapper>() {
             private final ObjectMapper mapper = defaultObjectMapper();
 
@@ -90,8 +83,10 @@ public final class JsonKonfigSource implements KonfigSource {
         });
     }
 
-    public JsonKonfigSource(@NonNull final SupplierX<String> json,
-                            @NonNull final SupplierX<ObjectMapper> objectMapper) {
+    public JsonKonfigSource(final SupplierX<String> json,
+                            final SupplierX<ObjectMapper> objectMapper) {
+        Objects.requireNonNull(json, "jsonSupplier");
+        Objects.requireNonNull(objectMapper, "objectMapperSupplier");
         // Check early, so we're not fooled with a dummy object reader.
         try {
             Class.forName("com.fasterxml.jackson.databind.JsonNode");
@@ -129,7 +124,7 @@ public final class JsonKonfigSource implements KonfigSource {
      */
     @Override
     public Boolean bool(final String key) {
-        val at = node(key);
+        final JsonNode at = node(key);
         checkType(at.isBoolean(), BOOLEAN, at, key);
         return at.asBoolean();
     }
@@ -139,7 +134,7 @@ public final class JsonKonfigSource implements KonfigSource {
      */
     @Override
     public Integer int_(final String key) {
-        val at = node(key);
+        final JsonNode at = node(key);
         checkType(at.isInt(), INT, at, key);
         return at.asInt();
     }
@@ -149,7 +144,7 @@ public final class JsonKonfigSource implements KonfigSource {
      */
     @Override
     public Long long_(final String key) {
-        val at = node(key);
+        final JsonNode at = node(key);
 
         if (at.isInt())
             return (long) at.asInt();
@@ -166,7 +161,7 @@ public final class JsonKonfigSource implements KonfigSource {
      */
     @Override
     public Double double_(final String key) {
-        val at = node(key);
+        final JsonNode at = node(key);
         checkType(at.isDouble(), DOUBLE, at, key);
         return at.asDouble();
     }
@@ -176,10 +171,10 @@ public final class JsonKonfigSource implements KonfigSource {
      */
     @Override
     public String string(final String key) {
-        val at = node(key);
+        final JsonNode at = node(key);
 
         if (at.isArray()) {
-            val sb = new StringBuilder();
+            final StringBuilder sb = new StringBuilder();
             for (final JsonNode jsonNode : at) {
                 checkType(jsonNode.isTextual(), STRING_ARRAY, at, key);
                 sb.append(jsonNode.textValue());
@@ -200,10 +195,10 @@ public final class JsonKonfigSource implements KonfigSource {
      */
     @Override
     public <T> List<T> list(final String key, final Class<T> el) {
-        val at = node(key);
+        final JsonNode at = node(key);
         checkType(at.isArray(), LIST, at, key);
-        val reader = this.mapperSupplier.get();
-        val javaType = reader.getTypeFactory().constructCollectionType(List.class, el);
+        final ObjectMapper reader = this.mapperSupplier.get();
+        final CollectionType javaType = reader.getTypeFactory().constructCollectionType(List.class, el);
 
         try {
             return reader.readValue(at.traverse(), javaType);
@@ -220,8 +215,8 @@ public final class JsonKonfigSource implements KonfigSource {
     public <T> Map<String, T> map(final String key, final Class<T> el) {
         final JsonNode at = node(key);
         checkType(at.isObject(), MAP, at, key);
-        val reader = this.mapperSupplier.get();
-        val javaType = reader.getTypeFactory().constructMapType(Map.class, String.class, el);
+        final ObjectMapper reader = this.mapperSupplier.get();
+        final MapType javaType = reader.getTypeFactory().constructMapType(Map.class, String.class, el);
 
         try {
             return reader.readValue(at.traverse(), javaType);
@@ -238,8 +233,8 @@ public final class JsonKonfigSource implements KonfigSource {
     public <T> Set<T> set(final String key, final Class<T> el) {
         final JsonNode at = node(key);
         checkType(at.isArray(), SET, at, key);
-        val reader = this.mapperSupplier.get();
-        val javaType = reader.getTypeFactory().constructCollectionType(List.class, el);
+        final ObjectMapper reader = this.mapperSupplier.get();
+        final CollectionType javaType = reader.getTypeFactory().constructCollectionType(List.class, el);
 
         final List<T> l;
         try {
@@ -257,8 +252,8 @@ public final class JsonKonfigSource implements KonfigSource {
      */
     @Override
     public <T> T custom(final String key, final Class<T> el) {
-        val reader = this.mapperSupplier.get();
-        val traverse = this.node(key).traverse();
+        final ObjectMapper reader = this.mapperSupplier.get();
+        final JsonParser traverse = this.node(key).traverse();
 
         try {
             return reader.readValue(traverse, el);
@@ -283,7 +278,7 @@ public final class JsonKonfigSource implements KonfigSource {
      */
     @Override
     public boolean isUpdatable() {
-        val newJson = this.json.get();
+        String newJson = this.json.get();
 
         if (newJson == null)
             return false;

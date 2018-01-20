@@ -1,33 +1,30 @@
 package cc.koosha.konfiguration;
 
-import lombok.Cleanup;
-import lombok.SneakyThrows;
-import lombok.val;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.io.File;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Scanner;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableMap;
 
-
 public class KonfigurationKombinerConcurrencyTest {
 
-    @SneakyThrows
-    KonfigurationKombinerConcurrencyTest() {
+    KonfigurationKombinerConcurrencyTest() throws Exception{
 
-        val url0 = getClass().getResource("sample0.json");
-        val file0 = new File(url0.toURI());
+        URL url0 = getClass().getResource("sample0.json");
+        File file0 = new File(url0.toURI());
         this.JSON0 = new Scanner(file0, "UTF8").useDelimiter("\\Z").next();
 
-        val url1 = getClass().getResource("sample1.json");
-        val file1 = new File(url1.toURI());
+        URL url1 = getClass().getResource("sample1.json");
+        File file1 = new File(url1.toURI());
         this.JSON1 = new Scanner(file1, "UTF8").useDelimiter("\\Z").next();
 
         Map<String, Object> MAP0 = new HashMap<>();
@@ -55,26 +52,12 @@ public class KonfigurationKombinerConcurrencyTest {
 
         this.reset();
 
-        val IN_MEM_2_SOURCE = new InMemoryKonfigSource(new SupplierX<Map<String, Object>>() {
-            @Override
-            public Map<String, Object> get() {
-                return KonfigurationKombinerConcurrencyTest.this.MAP2;
-            }
-        });
+        InMemoryKonfigSource IN_MEM_2_SOURCE = new InMemoryKonfigSource(
+                () -> KonfigurationKombinerConcurrencyTest.this.MAP2);
 
-        val inMemSource = new InMemoryKonfigSource(new SupplierX<Map<String, Object>>() {
-            @Override
-            public Map<String, Object> get() {
-                return KonfigurationKombinerConcurrencyTest.this.map;
-            }
-        });
+        InMemoryKonfigSource inMemSource = new InMemoryKonfigSource(() -> KonfigurationKombinerConcurrencyTest.this.map);
 
-        val jsonSource = new JsonKonfigSource(new SupplierX<String>() {
-            @Override
-            public String get() {
-                return KonfigurationKombinerConcurrencyTest.this.json;
-            }
-        });
+        JsonKonfigSource jsonSource = new JsonKonfigSource(() -> KonfigurationKombinerConcurrencyTest.this.json);
 
         this.k = new KonfigurationKombiner(inMemSource, IN_MEM_2_SOURCE, jsonSource);
 
@@ -108,65 +91,70 @@ public class KonfigurationKombinerConcurrencyTest {
 
     @Test(enabled = false)
     public void benchmark() {
-
-        @Cleanup("shutdown")
-        val e = Executors.newSingleThreadExecutor();
-        e.submit(new Runnable() {
-            @Override
-            public void run() {
+        ExecutorService e = null;
+        try {
+            e = Executors.newSingleThreadExecutor();
+            e.submit(() -> {
                 while (run) {
                     toggle();
                     k.update();
                     c++;
                 }
+            });
+
+            final long loops = 1_000_000L;
+
+            long total = 0;
+            for (int i = 0; i < loops; i++) {
+                final long b = System.currentTimeMillis();
+                k.int_("xxx" + i).v(2);
+                k.int_("aInt").v();
+                total += System.currentTimeMillis() - b;
             }
-        });
 
-        final long loops = 1_000_000L;
+            run = false;
 
-        long total = 0;
-        for (int i = 0; i < loops; i++) {
-            final long b = System.currentTimeMillis();
-            k.int_("xxx" + i).v(2);
-            k.int_("aInt").v();
-            total += System.currentTimeMillis() - b;
+            System.out.println("total time: " + total);
+            System.out.println("each cycle time:" + ((double) total) / loops);
+            System.out.println("total update count: " + c);
         }
-
-        run = false;
-
-        System.out.println("total time: " + total);
-        System.out.println("each cycle time:" + ((double) total) / loops);
-        System.out.println("total update count: " + c);
+        finally {
+            if(e != null)
+                e.shutdown();
+        }
     }
 
     @Test(enabled = false)
     public void testMissedUpdates() {
 
-        @Cleanup("shutdown")
-        val e = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2);
+        ExecutorService e = null;
+        try {
+            e = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2);
 
-        for (int i = 0; i < Runtime.getRuntime().availableProcessors(); i++) {
-            e.submit(new Runnable() {
-                @Override
-                public void run() {
+            for (int i = 0; i < Runtime.getRuntime().availableProcessors(); i++) {
+                e.submit(() -> {
                     while (run) {
                         toggle();
                         k.update();
                     }
-                }
-            });
-        }
+                });
+            }
 
-        for (int i = 0; i < 10_000; i++) {
-            val value = k.int_("aInt").v();
-            // Uncomment to make sure update happens
-            //            Assert.assertEquals(value, (Integer) 12);
-            // Add the damn Sl4j already!
-            if (i % 1000 == 0)
-                System.out.println(i);
-        }
+            for (int i = 0; i < 10_000; i++) {
+                k.int_("aInt").v();
+                // Uncomment to make sure update happens
+                //            Assert.assertEquals(value, (Integer) 12);
+                // Add the damn Sl4j already!
+                if (i % 1000 == 0)
+                    System.out.println(i);
+            }
 
-        run = false;
+            run = false;
+        }
+        finally {
+            if(e != null)
+                e.shutdown();
+        }
     }
 
 }
