@@ -14,13 +14,21 @@ public class DummyVTest {
     @Test
     public void testDeregister() throws Exception {
         DummyV<?> dummyV = new DummyV<>(key, null);
-        assertSame(dummyV.deregister(k -> { }), dummyV);
+        assertSame(dummyV.deregister(new KeyObserver() {
+            @Override
+            public void accept(String k) {
+            }
+        }), dummyV);
     }
 
     @Test
     public void testRegister() throws Exception {
         DummyV<?> dummyV = new DummyV<>(key);
-        assertSame(dummyV.register(k -> { }), dummyV);
+        assertSame(dummyV.register(new KeyObserver() {
+            @Override
+            public void accept(String k) {
+            }
+        }), dummyV);
     }
 
     @Test

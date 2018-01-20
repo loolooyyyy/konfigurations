@@ -6,8 +6,8 @@ apply plugin: 'maven-publish'
 group 'cc.koosha.konfigurations'
 version '4.0.0'
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
 
 repositories {
     mavenCentral()
@@ -19,12 +19,12 @@ test {
     useTestNG()
 }
 
-idea {                                                                          
-  module{                                                                       
-    downloadJavadoc = true                                                      
-    downloadSources = true                                                      
-  }                                                                             
-}  
+idea {
+  module{
+    downloadJavadoc = true
+    downloadSources = true
+  }
+}
 
 dependencies {
     compileOnly 'com.fasterxml.jackson.core:jackson-core:2.9.0'

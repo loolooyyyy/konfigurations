@@ -132,7 +132,7 @@ public final class DummyV<T> implements K<T> {
     }
 
     public static <T> DummyV<Collection<T>> emptyCollection() {
-        return new DummyV<>("", Collections.<T>emptyList());
+        return new DummyV<Collection<T>>("", Collections.<T>emptyList());
     }
 
     public static <T> DummyV<List<T>> emptyList() {

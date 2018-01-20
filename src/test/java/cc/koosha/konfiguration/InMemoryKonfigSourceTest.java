@@ -70,7 +70,12 @@ public class InMemoryKonfigSourceTest extends KonfigValueTestMixin {
     public void setup() throws Exception {
 
         this.map = this.map0;
-        this.k = new InMemoryKonfigSource(() -> map);
+        this.k = new InMemoryKonfigSource(new SupplierX<Map<String, Object>>() {
+            @Override
+            public Map<String, Object> get() {
+                return map;
+            }
+        });
     }
 
     @Override

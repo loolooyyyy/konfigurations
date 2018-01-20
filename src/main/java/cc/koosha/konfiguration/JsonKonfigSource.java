@@ -69,7 +69,12 @@ public final class JsonKonfigSource implements KonfigSource {
 
     @SuppressWarnings("unused")
     public JsonKonfigSource(final String json) {
-        this(() -> json);
+        this(new SupplierX<String>() {
+            @Override
+            public String get() {
+                return json;
+            }
+        });
     }
 
     public JsonKonfigSource(final SupplierX<String> json) {

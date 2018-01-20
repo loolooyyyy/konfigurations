@@ -53,11 +53,26 @@ public class KonfigurationKombinerConcurrencyTest {
         this.reset();
 
         InMemoryKonfigSource IN_MEM_2_SOURCE = new InMemoryKonfigSource(
-                () -> KonfigurationKombinerConcurrencyTest.this.MAP2);
+                new SupplierX<Map<String, Object>>() {
+                    @Override
+                    public Map<String, Object> get() {
+                        return KonfigurationKombinerConcurrencyTest.this.MAP2;
+                    }
+                });
 
-        InMemoryKonfigSource inMemSource = new InMemoryKonfigSource(() -> KonfigurationKombinerConcurrencyTest.this.map);
+        InMemoryKonfigSource inMemSource = new InMemoryKonfigSource(new SupplierX<Map<String, Object>>() {
+            @Override
+            public Map<String, Object> get() {
+                return KonfigurationKombinerConcurrencyTest.this.map;
+            }
+        });
 
-        JsonKonfigSource jsonSource = new JsonKonfigSource(() -> KonfigurationKombinerConcurrencyTest.this.json);
+        JsonKonfigSource jsonSource = new JsonKonfigSource(new SupplierX<String>() {
+            @Override
+            public String get() {
+                return KonfigurationKombinerConcurrencyTest.this.json;
+            }
+        });
 
         this.k = new KonfigurationKombiner(inMemSource, IN_MEM_2_SOURCE, jsonSource);
 
@@ -94,11 +109,14 @@ public class KonfigurationKombinerConcurrencyTest {
         ExecutorService e = null;
         try {
             e = Executors.newSingleThreadExecutor();
-            e.submit(() -> {
-                while (run) {
-                    toggle();
-                    k.update();
-                    c++;
+            e.submit(new Runnable() {
+                @Override
+                public void run() {
+                    while (run) {
+                        KonfigurationKombinerConcurrencyTest.this.toggle();
+                        k.update();
+                        c++;
+                    }
                 }
             });
 
@@ -132,10 +150,13 @@ public class KonfigurationKombinerConcurrencyTest {
             e = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2);
 
             for (int i = 0; i < Runtime.getRuntime().availableProcessors(); i++) {
-                e.submit(() -> {
-                    while (run) {
-                        toggle();
-                        k.update();
+                e.submit(new Runnable() {
+                    @Override
+                    public void run() {
+                        while (run) {
+                            KonfigurationKombinerConcurrencyTest.this.toggle();
+                            k.update();
+                        }
                     }
                 });
             }

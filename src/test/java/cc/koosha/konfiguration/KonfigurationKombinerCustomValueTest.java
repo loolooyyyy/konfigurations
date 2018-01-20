@@ -4,6 +4,7 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import java.util.Collections;
+import java.util.Map;
 
 
 public class KonfigurationKombinerCustomValueTest {
@@ -13,7 +14,12 @@ public class KonfigurationKombinerCustomValueTest {
     final String key = "theKey";
 
     private KonfigurationKombiner k = new KonfigurationKombiner(
-            new InMemoryKonfigSource(() -> Collections.singletonMap(key, value)));
+            new InMemoryKonfigSource(new SupplierX<Map<String, Object>>() {
+                @Override
+                public Map<String, Object> get() {
+                    return Collections.<String, Object>singletonMap(key, value);
+                }
+            }));
 
     @Test
     public void testCustomValue() {

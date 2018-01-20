@@ -39,7 +39,12 @@ public class JsonKonfigSourceTest extends KonfigValueTestMixin {
     public void setup() throws Exception {
 
         json = json0;
-        this.k = new JsonKonfigSource(() -> json);
+        this.k = new JsonKonfigSource(new SupplierX<String>() {
+            @Override
+            public String get() {
+                return json;
+            }
+        });
     }
 
     protected void update() {
