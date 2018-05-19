@@ -26,8 +26,8 @@ public interface KonfigSource {
 
     /**
      * Read and return a boolean value from this source.
-     * <p>
-     * Thread-safe.
+     *
+     * <p>Thread-safe.
      *
      * @param key the unique key of the konfiguration being requested.
      * @return the value of konfiguration represented by supplied key in the
@@ -42,8 +42,8 @@ public interface KonfigSource {
 
     /**
      * Read and return a int value from this source.
-     * <p>
-     * Thread-safe.
+     *
+     * <p>Thread-safe.
      *
      * @param key the unique key of the konfiguration being requested.
      * @return the value of konfiguration represented by supplied key in the
@@ -58,8 +58,8 @@ public interface KonfigSource {
 
     /**
      * Read and return a long value from this source.
-     * <p>
-     * Thread-safe.
+     *
+     * <p>Thread-safe.
      *
      * @param key the unique key of the konfiguration being requested.
      * @return the value of konfiguration represented by supplied key in the
@@ -74,8 +74,8 @@ public interface KonfigSource {
 
     /**
      * Read and return a double value from this source.
-     * <p>
-     * Thread-safe.
+     *
+     * <p>Thread-safe.
      *
      * @param key the unique key of the konfiguration being requested.
      * @return the value of konfiguration represented by supplied key in the
@@ -90,8 +90,8 @@ public interface KonfigSource {
 
     /**
      * Read and return a string value from this source.
-     * <p>
-     * Thread-safe.
+     *
+     * <p>Thread-safe.
      *
      * @param key the unique key of the konfiguration being requested.
      * @return the value of konfiguration represented by supplied key in the
@@ -107,8 +107,8 @@ public interface KonfigSource {
 
     /**
      * Read and return a boolean value from this source.
-     * <p>
-     * Thread-safe.
+     *
+     * <p>Thread-safe.
      *
      * @param key  the unique key of the konfiguration being requested.
      * @param type type of elements in the list.
@@ -125,8 +125,8 @@ public interface KonfigSource {
 
     /**
      * Read and return a boolean value from this source.
-     * <p>
-     * Thread-safe.
+     *
+     * <p>Thread-safe.
      *
      * @param key  the unique key of the konfiguration being requested.
      * @param type type of values of the map.
@@ -143,8 +143,8 @@ public interface KonfigSource {
 
     /**
      * Read and return a boolean value from this source.
-     * <p>
-     * Thread-safe.
+     *
+     * <p>Thread-safe.
      *
      * @param key  the unique key of the konfiguration being requested.
      * @param type type of elements in the set.
@@ -161,8 +161,8 @@ public interface KonfigSource {
 
     /**
      * Read and return a boolean value from this source.
-     * <p>
-     * Thread-safe.
+     *
+     * <p>Thread-safe.
      *
      * @param key  the unique key of the konfiguration being requested.
      * @param type type of the custom object requested.
@@ -180,8 +180,8 @@ public interface KonfigSource {
 
     /**
      * Check if requested key is present in this source.
-     * <p>
-     * Thread-safe.
+     *
+     * <p>Thread-safe.
      *
      * @param key the key to check.
      * @return true if the requested key exists in this source.
@@ -193,20 +193,19 @@ public interface KonfigSource {
      * Indicates whether if anything is actually updated in the origin of this
      * source (that is, the source returned by {@link #copyAndUpdate()} differs from this
      * source.)
-     * <p>
-     * This action must <b>NOT</b> modify this source.
-     * <p>
-     * <b>VERY VERY IMPORTANT:</b> This method is to be called only from
+     *
+     * <p>This action must <b>NOT</b> modify this source.
+     *
+     * <p><b>VERY VERY IMPORTANT:</b> This method is to be called only from
      * {@link KonfigurationKombiner} or
-     * concurrency issues will arise
-     * .<p>
-     * Why? To check and see if it's updatable, a source might ask it's origin
+     * concurrency issues will arise.
+     * <br>Why? To check and see if it's updatable, a source might ask it's origin
      * (a web url?) to get the new content, to compare with the old content,
      * and it asks it's origin for the new content once more, to actually
      * update the values. If this method is called during KonfigurationKombiner
      * is also calling it, this might interfere and lost updates may happen.
-     * <p>
-     * NOT Thread-safe.
+     *
+     * <p>NOT Thread-safe.
      *
      * @return true if the source obtained via {@link #copyAndUpdate()} will differ from
      * this source.
@@ -215,11 +214,11 @@ public interface KonfigSource {
 
     /**
      * Creates an <b>updated</b> copy of this source.
-     * <p>
-     * A call to this method must <b>NOT</b> modify this source, but the newly
+     *
+     * <p>A call to this method must <b>NOT</b> modify this source, but the newly
      * created source must contain the updated values.
-     * <p>
-     * NOT Thread-safe.
+     *
+     * <p>NOT Thread-safe.
      *
      * @return an updated copy of this source.
      */

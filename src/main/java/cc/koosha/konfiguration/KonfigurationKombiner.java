@@ -180,8 +180,8 @@ public final class KonfigurationKombiner implements Konfiguration {
     /**
      * Read only subset view of a konfiguration. Prepends a pre-defined key
      * to all konfig values
-     * <p>
-     * Immutable and thread safe by itself, although the underlying wrapped
+     *
+     * <p>Immutable and thread safe by itself, although the underlying wrapped
      * konfiguration's thread safety is not guarantied.
      */
     private static final class KonfigurationSubsetView implements Konfiguration {
