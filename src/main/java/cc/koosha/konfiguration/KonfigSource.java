@@ -34,7 +34,7 @@ public interface KonfigSource {
      * source.
      * @throws KonfigurationMissingKeyException if the requested key is not
      *                                          present in this source.
-     * @throws KonfigurationBadTypeException    if the request key does not
+     * @throws KonfigurationTypeException    if the request key does not
      *                                          present the requested type
      *                                          (boolean).
      */
@@ -50,7 +50,7 @@ public interface KonfigSource {
      * source.
      * @throws KonfigurationMissingKeyException if the requested key is not
      *                                          present in this source.
-     * @throws KonfigurationBadTypeException    if the request key does not
+     * @throws KonfigurationTypeException    if the request key does not
      *                                          present the requested type
      *                                          (int).
      */
@@ -66,7 +66,7 @@ public interface KonfigSource {
      * source.
      * @throws KonfigurationMissingKeyException if the requested key is not
      *                                          present in this source.
-     * @throws KonfigurationBadTypeException    if the request key does not
+     * @throws KonfigurationTypeException    if the request key does not
      *                                          present the requested type
      *                                          (long).
      */
@@ -82,7 +82,7 @@ public interface KonfigSource {
      * source.
      * @throws KonfigurationMissingKeyException if the requested key is not
      *                                          present in this source.
-     * @throws KonfigurationBadTypeException    if the request key does not
+     * @throws KonfigurationTypeException    if the request key does not
      *                                          present the requested type
      *                                          (double).
      */
@@ -98,7 +98,7 @@ public interface KonfigSource {
      * source.
      * @throws KonfigurationMissingKeyException if the requested key is not
      *                                          present in this source.
-     * @throws KonfigurationBadTypeException    if the request key does not
+     * @throws KonfigurationTypeException    if the request key does not
      *                                          present the requested type
      *                                          (string).
      */
@@ -117,7 +117,7 @@ public interface KonfigSource {
      * source.
      * @throws KonfigurationMissingKeyException if the requested key is not
      *                                          present in this source.
-     * @throws KonfigurationBadTypeException    if the request key does not
+     * @throws KonfigurationTypeException    if the request key does not
      *                                          present the requested type (list
      *                                          of T).
      */
@@ -135,7 +135,7 @@ public interface KonfigSource {
      * source.
      * @throws KonfigurationMissingKeyException if the requested key is not
      *                                          present in this source.
-     * @throws KonfigurationBadTypeException    if the request key does not
+     * @throws KonfigurationTypeException    if the request key does not
      *                                          present the requested type (map
      *                                          from String to T).
      */
@@ -153,7 +153,7 @@ public interface KonfigSource {
      * source.
      * @throws KonfigurationMissingKeyException if the requested key is not
      *                                          present in this source.
-     * @throws KonfigurationBadTypeException    if the request key does not
+     * @throws KonfigurationTypeException    if the request key does not
      *                                          present the requested type (set
      *                                          of T).
      */
@@ -171,7 +171,7 @@ public interface KonfigSource {
      * source.
      * @throws KonfigurationMissingKeyException if the requested key is not
      *                                          present in this source.
-     * @throws KonfigurationBadTypeException    if the request key does not
+     * @throws KonfigurationTypeException    if the request key does not
      *                                          present the requested type
      *                                          (object of type T).
      */

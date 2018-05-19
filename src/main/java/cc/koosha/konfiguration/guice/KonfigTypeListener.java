@@ -131,7 +131,7 @@ public final class KonfigTypeListener implements TypeListener {
             value = cfg.map(konfig.value(), tp);
         }
         else {
-            throw new KonfigurationBadTypeException("unknown type: " + rawType);
+            throw new KonfigurationTypeException("unknown type: " + rawType);
         }
 
         return value;

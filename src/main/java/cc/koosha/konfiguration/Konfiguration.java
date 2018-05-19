@@ -121,16 +121,18 @@ public interface Konfiguration {
 
     /**
      * Update all the konfiguration values and notify the update observers.
-     * <p>
-     * Important: the key observers might be notified <em>after</em> the cache
+     *
+     * <p>Important: the key observers might be notified <em>after</em> the cache
      * update, and it is implementation specific. So it's possible that a call
      * to {@link K#v()} returns the new value, while the observer is not
      * notified yet.
-     * <p>
-     * Important: order of calling {@link KeyObserver}s is implementation
+     *
+     * <p>Important: order of calling {@link KeyObserver}s is implementation
      * specific.
-     * <p>
-     * Thread safe.
+     *
+     * <p>Thread safe.
+     *
+     * @throws KonfigurationException if the konfiguration is not updatable
      *
      * @return true if anything was changed during this update.
      */

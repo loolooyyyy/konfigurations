@@ -19,14 +19,14 @@ public final class InMemoryKonfigSource implements KonfigSource {
     private final Map<String, Object> storage;
     private final SupplierX<Map<String, Object>> storageProvider;
 
-    private KonfigurationBadTypeException checkType(final String required,
-                                                    final String key) {
-        return new KonfigurationBadTypeException(
+    private KonfigurationTypeException checkType(final String required,
+                                                 final String key) {
+        return new KonfigurationTypeException(
                 required, this.storage.get(key).getClass().toString(), key);
     }
 
-    private KonfigurationBadTypeException checkType(final TypeName required,
-                                                    final String key) {
+    private KonfigurationTypeException checkType(final TypeName required,
+                                                 final String key) {
         return this.checkType(required.getTName(), key);
     }
 
@@ -45,7 +45,7 @@ public final class InMemoryKonfigSource implements KonfigSource {
 
         final Map<String, Object> newStorage = this.storageProvider.get();
         if (newStorage == null)
-            throw new KonfigurationException("storage is null");
+            throw new KonfigurationSourceException("storage is null");
 
         this.storage = new HashMap<>(newStorage);
     }

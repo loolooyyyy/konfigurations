@@ -16,14 +16,14 @@ public interface K<T> {
     /**
      * Register to receive update notifications for changes in value of this
      * konfiguration value, and this value only.
-     * <p>
-     * listeners may register to multiple keys on different instances of this
+     *
+     * <p>listeners may register to multiple keys on different instances of this
      * interface, but registering to the same key multiple times has no special
      * effect (it's only registered once).
-     * <p>
-     * Thread-safe.
-     * <p>
-     * <b>IMPORTANT:</b> Do NOT just pass in lambdas, as this method stores
+     *
+     * <p>Thread-safe.
+     *
+     * <p><b>IMPORTANT:</b> Do NOT just pass in lambdas, as this method stores
      * only weak references and the observer will be garbage collected. Keep a
      * reference to the observer yourself.
      *
@@ -36,13 +36,13 @@ public interface K<T> {
     /**
      * De-register a listener previously registered via
      * {@link #register(KeyObserver)}.
-     * <p>
-     * De-registering a previously de-registered listener, or a listener not
+     *
+     * <p>De-registering a previously de-registered listener, or a listener not
      * previously registered at all has no effect.
-     * <p>
-     * Thread-safe.
-     * <p>
-     * <b>IMPORTANT:</b> Do NOT just pass in lambdas, as this method stores
+     *
+     * <p>Thread-safe.
+     *
+     * <p><b>IMPORTANT:</b> Do NOT just pass in lambdas, as this method stores
      * only weak references and the observer will be garbage collected. Keep a
      * reference to the observer yourself.
      *
@@ -54,8 +54,8 @@ public interface K<T> {
 
     /**
      * Unique key of this konfiguration.
-     * <p>
-     * Thread-safe.
+     *
+     * <p>Thread-safe.
      *
      * @return unique key of this konfiguration.
      */
@@ -63,8 +63,8 @@ public interface K<T> {
 
     /**
      * Actual value of this konfiguration.
-     * <p>
-     * Thread-safe.
+     *
+     * <p>Thread-safe.
      *
      * @return Actual value of this konfiguration.
      * @throws KonfigurationMissingKeyException if the value has been removed
@@ -77,8 +77,8 @@ public interface K<T> {
     /**
      * Similar to {@link #v()}, but returns the supplied default if this
      * konfiguration's key no longer exists in the source.
-     * <p>
-     * Thread-safe.
+     *
+     * <p>Thread-safe.
      *
      * @param defaultValue default value to use if key of this konfiguration has
      *                     been removed from the original source.

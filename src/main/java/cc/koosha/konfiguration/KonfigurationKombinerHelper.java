@@ -138,7 +138,7 @@ final class KonfigurationKombinerHelper {
             return cast;
         }
         else {
-            throw new KonfigurationBadTypeException(
+            throw new KonfigurationTypeException(
                     TypeName.typeName(dataType, elementType),
                     TypeName.typeName(r.getDataType(), r.getElementType()),
                     name

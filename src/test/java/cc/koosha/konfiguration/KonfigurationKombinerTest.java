@@ -43,7 +43,7 @@ public final class KonfigurationKombinerTest {
         assertEquals(k.int_("xxx").v(), (Integer) 99);
     }
 
-    @Test(expectedExceptions = KonfigurationBadTypeException.class)
+    @Test(expectedExceptions = KonfigurationTypeException.class)
     public void testV3() throws Exception {
 
         k.string("xxx");

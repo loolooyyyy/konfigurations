@@ -133,7 +133,7 @@ public final class KonfigurationKombiner implements Konfiguration {
         if (type.isAssignableFrom(Map.class)
                 || type.isAssignableFrom(Set.class)
                 || type.isAssignableFrom(List.class))
-            throw new KonfigurationException("for collection types, use corresponding methods");
+            throw new KonfigurationTypeException("for collection types, use corresponding methods");
 
         return kh.getWrappedValue(key, null, type);
     }
@@ -275,12 +275,14 @@ public final class KonfigurationKombiner implements Konfiguration {
 
 
         /**
-         * {@inheritDoc}
+         * Does not return false or true, as clients might wait for this method
+         * it in a while loop and wait for it to return true, indicating a
+         * change being applied. Simply fails fast.
+         *
+         * @throws KonfigurationException always.
          */
         @Override
         public boolean update() {
-            // Do not return false or true, as clients might put it in a while
-            // loop and wait for a change. Simply fail.
             throw new KonfigurationException("update is not available from subset view");
         }
 

@@ -32,7 +32,7 @@ public final class JsonKonfigSource implements KonfigSource {
 
     private JsonNode node_(final String key) {
         if (key == null || key.isEmpty())
-            throw new IllegalArgumentException("bad konfig key: " + key);
+            throw new IllegalArgumentException("empty konfig key");
 
         final String k = "/" + key.replace('.', '/');
         return this.root.at(k);
@@ -63,7 +63,9 @@ public final class JsonKonfigSource implements KonfigSource {
         if (isOk)
             return;
 
-        throw new KonfigurationBadTypeException(required.getTName(), node.getNodeType().toString(), key);
+        throw new KonfigurationTypeException(required.getTName(),
+                                             node.getNodeType().toString(),
+                                             key);
     }
 
 
@@ -99,8 +101,8 @@ public final class JsonKonfigSource implements KonfigSource {
             Class.forName("com.fasterxml.jackson.databind.JsonNode");
         }
         catch (final ClassNotFoundException e) {
-            throw new KonfigurationException(getClass().getName() + " requires " +
-                                                     "jackson library to be present in the class path", e);
+            throw new KonfigurationSourceException(getClass().getName() + " requires " +
+                                                           "jackson library to be present in the class path", e);
         }
 
         this.json = json;
@@ -108,18 +110,18 @@ public final class JsonKonfigSource implements KonfigSource {
 
         final String newJson = this.json.get();
         if (newJson == null)
-            throw new KonfigurationException("storage is null");
+            throw new KonfigurationSourceException("storage is null");
 
         final JsonNode update;
         try {
             update = this.mapperSupplier.get().readTree(newJson);
         }
         catch (final IOException e) {
-            throw new KonfigurationException(e);
+            throw new KonfigurationSourceException("error parsing json string", e);
         }
 
         if (update == null)
-            throw new KonfigurationException("root element is null");
+            throw new KonfigurationSourceException("root element is null");
 
         this.root = update;
         this.lastHash = newJson.hashCode();
@@ -160,7 +162,7 @@ public final class JsonKonfigSource implements KonfigSource {
 
         //noinspection ConstantConditions
         checkType(false, LONG, at, key);
-        throw new IllegalStateException("?!!");
+        throw new AssertionError("?!!");
     }
 
     /**
@@ -194,7 +196,7 @@ public final class JsonKonfigSource implements KonfigSource {
 
         //noinspection ConstantConditions
         checkType(false, STRING, at, key);
-        throw new IllegalStateException("?!!");
+        throw new AssertionError("?!!");
     }
 
     /**
@@ -211,7 +213,9 @@ public final class JsonKonfigSource implements KonfigSource {
             return reader.readValue(at.traverse(), javaType);
         }
         catch (final IOException e) {
-            throw new KonfigurationException(e);
+            throw new KonfigurationTypeException("can not read the key [" + key + "]" +
+                                                         " as a list of [" +
+                                                         el.getCanonicalName() + "]", e);
         }
     }
 
@@ -229,7 +233,9 @@ public final class JsonKonfigSource implements KonfigSource {
             return reader.readValue(at.traverse(), javaType);
         }
         catch (final IOException e) {
-            throw new KonfigurationException(e);
+            throw new KonfigurationTypeException("can not read the key [" + key + "]" +
+                                                         " as a map of [" +
+                                                         el.getCanonicalName() + "]", e);
         }
     }
 
@@ -248,7 +254,9 @@ public final class JsonKonfigSource implements KonfigSource {
             l = reader.readValue(at.traverse(), javaType);
         }
         catch (final IOException e) {
-            throw new KonfigurationException(e);
+            throw new KonfigurationTypeException("can not read the key [" + key + "]" +
+                                                         " as a set of [" +
+                                                         el.getCanonicalName() + "]", e);
         }
 
         return new HashSet<>(l);
@@ -266,7 +274,9 @@ public final class JsonKonfigSource implements KonfigSource {
             return reader.readValue(traverse, el);
         }
         catch (final IOException e) {
-            throw new KonfigurationBadTypeException(e);
+            throw new KonfigurationTypeException("can not read the key [" + key + "]" +
+                                                         " as a custom type [" +
+                                                         el.getCanonicalName() + "]", e);
         }
     }
 
