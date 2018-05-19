@@ -5,6 +5,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+
 final class KonfigurationKombinerHelper {
 
     private final Collection<KonfigSource> sources;
@@ -18,6 +19,7 @@ final class KonfigurationKombinerHelper {
     private final WeakHashMap<KeyObserver, Collection<String>> keyObservers =
             new WeakHashMap<>();
 
+    @SuppressWarnings("WeakerAccess")
     public KonfigurationKombinerHelper(Collection<KonfigSource> sources) {
         this.sources = sources;
     }

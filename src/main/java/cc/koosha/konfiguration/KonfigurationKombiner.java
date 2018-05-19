@@ -5,15 +5,15 @@ import java.util.*;
 
 /**
  * Almost Thread-safe, <b>NOT</b> immutable.
- * <p>
- * Clients may safely use any method, BUT the {@link #update()} must be
+ *
+ * <p>Clients may safely use any method, BUT the {@link #update()} must be
  * called from a single thread only. Although calling it still does NOT
  * invalidate thread safety of clients.
- * <p>
- * In order to stop clients from calling {@link #update()}, call
+ *
+ * <p>In order to stop clients from calling {@link #update()}, call
  * {@link #readonly()} and obtain a readonly view of the konfiguration.
- * <p>
- * Pitfall: The first call for a key, defines the expected type of that key.
+ *
+ * <p>Pitfall: The first call for a key, defines the expected type of that key.
  * For instance calling string("even_though_is_int"), will make KonfigurationKombiner
  * to always return an string typed key, while it actually is an int.
  */
@@ -21,10 +21,12 @@ public final class KonfigurationKombiner implements Konfiguration {
 
     private final KonfigurationKombinerHelper kh;
 
+    @SuppressWarnings("WeakerAccess")
     public KonfigurationKombiner(final KonfigSource... sources) {
         this(Arrays.asList(Objects.requireNonNull(sources)));
     }
 
+    @SuppressWarnings("WeakerAccess")
     public KonfigurationKombiner(final Collection<KonfigSource> sources) {
         final List<KonfigSource> sources_ =
                 new ArrayList<>(Objects.requireNonNull(sources));
@@ -35,7 +37,7 @@ public final class KonfigurationKombiner implements Konfiguration {
         kh = new KonfigurationKombinerHelper(sources_);
     }
 
-    @SuppressWarnings("unused")
+    @SuppressWarnings({"unused", "WeakerAccess"})
     public Konfiguration readonly() {
         return new KonfigurationSubsetView(this);
     }

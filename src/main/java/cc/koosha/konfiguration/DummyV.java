@@ -5,22 +5,22 @@ import java.util.*;
 
 /**
  * Dummy konfig value, holding a constant konfig value with no source.
- * <p>
- * Good for use in cases where a konfiguration source is not available but a
+ *
+ * <p>Good for use in cases where a konfiguration source is not available but a
  * konfiguration value is needed.
- * <p>
- * Thread-safe and immutable.
- * <p>
- * {@link #deregister(KeyObserver)} and {@link #register(KeyObserver)} do NOT
+ *
+ * <p>Thread-safe and immutable.
+ *
+ * <p>{@link #deregister(KeyObserver)} and {@link #register(KeyObserver)} do NOT
  * work.
- * <p>
- * Regarding equals and hashcode: Each instance of DummyV is considered to be
+ *
+ * <p>Regarding equals and hashcode: Each instance of DummyV is considered to be
  * from a different origin (in contrast to _KonfigVImpl, so only each
  * object is equal to itself only, even with same key and values.
  *
  * @param <T> type of konfig value this object holds.
  */
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "WeakerAccess"})
 public final class DummyV<T> implements K<T> {
 
     private final String key;

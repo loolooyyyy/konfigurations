@@ -3,11 +3,11 @@ package cc.koosha.konfiguration;
 
 /**
  * Konfig value wrapper.
- * <p>
- * All the methods denoted with 'Thread-safe' in their comment section must be
+ *
+ * <p>All the methods denoted with 'Thread-safe' in their comment section must be
  * implemented in a thread safe fashion.
- * <p>
- * Thread-safe
+ *
+ * <p>Thread-safe
  *
  * @param <T> type of value being wrapped
  */

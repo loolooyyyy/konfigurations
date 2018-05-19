@@ -7,17 +7,17 @@ import java.util.Set;
 
 /**
  * Provides a konfiguration source to a {@link Konfiguration}
- * <p>
- * A config source must NOT be used directly, it must be supplied to
+ *
+ * <p>A config source must NOT be used directly, it must be supplied to
  * {@link Konfiguration}.<br>
  * Also see {@link #isUpdatable()}.
- * <p>
- * All the methods denoted with 'Thread-safe' in their comment section must be
+ *
+ * <p>All the methods denoted with 'Thread-safe' in their comment section must be
  * implemented in a thread safe fashion.
- * <p>
- * All the implementations of this interface (and for the love of god all the
+ *
+ * <p>All the implementations of this interface (and for the love of god all the
  * values returned by methods of this interface) must be immutable.
- * <p>
+ *
  * <b>Important</b>: there is no {@code update()} method and there wont be.
  * there's only a {@link #copyAndUpdate()}, which updates too but does not modify the
  * original class.

@@ -1,6 +1,7 @@
 package cc.koosha.konfiguration;
 
 
+@SuppressWarnings({"unused", "WeakerAccess"})
 public class KonfigurationBadTypeException extends KonfigurationException {
 
     public KonfigurationBadTypeException() {

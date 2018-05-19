@@ -1,6 +1,7 @@
 package cc.koosha.konfiguration;
 
 
+@SuppressWarnings("WeakerAccess")
 public class KonfigurationException extends RuntimeException {
 
     public KonfigurationException() {

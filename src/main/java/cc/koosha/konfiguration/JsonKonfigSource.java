@@ -16,11 +16,11 @@ import static cc.koosha.konfiguration.TypeName.*;
 
 /**
  * Reads konfig from a json source (supplied as string).
- * <p>
- * for {@link #custom(String, Class)} to work, the supplied json reader must be
+ *
+ * <p>for {@link #custom(String, Class)} to work, the supplied json reader must be
  * configured to handle arbitrary types accordingly.
- * <p>
- * Thread safe and immutable.
+ *
+ * <p>Thread safe and immutable.
  */
 public final class JsonKonfigSource implements KonfigSource {
 

@@ -3,6 +3,7 @@ package cc.koosha.konfiguration;
 import java.util.NoSuchElementException;
 
 
+@SuppressWarnings("WeakerAccess")
 public class KonfigurationMissingKeyException extends NoSuchElementException {
 
     private final String key;

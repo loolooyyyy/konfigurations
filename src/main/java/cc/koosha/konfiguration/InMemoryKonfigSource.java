@@ -7,12 +7,12 @@ import static cc.koosha.konfiguration.TypeName.*;
 
 /**
  * Reads konfig from a plain java map.
- * <p>
- * To fulfill contract of {@link KonfigSource}, all the values put in the
+ *
+ * <p>To fulfill contract of {@link KonfigSource}, all the values put in the
  * map of konfiguration key/values supplied to the konfiguration, should be
  * immutable.
- * <p>
- * Thread safe and immutable.
+ *
+ * <p>Thread safe and immutable.
  */
 public final class InMemoryKonfigSource implements KonfigSource {
 
@@ -37,6 +37,7 @@ public final class InMemoryKonfigSource implements KonfigSource {
      *
      * @param storage konfig source.
      */
+    @SuppressWarnings("WeakerAccess")
     public InMemoryKonfigSource(final SupplierX<Map<String, Object>> storage) {
         if (storage == null)
             throw new NullPointerException("storage");
