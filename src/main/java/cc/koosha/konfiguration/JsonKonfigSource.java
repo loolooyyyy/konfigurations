@@ -77,6 +77,7 @@ public final class JsonKonfigSource implements KonfigSource {
         });
     }
 
+    @SuppressWarnings("WeakerAccess")
     public JsonKonfigSource(final SupplierX<String> json) {
         this(json, new SupplierX<ObjectMapper>() {
             private final ObjectMapper mapper = defaultObjectMapper();
@@ -88,6 +89,7 @@ public final class JsonKonfigSource implements KonfigSource {
         });
     }
 
+    @SuppressWarnings("WeakerAccess")
     public JsonKonfigSource(final SupplierX<String> json,
                             final SupplierX<ObjectMapper> objectMapper) {
         Objects.requireNonNull(json, "jsonSupplier");
