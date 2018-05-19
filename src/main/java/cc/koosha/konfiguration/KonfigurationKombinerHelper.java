@@ -10,6 +10,7 @@ final class KonfigurationKombinerHelper {
 
     private final Collection<KonfigSource> sources;
 
+    private final Object UPDATE_LOCK = new Object();
     private final ReadWriteLock VALUES_LOCK = new ReentrantReadWriteLock();
     private final ReadWriteLock OBSERVERS_LOCK = new ReentrantReadWriteLock();
 
@@ -148,8 +149,6 @@ final class KonfigurationKombinerHelper {
 
     // --------------------
 
-
-    private final Object UPDATE_LOCK = new Object();
 
     boolean update() {
         synchronized (UPDATE_LOCK) {

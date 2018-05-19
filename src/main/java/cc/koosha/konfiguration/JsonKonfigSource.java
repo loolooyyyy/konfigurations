@@ -32,7 +32,7 @@ public final class JsonKonfigSource implements KonfigSource {
 
     private JsonNode node_(final String key) {
         if (key == null || key.isEmpty())
-            throw new IllegalArgumentException("empty konfig key");
+            throw new KonfigurationMissingKeyException("empty konfig key");
 
         final String k = "/" + key.replace('.', '/');
         return this.root.at(k);
@@ -50,9 +50,7 @@ public final class JsonKonfigSource implements KonfigSource {
 
     private static ObjectMapper defaultObjectMapper() {
         final ObjectMapper mapper = new ObjectMapper();
-
         mapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
-
         return mapper;
     }
 
