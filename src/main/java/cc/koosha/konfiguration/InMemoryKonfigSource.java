@@ -36,6 +36,9 @@ public final class InMemoryKonfigSource implements KonfigSource {
      * mode call to get the new values afterward.
      *
      * @param storage konfig source.
+     * @throws NullPointerException         if provided storage provider is null
+     * @throws KonfigurationSourceException if the provided storage by
+     *                                      provider is null
      */
     @SuppressWarnings("WeakerAccess")
     public InMemoryKonfigSource(final SupplierX<Map<String, Object>> storage) {
@@ -50,6 +53,13 @@ public final class InMemoryKonfigSource implements KonfigSource {
         this.storage = new HashMap<>(newStorage);
     }
 
+    /**
+     * Wraps the provided storage in a {@link SupplierX} and calls
+     * {@link #InMemoryKonfigSource(SupplierX)}
+     *
+     * @param storage konfig source.
+     * @throws NullPointerException if storage is null.
+     */
     @SuppressWarnings("unused")
     public InMemoryKonfigSource(final Map<String, Object> storage) {
         this(new SupplierX<Map<String, Object>>() {

@@ -28,8 +28,7 @@ public final class DummyV<T> implements K<T> {
     private final boolean hasValue;
 
     private DummyV(final String key, final T v, final boolean hasValue) {
-        if(key == null)
-            throw new NullPointerException("key");
+        Objects.requireNonNull(key, "key");
         this.key = key;
         this.v = v;
         this.hasValue = hasValue;
@@ -40,6 +39,7 @@ public final class DummyV<T> implements K<T> {
      * fails).
      *
      * @param key key representing this konfiguration value.
+     * @throws NullPointerException if the key is null
      */
     public DummyV(final String key) {
         this(key, null, false);
@@ -50,9 +50,10 @@ public final class DummyV<T> implements K<T> {
      *
      * @param key key representing this konfiguration value.
      * @param v   value this konfiguration holds (can be null).
+     * @throws NullPointerException if the key is null
      */
     public DummyV(final String key, final T v) {
-        this(Objects.requireNonNull(key, "key"), v, true);
+        this(key, v, true);
     }
 
 

@@ -69,6 +69,12 @@ public final class JsonKonfigSource implements KonfigSource {
     }
 
 
+    /**
+     * Wraps the provided json string in a {@link SupplierX} and calls
+     * {@link #JsonKonfigSource(SupplierX)}.
+     *
+     * @param json constant json string as backing storage.
+     */
     @SuppressWarnings("unused")
     public JsonKonfigSource(final String json) {
         this(new SupplierX<String>() {
@@ -79,6 +85,12 @@ public final class JsonKonfigSource implements KonfigSource {
         });
     }
 
+    /**
+     * Calls {@link #JsonKonfigSource(SupplierX, SupplierX)} with a default
+     * Object mapper provided by {@link #defaultObjectMapper()}.
+     *
+     * @param json constant json string as backing storage.
+     */
     @SuppressWarnings("WeakerAccess")
     public JsonKonfigSource(final SupplierX<String> json) {
         this(json, new SupplierX<ObjectMapper>() {
@@ -91,6 +103,29 @@ public final class JsonKonfigSource implements KonfigSource {
         });
     }
 
+    /**
+     * Creates a {@link JsonKonfigSource} with the given json provider and
+     * object mapper provider.
+     *
+     * @param json         backing store provider. Must always return a
+     *                     non-null valid json string.
+     * @param objectMapper {@link ObjectMapper} provider. Must always
+     *                     return a valid non-null ObjectMapper, and if
+     *                     required, it must be able to deserialize custom
+     *                     types, so that {@link #custom(String, Class)} works
+     *                     as well.
+     * @throws NullPointerException         if any of its arguments are null.
+     * @throws KonfigurationSourceException if jackson library is not in the
+     *                                      classpath. it specifically looks
+     *                                      for the class:
+     *                                      "com.fasterxml.jackson.databind.JsonNode"
+     * @throws KonfigurationSourceException if the storage (json string) returned
+     *                                      by json string is null.
+     * @throws KonfigurationSourceException if the provided json string can not
+     *                                      be parsed by jackson.
+     * @throws KonfigurationSourceException if the the root element returned by
+     *                                      jackson is null.
+     */
     @SuppressWarnings("WeakerAccess")
     public JsonKonfigSource(final SupplierX<String> json,
                             final SupplierX<ObjectMapper> objectMapper) {

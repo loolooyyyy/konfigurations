@@ -21,11 +21,20 @@ public final class KonfigurationKombiner implements Konfiguration {
 
     private final KonfigurationKombinerHelper kh;
 
+    /**
+     * @param sources sources to combine in one konfiguration.
+     * @throws NullPointerException if sources is null.
+     */
     @SuppressWarnings("WeakerAccess")
     public KonfigurationKombiner(final KonfigSource... sources) {
         this(Arrays.asList(Objects.requireNonNull(sources)));
     }
 
+    /**
+     * @param sources sources to combine.
+     * @throws NullPointerException     if sources is null.
+     * @throws IllegalArgumentException is sources is empty.
+     */
     @SuppressWarnings("WeakerAccess")
     public KonfigurationKombiner(final Collection<KonfigSource> sources) {
         final List<KonfigSource> sources_ =
