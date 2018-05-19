@@ -4,7 +4,7 @@ apply plugin: 'distribution'
 apply plugin: 'maven-publish'
 
 group 'cc.koosha.konfigurations'
-version '4.0.0'
+version '4.0.1'
 
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
@@ -21,6 +21,8 @@ test {
 
 idea {
   module{
+    outputDir = file('build')
+    inheritOutputDirs = true
     downloadJavadoc = true
     downloadSources = true
   }
@@ -33,7 +35,6 @@ dependencies {
 
     testCompile 'com.fasterxml.jackson.core:jackson-core:2.9.5'
     testCompile 'com.fasterxml.jackson.core:jackson-databind:2.9.5'
-
     testCompile 'org.testng:testng:6.11'
     testCompile 'org.slf4j:slf4j-api:1.7.25'
     testCompile 'org.slf4j:slf4j-simple:1.7.25'
@@ -49,20 +50,20 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
     from javadoc.destinationDir
 }
 
-task allJar(type: Jar, dependsOn: [sourcesJar, javadocJar, jar]) {
-    classifier = 'everything'
-    from sourceSets.main.allSource
-    from javadoc.destinationDir
-    baseName = 'allJar'
-    from configurations.archives.artifacts.files.collect {
-        zipTree(it)
-    }
-}
+// task allJar(type: Jar, dependsOn: [sourcesJar, javadocJar, jar]) {
+//     classifier = 'everything'
+//     from sourceSets.main.allSource
+//     from javadoc.destinationDir
+//     baseName = 'allJar'
+//     from configurations.archives.artifacts.files.collect {
+//         zipTree(it)
+//     }
+// }
 
 artifacts {
     archives sourcesJar
     archives javadocJar
-//    archives allJar
+    // archives allJar
 }
 
 publishing {
