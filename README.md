@@ -1,7 +1,7 @@
 
 ## Java Configuration Library
 
-Simple, tight, small but very extendable configuration management library.
+Simple, small and extendable configuration management library with live updates.
 
 ## Project goals:
 
