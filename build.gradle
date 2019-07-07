@@ -1,11 +1,26 @@
 apply plugin: 'java'
 apply plugin: 'idea'
-apply plugin: 'distribution'
-//apply plugin: 'maven-publish'
-apply plugin: 'maven'
+apply plugin: 'maven-publish'
+apply plugin: 'signing'
 
-group 'net.parget.konfigurations'
-version '5.0.0'
+project.ext {
+    my_group = 'net.parget.konfigurations'
+    my_artifact = 'konfigurations'
+    my_version = '5.0.0'
+    my_name = 'Konfigurations'
+    my_real_name = 'Koosha Hosseiny'
+    my_email = 'koosha.hosseiny@gmail.com'
+    my_description = 'Simple, small and extendable configuration management library with live updates.'
+    my_url = 'https://github.com/hkoosha/konfigurations'
+    my_url_issue = 'https://github.com/hkoosha/konfigurations/issues'
+    my_git = 'scm:git:git://github.com/hkoosha/konfigurations.git'
+    my_git_conn = 'scm:git:git@github.com:hkoosha/konfigurations.git'
+    my_org = 'net.pargar'
+    my_org_url = 'https://pargar.net'
+}
+
+group ext.my_group
+version ext.my_version
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -20,12 +35,12 @@ test {
 }
 
 idea {
-  module{
-    outputDir = file('build')
-    inheritOutputDirs = true
-    downloadJavadoc = true
-    downloadSources = true
-  }
+    module {
+        outputDir = file('build')
+        inheritOutputDirs = true
+        downloadJavadoc = true
+        downloadSources = true
+    }
 }
 
 dependencies {
@@ -40,110 +55,93 @@ dependencies {
     testCompile 'org.slf4j:slf4j-simple:1.7.26'
 }
 
-// task sourcesJar(type: Jar, dependsOn: classes) {
-//     classifier = 'sources'
-//     from sourceSets.main.allSource
-// }
-//
-// task javadocJar(type: Jar, dependsOn: javadoc) {
-//     classifier = 'javadoc'
-//     from javadoc.destinationDir
-// }
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
 
-// task allJar(type: Jar, dependsOn: [sourcesJar, javadocJar, jar]) {
-//     classifier = 'everything'
-//     from sourceSets.main.allSource
-//     from javadoc.destinationDir
-//     baseName = 'allJar'
-//     from configurations.archives.artifacts.files.collect {
-//         zipTree(it)
-//     }
-// }
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
 
-// artifacts {
-//     archives sourcesJar
-//     archives javadocJar
-//     // archives allJar
-// }
+task allJar(type: Jar, dependsOn: [sourcesJar, javadocJar, jar]) {
+    classifier = 'everything'
+    from sourceSets.main.allSource
+    from javadoc.destinationDir
+    baseName = 'allJar'
+    from configurations.archives.artifacts.files.collect {
+        zipTree(it)
+    }
+}
 
-// publishing {
-//     publications {
-//         mavenJava(MavenPublication) {
-//             from components.java
-//             artifact sourcesJar {
-//                 classifier "sources"
-//             }
-//         }
-//     }
-// }
+artifacts {
+    archives sourcesJar
+    archives javadocJar
+    // archives allJar
+}
 
-task writeNewPom {
-    doLast {
-        pom {
-            project {
-                groupId 'net.parget.konfigurations'
-                artifactId 'konfigurations'
-                version '5.0.0'
-                inceptionYear '2019'
+signing {
+ sign configurations.archives
+}
 
-                name 'Konfigurations'
-                description 'Simple, small and extendable configuration management library with live updates.'
-                url 'https://github.com/hkoosha/konfigurations'
-
-                organization {
-                  url 'https://pargar.net'
-                  name 'Pargar'
-                }
-
-                developers {
-                  developer {
-                    url 'https://pargar.net'
-                    name 'Koosha Hosseiny'
-                    email 'koosha.hosseiny@gmail.com'
-                    organization 'pargar'
-                    organizationUrl 'http://pargar.net'
-                  }
-                }
-
-                scm {
-                  connection 'scm:git:git://github.com/hkoosha/konfigurations.git'
-                  developerConnection 'scm:git:git@github.com:hkoosha/konfigurations.git'
-                  url 'https://github.com/hkoosha/konfigurations'
-                  tag 'release'
-                }
-
-                issueManagement {
-                  system 'Github'
-                  url 'https://github.com/hkoosha/konfigurations'
-                }
-
-                ciManagement {
-                  system 'Travis'
-                  url 'https://travis-ci.org/hkoosha/konfigurations'
-                }
-
-                distributionManagement {
-                  snapshotRepository {
-                    id 'ossrh'
-                    name 'Snapshot Maven'
-                    url 'https://oss.sonatype.org/content/repositories/snapshots'
-                  }
-                 //repository {
-                 //  id 'ossrh'
-                 //  name 'maven'
-                 //  url 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
-                 //}
-                }
-
-
-                licenses {
-                    license {
-                        name 'GNU General Public License'
-                        url 'https://www.gnu.org/licenses/gpl-3.0.txt'
-                        distribution 'repo'
-                    }
+def customizePom(pom) {
+    pom.withXml {
+        def root = asNode()
+        root.children().last() + {
+            resolveStrategy = Closure.DELEGATE_FIRST
+            description ext.my_description
+            name ext.my_name
+            url ext.my_url
+            organization {
+                name = ext.my_org
+                url = ext.my_org_url
+            }
+            issueManagement {
+                system 'GitHub'
+                url ext.my_url_issues
+            }
+            licenses {
+                license {
+                    name = 'GNU General Public License'
+                    url = 'https://www.gnu.org/licenses/gpl-3.0.txt'
                 }
             }
-        }.writeTo("pom.xml")
+            scm {
+                connection = ext.my_git
+                developerConnection = ext.my_git_conn
+                url = ext.my_url
+            }
+            developers {
+                developer {
+                    url = ext.my_org_url
+                    name = ext.my_real_name
+                    email = ext.my_email
+                }
+            }
+        }
+    }
+}
+
+publishing {
+    publications {
+        sonata(MavenPublication) {
+            customizePom(pom)
+            groupId project.ext.my_group
+            artifactId project.ext.my_artifact
+            version project.ext.my_version
+            from components.java
+            artifact sourcesJar {
+                classifier 'sources'
+            }
+            artifact javadocJar {
+                classifier 'javadoc'
+            }
+            repositories {
+                maven {
+                    url "https://oss.sonatype.org/service/local/staging/deploy/maven2"
+                }
+            }
+        }
     }
 }
