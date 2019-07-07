@@ -12,7 +12,7 @@ project.ext {
     my_email = 'koosha.hosseiny@gmail.com'
     my_description = 'Simple, small and extendable configuration management library with live updates.'
     my_url = 'https://github.com/hkoosha/konfigurations'
-    my_url_issue = 'https://github.com/hkoosha/konfigurations/issues'
+    my_url_issues = 'https://github.com/hkoosha/konfigurations/issues'
     my_git = 'scm:git:git://github.com/hkoosha/konfigurations.git'
     my_git_conn = 'scm:git:git@github.com:hkoosha/konfigurations.git'
     my_org = 'net.pargar'
@@ -82,51 +82,43 @@ artifacts {
 }
 
 signing {
- sign configurations.archives
-}
-
-def customizePom(pom) {
-    pom.withXml {
-        def root = asNode()
-        root.children().last() + {
-            resolveStrategy = Closure.DELEGATE_FIRST
-            description ext.my_description
-            name ext.my_name
-            url ext.my_url
-            organization {
-                name = ext.my_org
-                url = ext.my_org_url
-            }
-            issueManagement {
-                system 'GitHub'
-                url ext.my_url_issues
-            }
-            licenses {
-                license {
-                    name = 'GNU General Public License'
-                    url = 'https://www.gnu.org/licenses/gpl-3.0.txt'
-                }
-            }
-            scm {
-                connection = ext.my_git
-                developerConnection = ext.my_git_conn
-                url = ext.my_url
-            }
-            developers {
-                developer {
-                    url = ext.my_org_url
-                    name = ext.my_real_name
-                    email = ext.my_email
-                }
-            }
-        }
-    }
+    sign configurations.archives
 }
 
 publishing {
     publications {
         sonata(MavenPublication) {
-            customizePom(pom)
+            pom {
+                description = project.ext.my_description
+                name = project.ext.my_name
+                url = project.ext.my_url
+                organization {
+                    name = project.ext.my_org
+                    url = project.ext.my_org_url
+                }
+                issueManagement {
+                    system = 'GitHub'
+                    url = project.ext.my_url_issues
+                }
+                licenses {
+                    license {
+                        name = 'GNU General Public License'
+                        url = 'https://www.gnu.org/licenses/gpl-3.0.txt'
+                    }
+                }
+                scm {
+                    connection = project.ext.my_git
+                    developerConnection = project.ext.my_git_conn
+                    url = project.ext.my_url
+                }
+                developers {
+                    developer {
+                        url = project.ext.my_org_url
+                        name = project.ext.my_real_name
+                        email = project.ext.my_email
+                    }
+                }
+            }
             groupId project.ext.my_group
             artifactId project.ext.my_artifact
             version project.ext.my_version
@@ -140,6 +132,10 @@ publishing {
             repositories {
                 maven {
                     url "https://oss.sonatype.org/service/local/staging/deploy/maven2"
+                    credentials {
+                        username sonatypeUsername
+                        password sonatypePassword
+                    }
                 }
             }
         }
