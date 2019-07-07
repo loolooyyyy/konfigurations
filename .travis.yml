@@ -7,6 +7,9 @@ jdk:
 script:
   - ./gradlew clean test 
 
+env:
+- IS_CI_ENV=1
+
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
   - rm -fr $HOME/.gradle/caches/*/plugin-resolution/

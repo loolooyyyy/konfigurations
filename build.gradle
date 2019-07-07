@@ -3,6 +3,8 @@ apply plugin: 'idea'
 apply plugin: 'maven-publish'
 apply plugin: 'signing'
 
+def isCiServer = System.getenv().containsKey("IS_CI_ENV")
+
 project.ext {
     my_group = 'net.parget.konfigurations'
     my_artifact = 'konfigurations'
@@ -132,9 +134,11 @@ publishing {
             repositories {
                 maven {
                     url "https://oss.sonatype.org/service/local/staging/deploy/maven2"
-                    credentials {
-                        username sonatypeUsername
-                        password sonatypePassword
+                    if(!isCiServer) {
+                      credentials {
+                          username sonatypeUsername
+                          password sonatypePassword
+                      }
                     }
                 }
             }
