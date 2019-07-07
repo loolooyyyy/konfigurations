@@ -1,7 +1,8 @@
 apply plugin: 'java'
 apply plugin: 'idea'
 apply plugin: 'distribution'
-apply plugin: 'maven-publish'
+//apply plugin: 'maven-publish'
+apply plugin: 'maven'
 
 group 'net.parget.konfigurations'
 version '5.0.0'
@@ -13,7 +14,6 @@ repositories {
     mavenCentral()
     mavenLocal()
 }
-
 
 test {
     useTestNG()
@@ -40,15 +40,15 @@ dependencies {
     testCompile 'org.slf4j:slf4j-simple:1.7.26'
 }
 
-task sourcesJar(type: Jar, dependsOn: classes) {
-    classifier = 'sources'
-    from sourceSets.main.allSource
-}
-
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
-    from javadoc.destinationDir
-}
+// task sourcesJar(type: Jar, dependsOn: classes) {
+//     classifier = 'sources'
+//     from sourceSets.main.allSource
+// }
+//
+// task javadocJar(type: Jar, dependsOn: javadoc) {
+//     classifier = 'javadoc'
+//     from javadoc.destinationDir
+// }
 
 // task allJar(type: Jar, dependsOn: [sourcesJar, javadocJar, jar]) {
 //     classifier = 'everything'
@@ -60,20 +60,90 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
 //     }
 // }
 
-artifacts {
-    archives sourcesJar
-    archives javadocJar
-    // archives allJar
-}
+// artifacts {
+//     archives sourcesJar
+//     archives javadocJar
+//     // archives allJar
+// }
 
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            from components.java
-            artifact sourcesJar {
-                classifier "sources"
+// publishing {
+//     publications {
+//         mavenJava(MavenPublication) {
+//             from components.java
+//             artifact sourcesJar {
+//                 classifier "sources"
+//             }
+//         }
+//     }
+// }
+
+task writeNewPom {
+    doLast {
+        pom {
+            project {
+                groupId 'net.parget.konfigurations'
+                artifactId 'konfigurations'
+                version '5.0.0'
+                inceptionYear '2019'
+
+                name 'Konfigurations'
+                description 'Simple, small and extendable configuration management library with live updates.'
+                url 'https://github.com/hkoosha/konfigurations'
+
+                organization {
+                  url 'https://pargar.net'
+                  name 'Pargar'
+                }
+
+                developers {
+                  developer {
+                    url 'https://pargar.net'
+                    name 'Koosha Hosseiny'
+                    email 'koosha.hosseiny@gmail.com'
+                    organization 'pargar'
+                    organizationUrl 'http://pargar.net'
+                  }
+                }
+
+                scm {
+                  connection 'scm:git:git://github.com/hkoosha/konfigurations.git'
+                  developerConnection 'scm:git:git@github.com:hkoosha/konfigurations.git'
+                  url 'https://github.com/hkoosha/konfigurations'
+                  tag 'release'
+                }
+
+                issueManagement {
+                  system 'Github'
+                  url 'https://github.com/hkoosha/konfigurations'
+                }
+
+                ciManagement {
+                  system 'Travis'
+                  url 'https://travis-ci.org/hkoosha/konfigurations'
+                }
+
+                distributionManagement {
+                  snapshotRepository {
+                    id 'ossrh'
+                    name 'Snapshot Maven'
+                    url 'https://oss.sonatype.org/content/repositories/snapshots'
+                  }
+                 //repository {
+                 //  id 'ossrh'
+                 //  name 'maven'
+                 //  url 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
+                 //}
+                }
+
+
+                licenses {
+                    license {
+                        name 'GNU General Public License'
+                        url 'https://www.gnu.org/licenses/gpl-3.0.txt'
+                        distribution 'repo'
+                    }
+                }
             }
-        }
+        }.writeTo("pom.xml")
     }
 }
-
