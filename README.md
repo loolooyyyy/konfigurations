@@ -1,5 +1,5 @@
 
-## Java Configuration Library
+## Java Configuration Library [![Build Status](https://travis-ci.org/hkoosha/konfigurations.svg?branch=master)](https://travis-ci.org/hkoosha/konfigurations)
 
 Simple, small and extendable configuration management library with live updates.
 
