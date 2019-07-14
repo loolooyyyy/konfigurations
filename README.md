@@ -3,6 +3,21 @@
 
 Simple, small and extendable configuration management library with live updates.
 
+## Maven
+
+```xml
+<dependency>
+    <groupId>net.pargar.konfigurations</groupId>
+    <artifactId>konfigurations</artifactId>
+    <version>5.0.0</version>
+</dependency>
+```
+
+```groovy
+compile group: 'net.pargar.konfigurations', name: 'konfigurations', version: '5.0.0'
+```
+
+
 ## Project goals:
 
 - Supporting multiple configuration sources.
