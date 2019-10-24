@@ -7,14 +7,14 @@ Simple, small and extendable configuration management library with live updates.
 
 ```xml
 <dependency>
-    <groupId>net.pargar.konfigurations</groupId>
+    <groupId>io.koosha.konfigurations</groupId>
     <artifactId>konfigurations</artifactId>
     <version>5.0.0</version>
 </dependency>
 ```
 
 ```groovy
-compile group: 'net.pargar.konfigurations', name: 'konfigurations', version: '5.0.0'
+compile group: 'io.koosha.konfigurations', name: 'konfigurations', version: '5.0.0'
 ```
 
 

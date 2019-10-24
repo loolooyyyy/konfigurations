@@ -6,7 +6,7 @@ apply plugin: 'signing'
 def isCiServer = System.getenv().containsKey("IS_CI_ENV")
 
 project.ext {
-    my_group = 'net.parget.konfigurations'
+    my_group = 'io.koosha.konfigurations'
     my_artifact = 'konfigurations'
     my_version = '5.0.0'
     my_name = 'Konfigurations'
@@ -17,8 +17,8 @@ project.ext {
     my_url_issues = 'https://github.com/hkoosha/konfigurations/issues'
     my_git = 'scm:git:git://github.com/hkoosha/konfigurations.git'
     my_git_conn = 'scm:git:git@github.com:hkoosha/konfigurations.git'
-    my_org = 'net.pargar'
-    my_org_url = 'https://pargar.net'
+    my_org = 'io.koosha'
+    my_org_url = 'https://koosha.io'
 }
 
 group ext.my_group
@@ -48,7 +48,6 @@ idea {
 dependencies {
     compileOnly 'com.fasterxml.jackson.core:jackson-core:2.9.9'
     compileOnly 'com.fasterxml.jackson.core:jackson-databind:2.9.9'
-    compileOnly 'com.google.inject:guice:4.0'
 
     testCompile 'com.fasterxml.jackson.core:jackson-core:2.9.9'
     testCompile 'com.fasterxml.jackson.core:jackson-databind:2.9.9'
