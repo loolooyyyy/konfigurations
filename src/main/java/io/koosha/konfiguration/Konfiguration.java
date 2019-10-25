@@ -144,7 +144,7 @@ public interface Konfiguration {
     <T> K<T> custom(String key, Class<T> type);
 
     /**
-     * Check if {@param key} exists in the configuration.
+     * Check if {@code key} exists in the configuration.
      *
      * @param key
      *         the config key to chekc it's existence
