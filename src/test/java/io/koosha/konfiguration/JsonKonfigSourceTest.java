@@ -15,21 +15,21 @@ import static org.testng.Assert.assertTrue;
 
 public class JsonKonfigSourceTest extends KonfigValueTestMixin {
 
-    public static final String SAMPLE_0 = "{ \"aInt\": 12, \"aBool\": true, " +
+    static final String SAMPLE_0 = "{ \"aInt\": 12, \"aBool\": true, " +
             "\"aIntList\": [1, 0, 2], \"aStringList\": [\"a\", \"B\", \"c\"], " +
             "\"aLong\": 9223372036854775807, \"aDouble\": 3.14, \"aMap\": " +
             "{ \"a\": 99, \"c\": 22 }, \"aSet\": [1, 2, 1, 2], \"aString\": " +
             "\"hello world\", \"some\": { \"nested\": { \"key\": 99, " +
             "\"userDefined\" : { \"str\": \"I'm all set\", \"i\": 99 } } } }";
 
-    public static final String SAMPLE_1 = "{ \"aInt\": 99, \"aBool\": false, " +
+    static final String SAMPLE_1 = "{ \"aInt\": 99, \"aBool\": false, " +
             "\"aIntList\": [2, 2], \"aStringList\": [\"a\", \"c\"], \"aLong\": " +
             "-9223372036854775808, \"aDouble\": 4.14, \"aMap\": { \"a\": \"b\", " +
             "\"c\": \"e\" }, \"aSet\": [3, 2, 1, 2], \"aString\": \"goodbye world\" }";
 
-    protected String json;
-    protected String json0;
-    protected String json1;
+    private String json;
+    private String json0;
+    private String json1;
 
     private JsonKonfigSource k;
 

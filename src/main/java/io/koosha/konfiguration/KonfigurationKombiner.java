@@ -154,6 +154,11 @@ public final class KonfigurationKombiner implements Konfiguration {
         return kh.getWrappedValue(key, null, type);
     }
 
+    @Override
+    public boolean contains(final String key) {
+        return kh.contains(key);
+    }
+
 
     /**
      * {@inheritDoc}
@@ -192,6 +197,7 @@ public final class KonfigurationKombiner implements Konfiguration {
     public boolean update() {
         return kh.update();
     }
+
 
     /**
      * Read only subset view of a konfiguration. Prepends a pre-defined key
@@ -286,6 +292,11 @@ public final class KonfigurationKombiner implements Konfiguration {
         @Override
         public <T> K<T> custom(final String key, final Class<T> type) {
             return wrapped.custom(baseKey + key, type);
+        }
+
+        @Override
+        public boolean contains(final String key) {
+            return wrapped.contains(baseKey + key);
         }
 
 

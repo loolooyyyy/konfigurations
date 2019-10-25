@@ -282,6 +282,21 @@ final class KonfigurationKombinerHelper {
         }
     }
 
+    boolean contains(final String key) {
+        Lock readLock = null;
+        try {
+            readLock = VALUES_LOCK.readLock();
+            readLock.lock();
+            if (this.kvalCache.containsKey(key))
+                return true;
+        }
+        finally {
+            if (readLock != null)
+                readLock.unlock();
+        }
+        return false;
+    }
+
 
     // --------------------
 

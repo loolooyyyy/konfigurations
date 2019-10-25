@@ -143,6 +143,16 @@ public interface Konfiguration {
      */
     <T> K<T> custom(String key, Class<T> type);
 
+    /**
+     * Check if {@param key} exists in the configuration.
+     *
+     * @param key
+     *         the config key to chekc it's existence
+     *
+     * @return true if the key exists, false otherwise.
+     */
+    boolean contains(String key);
+
 
     /**
      * Update all the konfiguration values and notify the update observers.
