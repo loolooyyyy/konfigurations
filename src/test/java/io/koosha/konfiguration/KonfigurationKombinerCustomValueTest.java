@@ -7,13 +7,14 @@ import org.testng.annotations.Test;
 import java.util.Collections;
 
 
+@SuppressWarnings("WeakerAccess")
 public class KonfigurationKombinerCustomValueTest {
 
     final DummyCustom value = new DummyCustom();
 
     final String key = "theKey";
 
-    private KonfigurationKombiner k = new KonfigurationKombiner(new InMemoryKonfigSource(() -> Collections.singletonMap(
+    private Konfiguration k = Konfiguration.kombine(KonfigSource.inMemory(() -> Collections.singletonMap(
             key,
             value)));
 

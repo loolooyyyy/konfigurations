@@ -12,6 +12,7 @@ import static java.util.Collections.singletonMap;
 import static org.testng.Assert.*;
 
 
+@SuppressWarnings("RedundantThrows")
 public final class KonfigurationKombinerTest {
 
     private AtomicBoolean flag = new AtomicBoolean(true);
@@ -20,13 +21,13 @@ public final class KonfigurationKombinerTest {
                                                             ? singletonMap("xxx", (Object) 12)
                                                             : singletonMap("xxx", (Object) 99);
 
-    private KonfigurationKombiner k;
+    private Konfiguration k;
 
     @BeforeMethod
     public void setup() {
 
         this.flag.set(true);
-        this.k = new KonfigurationKombiner(new InMemoryKonfigSource(sup));
+        this.k = Konfiguration.kombine(KonfigSource.inMemory(sup));
     }
 
     @Test
@@ -64,7 +65,7 @@ public final class KonfigurationKombinerTest {
     @Test(expectedExceptions = KonfigurationMissingKeyException.class)
     public void testNoDefaultValue() {
 
-        k.long_("someblablabla").v();
+        k.long_("some bla bla bla").v();
     }
 
     @Test

@@ -4,19 +4,19 @@ package io.koosha.konfiguration;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-// import java.io.File;
-// import java.net.URL;
-// import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-// import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static java.util.Arrays.asList;
-import static java.util.Collections.unmodifiableMap;
 
+// import java.io.File;
+// import java.net.URL;
+// import java.nio.charset.StandardCharsets;
+// import java.util.Scanner;
+
+@SuppressWarnings("WeakerAccess")
 public class KonfigurationKombinerConcurrencyTest {
 
     KonfigurationKombinerConcurrencyTest() throws Exception{
@@ -31,38 +31,26 @@ public class KonfigurationKombinerConcurrencyTest {
         // this.JSON1 = new Scanner(file1, "UTF8").useDelimiter("\\Z").next();
         this.JSON1 = JsonKonfigSourceTest.SAMPLE_1;
 
-        Map<String, Object> MAP0 = new HashMap<>();
-        MAP0.put("aInt", 12);
-        MAP0.put("aBool", false);
-        MAP0.put("aIntList", asList(1, 0, 2));
-        MAP0.put("aLong", 88L);
-        this.MAP0 = unmodifiableMap(MAP0);
+        this.MAP0 = Map.of("aInt", 12, "aBool", false, "aIntList", asList(1, 0, 2), "aLong", 88L);
 
 
-        Map<String, Object> MAP1 = new HashMap<>();
-        MAP1.put("aInt", 99);
-        MAP1.put("bBool", false);
-        MAP1.put("aIntList", asList(2, 2));
-        this.MAP1 = unmodifiableMap(MAP1);
+        this.MAP1 = Map.of("aInt", 99, "bBool", false, "aIntList", asList(2, 2));
 
 
-        Map<String, Object> MAP2 = new HashMap<>();
-        MAP2.put("xx", 44);
-        MAP2.put("yy", true);
-        this.MAP2 = unmodifiableMap(MAP2);
+        this.MAP2 = Map.of("xx", 44, "yy", true);
 
 
         // ----------------------
 
         this.reset();
 
-        InMemoryKonfigSource IN_MEM_2_SOURCE = new InMemoryKonfigSource(() -> KonfigurationKombinerConcurrencyTest.this.MAP2);
+        KonfigSource IN_MEM_2_SOURCE = KonfigSource.inMemory(() -> KonfigurationKombinerConcurrencyTest.this.MAP2);
 
-        InMemoryKonfigSource inMemSource = new InMemoryKonfigSource(() -> KonfigurationKombinerConcurrencyTest.this.map);
+        KonfigSource inMemSource = KonfigSource.inMemory(() -> KonfigurationKombinerConcurrencyTest.this.map);
 
-        JsonKonfigSource jsonSource = new JsonKonfigSource(() -> KonfigurationKombinerConcurrencyTest.this.json);
+        KonfigSource jsonSource = KonfigSource.jacksonJson(() -> KonfigurationKombinerConcurrencyTest.this.json);
 
-        this.k = new KonfigurationKombiner(inMemSource, IN_MEM_2_SOURCE, jsonSource);
+        this.k = Konfiguration.kombine(inMemSource, IN_MEM_2_SOURCE, jsonSource);
 
     }
 
@@ -77,7 +65,7 @@ public class KonfigurationKombinerConcurrencyTest {
 
     private Map<String, Object> map;
     private String json;
-    private KonfigurationKombiner k;
+    private Konfiguration k;
 
     @BeforeMethod
     void reset() {

@@ -1,9 +1,7 @@
 package io.koosha.konfiguration;
 
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 
 /**
@@ -169,10 +167,11 @@ public interface Konfiguration {
      *
      * @return true if anything was changed during this update.
      *
-     * @throws KonfigurationException
-     *         if the konfiguration is not updatable
+     * @throws KonfigurationException TODO
+     * @throws UnsupportedOperationException  of this konfig is read only.
      */
     boolean update();
+
 
     /**
      * Get a subset view of this konfiguration representing all the values under
@@ -188,6 +187,17 @@ public interface Konfiguration {
      */
     @SuppressWarnings("unused")
     Konfiguration subset(String key);
+
+    /**
+     * In order to stop clients from calling {@link #update()}, use this method
+     * and obtain a readonly view of the konfiguration.
+     *
+     * @return a readonly view of the konfiguration instance.
+     */
+    Konfiguration readonly();
+
+    boolean isReadonly();
+
 
     /**
      * Register a listener to be notified of any updates to this konfiguration.
@@ -221,5 +231,52 @@ public interface Konfiguration {
      * @see #register(KeyObserver)
      */
     Konfiguration deregister(KeyObserver observer);
+
+    // ========================================================================
+
+    /**
+     * Create a new konfiguration object from given sources.
+     */
+    static Konfiguration kombine(final KonfigSource k0) {
+        return new KonfigurationKombiner(k0);
+    }
+
+    /**
+     * Create a new konfiguration object from given sources.
+     */
+    static Konfiguration kombine(final KonfigSource k0,
+                                 final KonfigSource k1) {
+        return new KonfigurationKombiner(k0, k1);
+    }
+
+    /**
+     * Create a new konfiguration object from given sources.
+     */
+    static Konfiguration kombine(final KonfigSource k0,
+                                 final KonfigSource k1,
+                                 final KonfigSource k2) {
+        return new KonfigurationKombiner(k0, k1, k2);
+    }
+
+    /**
+     * Create a new konfiguration object from given sources.
+     */
+    static Konfiguration kombine(final KonfigSource k0,
+                                 final KonfigSource k1,
+                                 final KonfigSource k2,
+                                 final KonfigSource... sources) {
+        return new KonfigurationKombiner(k0, k1, k2, sources);
+    }
+
+    /**
+     * Create a new konfiguration object from given sources.
+     *
+     * @param sources sources to combine.
+     * @throws NullPointerException     if sources is null.
+     * @throws IllegalArgumentException is sources is empty.
+     */
+    static Konfiguration kombine(final Collection<KonfigSource> sources) {
+        return new KonfigurationKombiner(sources);
+    }
 
 }

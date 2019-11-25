@@ -13,6 +13,7 @@ import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
 
+@SuppressWarnings("RedundantThrows")
 public class JsonKonfigSourceTest extends KonfigValueTestMixin {
 
     static final String SAMPLE_0 = "{ \"aInt\": 12, \"aBool\": true, " +
@@ -31,7 +32,7 @@ public class JsonKonfigSourceTest extends KonfigValueTestMixin {
     private String json0;
     private String json1;
 
-    private JsonKonfigSource k;
+    private KonfigSource k;
 
     @BeforeClass
     public void classSetup() throws Exception {
@@ -51,16 +52,16 @@ public class JsonKonfigSourceTest extends KonfigValueTestMixin {
     public void setup() throws Exception {
 
         json = json0;
-        this.k = new JsonKonfigSource(() -> json);
+        this.k = KonfigSource.jacksonJson(() -> json);
     }
 
     protected void update() {
 
         this.json = this.json1;
-        this.k = (JsonKonfigSource) this.k.copyAndUpdate();
+        this.k = this.k.copyAndUpdate();
     }
 
-    public JsonKonfigSource k() {
+    public KonfigSource k() {
         return this.k;
     }
 

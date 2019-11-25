@@ -19,13 +19,13 @@ public class MissingKeyTest {
                                                             ? singletonMap("xxx", (Object) 12)
                                                             : singletonMap("xxx", (Object) 99);
 
-    private KonfigurationKombiner k;
+    private Konfiguration k;
 
     @BeforeMethod
     public void setup() {
 
         this.returnFourTaee = true;
-        this.k = new KonfigurationKombiner(new InMemoryKonfigSource(sup));
+        this.k = Konfiguration.kombine(KonfigSource.inMemory(sup));
     }
 
     @Test

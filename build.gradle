@@ -8,7 +8,7 @@ def isCiServer = System.getenv().containsKey("IS_CI_ENV")
 project.ext {
     my_group = 'io.koosha.konfigurations'
     my_artifact = 'konfigurations'
-    my_version = '5.0.0'
+    my_version = '6.0.0'
     my_name = 'Konfigurations'
     my_real_name = 'Koosha Hosseiny'
     my_email = 'koosha.hosseiny@gmail.com'
@@ -34,6 +34,10 @@ repositories {
 
 test {
     useTestNG()
+}
+compileTestJava {
+  sourceCompatibility = "11"
+  targetCompatibility = "11"
 }
 
 idea {
@@ -85,7 +89,14 @@ artifacts {
 }
 
 signing {
+    required {
+      !version.toString().endsWith('-SNAPSHOT') && 
+        tasks.withType(PublishToMavenRepository).find {
+         gradle.taskGraph.hasTask it
+      }
+    }
     sign configurations.archives
+    sign publishing.publications
 }
 
 publishing {

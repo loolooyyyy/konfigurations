@@ -80,7 +80,7 @@ public class DummyVTest {
 
     @Test
     public void testString() throws Exception {
-        String value = "haha";
+        String value = "xx yy ha ha";
         assertEquals(DummyV.string(value).v(), value);
         assertEquals(DummyV.string(value).v("something"), value);
     }

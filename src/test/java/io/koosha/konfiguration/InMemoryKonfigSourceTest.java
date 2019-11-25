@@ -15,14 +15,14 @@ import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
 
-@SuppressWarnings("RedundantThrows")
+@SuppressWarnings({"RedundantThrows", "WeakerAccess"})
 public class InMemoryKonfigSourceTest extends KonfigValueTestMixin {
 
     protected Map<String, Object> map;
     protected Map<String, Object> map0;
     protected Map<String, Object> map1;
 
-    private InMemoryKonfigSource k;
+    private KonfigSource k;
 
     @BeforeClass
     public void classSetup() throws Exception {
@@ -72,16 +72,16 @@ public class InMemoryKonfigSourceTest extends KonfigValueTestMixin {
     public void setup() throws Exception {
 
         this.map = this.map0;
-        this.k = new InMemoryKonfigSource(() -> map);
+        this.k = KonfigSource.inMemory(() -> map);
     }
 
     @Override
     protected void update() {
         this.map = this.map1;
-        this.k = (InMemoryKonfigSource) this.k.copyAndUpdate();
+        this.k = this.k.copyAndUpdate();
     }
 
-    public InMemoryKonfigSource k() {
+    public KonfigSource k() {
         return this.k;
     }
 

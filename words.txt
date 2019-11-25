@@ -1,4 +1,5 @@
 kombine
-konfigurations
+konfiguration
 kval
 paranamer
+deser

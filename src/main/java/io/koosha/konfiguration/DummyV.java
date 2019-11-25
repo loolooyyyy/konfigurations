@@ -3,6 +3,8 @@ package io.koosha.konfiguration;
 
 import java.util.*;
 
+import static java.util.Objects.requireNonNull;
+
 
 /**
  * Dummy konfig value, holding a constant konfig value with no source.
@@ -32,7 +34,7 @@ public final class DummyV<T> implements K<T> {
     private final boolean hasValue;
 
     private DummyV(final String key, final T v, final boolean hasValue) {
-        Objects.requireNonNull(key, "key");
+        requireNonNull(key, "key");
         this.key = key;
         this.v = v;
         this.hasValue = hasValue;
@@ -119,60 +121,124 @@ public final class DummyV<T> implements K<T> {
 
     // ________________________________________________ PREDEFINED CONST VALUES
 
+    public static <T> K<T> t(final T t) {
+        return new DummyV<>("", t);
+    }
+
+
     public static K<Boolean> false_() {
-        return new DummyV<>("", false);
+        return t(false);
     }
 
     public static K<Boolean> true_() {
-        return new DummyV<>("", true);
+        return t(true);
     }
 
-    public static K<Integer> int_(final Integer i) {
-        return new DummyV<>("", i);
+
+    public static <T> K<Collection<T>> emptyCollection() {
+        return t(Collections.emptyList());
     }
 
-    public static K<Long> long_(final Long l) {
-        return new DummyV<>("", l);
+    public static <T> K<List<T>> emptyList() {
+        return t(Collections.emptyList());
     }
 
-    public static K<Double> double_(final Double d) {
-        return new DummyV<>("", d);
+    public static <U, V> K<Map<U, V>> emptyMap() {
+        return t(Collections.emptyMap());
     }
 
-    public static K<String> string(final String s) {
-        return new DummyV<>("", s);
-    }
-
-    public static <T> DummyV<Collection<T>> emptyCollection() {
-        return new DummyV<Collection<T>>("", Collections.<T>emptyList());
-    }
-
-    public static <T> DummyV<List<T>> emptyList() {
-        return new DummyV<>("", Collections.<T>emptyList());
-    }
-
-    public static <K, V> DummyV<Map<K, V>> emptyMap() {
-        return new DummyV<>("", Collections.<K, V>emptyMap());
-    }
-
-    public static <T> DummyV<Set<T>> emptySet() {
-        return new DummyV<>("", Collections.<T>emptySet());
-    }
-
-    public static <T> DummyV<List<T>> list(final List<T> l) {
-        return new DummyV<>("", l);
-    }
-
-    public static <K, V> DummyV<Map<K, V>> map(final Map<K, V> m) {
-        return new DummyV<>("", m);
-    }
-
-    public static <T> DummyV<Set<T>> set(final Set<T> s) {
-        return new DummyV<>("", s);
+    public static <T> K<Set<T>> emptySet() {
+        return t(Collections.emptySet());
     }
 
     public static <T> K<T> null_() {
-        return new DummyV<>("", null);
+        return t(null);
+    }
+
+
+    public static K<Boolean> bool(final Boolean b) {
+        if (b == null)
+            return null_();
+        return b ? true_() : false_();
+    }
+
+    public static K<Integer> int_(final Integer i) {
+        return t(i);
+    }
+
+    public static K<Long> long_(final Long l) {
+        return t(l);
+    }
+
+    public static K<Double> double_(final Double d) {
+        return t(d);
+    }
+
+    public static K<String> string(final String s) {
+        return t(s);
+    }
+
+    public static <T> K<List<T>> list(final List<T> l) {
+        return t(l);
+    }
+
+    public static <U, V> K<Map<U, V>> map(final Map<U, V> m) {
+        return t(m);
+    }
+
+    public static <U, V> K<Map<U, V>> map(final U k, final V v) {
+        final Map<U, V> m = new HashMap<>();
+        m.put(k, v);
+        return t(Collections.unmodifiableMap(m));
+    }
+
+    public static <U, V> K<Map<U, V>> map(final U k0, final V v0,
+                                          final U k1, final V v1) {
+        final Map<U, V> m = new HashMap<>();
+        m.put(k0, v0);
+        m.put(k1, v1);
+        return t(Collections.unmodifiableMap(m));
+    }
+
+    public static <U, V> K<Map<U, V>> map(final U k0, final V v0,
+                                          final U k1, final V v1,
+                                          final U k2, final V v2) {
+        final Map<U, V> m = new HashMap<>();
+        m.put(k0, v0);
+        m.put(k1, v1);
+        m.put(k2, v2);
+        return t(Collections.unmodifiableMap(m));
+    }
+
+    public static <U, V> K<Map<U, V>> map(final U k0, final V v0,
+                                          final U k1, final V v1,
+                                          final U k2, final V v2,
+                                          final Object... values) {
+        requireNonNull(values);
+
+        if (values.length == 0)
+            return map(k0, v0, k1, v1, k2, v2);
+
+        if(values.length % 2 != 0)
+            throw new IllegalArgumentException("mismatched number of keys and values: " + values.length);
+
+        final Map<U, V> m = new HashMap<>();
+        m.put(k0, v0);
+        m.put(k1, v1);
+        m.put(k2, v2);
+        for (int i = 0; i < values.length; i += 2) {
+            @SuppressWarnings("unchecked")
+            U k = (U) values[i];
+            @SuppressWarnings("unchecked")
+            V v = (V) values[i + 1];
+            m.put(k, v);
+        }
+
+        return t(Collections.unmodifiableMap(m));
+    }
+
+    public static <T> K<Set<T>> set(final Set<T> s) {
+        return t(s);
     }
 
 }

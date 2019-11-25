@@ -7,13 +7,14 @@ import org.testng.annotations.Test;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
+@SuppressWarnings("RedundantThrows")
 public class YamlKonfigSourceTest extends KonfigValueTestMixin {
 
     private String yaml;
     private String yaml0;
     private String yaml1;
 
-    private YamlKonfigSource k;
+    private KonfigSource k;
 
     @BeforeClass
     public void classSetup() throws Exception {
@@ -33,7 +34,7 @@ public class YamlKonfigSourceTest extends KonfigValueTestMixin {
     public void setup() throws Exception {
 
         yaml = yaml0;
-        this.k = new YamlKonfigSource(() -> yaml);
+        this.k = KonfigSource.snakeYaml(() -> yaml);
     }
 
     @Override
@@ -45,7 +46,7 @@ public class YamlKonfigSourceTest extends KonfigValueTestMixin {
     protected void update() {
 
         this.yaml = this.yaml1;
-        this.k = (YamlKonfigSource) this.k.copyAndUpdate();
+        this.k = this.k.copyAndUpdate();
     }
 
     @Test
