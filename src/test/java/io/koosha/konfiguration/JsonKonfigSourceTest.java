@@ -32,7 +32,7 @@ public class JsonKonfigSourceTest extends KonfigValueTestMixin {
     private String json0;
     private String json1;
 
-    private KonfigSource k;
+    private Konfiguration k;
 
     @BeforeClass
     public void classSetup() throws Exception {
@@ -68,14 +68,14 @@ public class JsonKonfigSourceTest extends KonfigValueTestMixin {
     @Test
     public void testNotUpdatable() throws Exception {
 
-        assertFalse(this.k().isUpdatable());
+        assertFalse(this.k().hasUpdate());
     }
 
     @Test
     public void testUpdatable() throws Exception {
 
         json = json1;
-        assertTrue(this.k().isUpdatable());
+        assertTrue(this.k().hasUpdate());
     }
 
 }

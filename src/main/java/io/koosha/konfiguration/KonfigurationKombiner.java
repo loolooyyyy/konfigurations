@@ -5,7 +5,10 @@ import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 
 
@@ -26,24 +29,28 @@ import static java.util.Objects.requireNonNull;
  */
 final class KonfigurationKombiner implements Konfiguration {
 
+    private String name;
     private final KonfigurationKombinerHelper kh;
 
-    KonfigurationKombiner(final KonfigSource k0) {
-        this(Collections.singletonList(requireNonNull(k0)));
+    KonfigurationKombiner(final String name,
+                          final Konfiguration k0) {
+        this(name, Collections.singletonList(requireNonNull(k0)));
     }
 
-    KonfigurationKombiner(final KonfigSource k0,
-                          final KonfigSource k1) {
-        this(Arrays.asList(
+    KonfigurationKombiner(final String name,
+                          final Konfiguration k0,
+                          final Konfiguration k1) {
+        this(name, Arrays.asList(
                 requireNonNull(k0),
                 requireNonNull(k1)
         ));
     }
 
-    KonfigurationKombiner(final KonfigSource k0,
-                          final KonfigSource k1,
-                          final KonfigSource k2) {
-        this(Arrays.asList(
+    KonfigurationKombiner(final String name,
+                          final Konfiguration k0,
+                          final Konfiguration k1,
+                          final Konfiguration k2) {
+        this(name, Arrays.asList(
                 requireNonNull(k0),
                 requireNonNull(k1),
                 requireNonNull(k2)
@@ -51,26 +58,28 @@ final class KonfigurationKombiner implements Konfiguration {
     }
 
 
-    KonfigurationKombiner(final KonfigSource k0,
-                          final KonfigSource k1,
-                          final KonfigSource k2,
-                          final KonfigSource... sources) {
-        this(helper(k0, k1, k2, sources));
+    KonfigurationKombiner(final String name,
+                          final Konfiguration k0,
+                          final Konfiguration k1,
+                          final Konfiguration k2,
+                          final Konfiguration... sources) {
+        this(name, helper(k0, k1, k2, sources));
     }
 
-    KonfigurationKombiner(final Collection<KonfigSource> sources) {
-        final List<KonfigSource> sources_ = new ArrayList<>(requireNonNull(sources));
+    KonfigurationKombiner(final String name,
+                          final Collection<Konfiguration> sources) {
+        this.name = requireNonNull(name);
+        final List<Konfiguration> sources_ = new ArrayList<>(requireNonNull(sources));
 
         if (sources_.isEmpty())
             throw new IllegalArgumentException("no source given");
 
-        for (final KonfigSource source : sources)
+        for (final Konfiguration source : sources)
             if (source == null)
                 throw new IllegalArgumentException("null value in sources");
 
-        this.kh = new KonfigurationKombinerHelper(sources_);
+        this.kh = new KonfigurationKombinerHelper(this, sources_);
     }
-
 
 
     /**
@@ -79,6 +88,30 @@ final class KonfigurationKombiner implements Konfiguration {
     @Override
     public final K<Boolean> bool(final String key) {
         return kh.getWrappedValue(key, Boolean.class, null);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public K<Byte> byte_(String key) {
+        return kh.getWrappedValue(key, Byte.class, null);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public K<Character> char_(String key) {
+        return kh.getWrappedValue(key, Character.class, null);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public K<Short> short_(String key) {
+        return kh.getWrappedValue(key, Short.class, null);
     }
 
     /**
@@ -101,6 +134,14 @@ final class KonfigurationKombiner implements Konfiguration {
      * {@inheritDoc}
      */
     @Override
+    public K<Float> float_(String key) {
+        return kh.getWrappedValue(key, Float.class, null);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public final K<Double> double_(final String key) {
         return kh.getWrappedValue(key, Double.class, null);
     }
@@ -117,7 +158,7 @@ final class KonfigurationKombiner implements Konfiguration {
      * {@inheritDoc}
      */
     @Override
-    public final <T> K<List<T>> list(final String key, final Class<T> type) {
+    public final <U> K<List<U>> list(final String key, final Class<U> type) {
         return kh.getWrappedValue(key, List.class, type);
     }
 
@@ -125,7 +166,7 @@ final class KonfigurationKombiner implements Konfiguration {
      * {@inheritDoc}
      */
     @Override
-    public final <T> K<Map<String, T>> map(final String key, final Class<T> type) {
+    public final <U> K<Map<String, T>> map(final String key, final Class<U> type) {
         return kh.getWrappedValue(key, Map.class, type);
     }
 
@@ -133,7 +174,7 @@ final class KonfigurationKombiner implements Konfiguration {
      * {@inheritDoc}
      */
     @Override
-    public final <T> K<Set<T>> set(final String key, final Class<T> type) {
+    public final <U> K<Set<U>> set(final String key, final Class<U> type) {
         return kh.getWrappedValue(key, Set.class, type);
     }
 
@@ -142,29 +183,30 @@ final class KonfigurationKombiner implements Konfiguration {
      */
     @SuppressWarnings("unchecked")
     @Override
-    public final <T> K<T> custom(final String key, final Class<T> type) {
+    public final <U> K<U> custom(final String key, final Class<U> type) {
         requireNonNull(type);
 
         if (Boolean.class.equals(type))
-            return (K<T>) this.bool(key);
+            return (K<U>) this.bool(key);
 
         if (Integer.class.equals(type))
-            return (K<T>) this.int_(key);
+            return (K<U>) this.int_(key);
 
         if (Long.class.equals(type))
-            return (K<T>) this.long_(key);
+            return (K<U>) this.long_(key);
 
         if (Double.class.equals(type))
-            return (K<T>) this.double_(key);
+            return (K<U>) this.double_(key);
 
         if (String.class.equals(type))
-            return (K<T>) this.string(key);
+            return (K<U>) this.string(key);
 
         if (type.isAssignableFrom(Map.class) || type.isAssignableFrom(Set.class) || type.isAssignableFrom(List.class))
-            throw new KonfigurationTypeException("for collection types, use corresponding methods");
+            throw new KfgException("for collection types, use corresponding methods");
 
         return kh.getWrappedValue(key, null, type);
     }
+
 
     /**
      * {@inheritDoc}
@@ -174,6 +216,14 @@ final class KonfigurationKombiner implements Konfiguration {
         return kh.contains(key);
     }
 
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getName() {
+        return this.name;
+    }
 
     /**
      * {@inheritDoc}
@@ -194,13 +244,6 @@ final class KonfigurationKombiner implements Konfiguration {
         return new KonfigurationSubsetView(this);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean isReadonly() {
-        return false;
-    }
 
     /**
      * {@inheritDoc}
@@ -220,14 +263,25 @@ final class KonfigurationKombiner implements Konfiguration {
         return this;
     }
 
+
     /**
      * {@inheritDoc}
      */
     @Override
-    public boolean update() {
-        return kh.update();
+    public Konfiguration update() {
+        kh.update();
+        return this;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean hasUpdate() {
+        return kh.hasUpdate();
+    }
+
+    // =========================================================================
 
     /**
      * Read only subset view of a konfiguration. Prepends a pre-defined key
@@ -241,7 +295,8 @@ final class KonfigurationKombiner implements Konfiguration {
         private final Konfiguration wrapped;
         private final String baseKey;
 
-        KonfigurationSubsetView(final Konfiguration wrapped, final String baseKey) {
+        KonfigurationSubsetView(final Konfiguration wrapped,
+                                final String baseKey) {
             requireNonNull(baseKey, "baseKey");
             this.wrapped = requireNonNull(wrapped, "wrapped");
             this.baseKey = baseKey.endsWith(".") ? baseKey : baseKey + ".";
@@ -264,6 +319,30 @@ final class KonfigurationKombiner implements Konfiguration {
          * {@inheritDoc}
          */
         @Override
+        public K<Byte> byte_(String key) {
+            return wrapped.byte_(baseKey + key);
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public K<Character> char_(String key) {
+            return wrapped.char_(baseKey + key);
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public K<Short> short_(String key) {
+            return wrapped.short_(baseKey + key);
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
         public K<Integer> int_(final String key) {
             return wrapped.int_(baseKey + key);
         }
@@ -274,6 +353,14 @@ final class KonfigurationKombiner implements Konfiguration {
         @Override
         public K<Long> long_(final String key) {
             return wrapped.long_(baseKey + key);
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public K<Float> float_(String key) {
+            return wrapped.float_(baseKey + key);
         }
 
         /**
@@ -296,7 +383,7 @@ final class KonfigurationKombiner implements Konfiguration {
          * {@inheritDoc}
          */
         @Override
-        public <T> K<List<T>> list(final String key, final Class<T> type) {
+        public <U> K<List<U>> list(final String key, final Class<U> type) {
             return wrapped.list(baseKey + key, type);
         }
 
@@ -304,7 +391,7 @@ final class KonfigurationKombiner implements Konfiguration {
          * {@inheritDoc}
          */
         @Override
-        public <T> K<Map<String, T>> map(final String key, final Class<T> type) {
+        public <U> K<Map<String, T>> map(final String key, final Class<U> type) {
             return wrapped.map(baseKey + key, type);
         }
 
@@ -312,7 +399,7 @@ final class KonfigurationKombiner implements Konfiguration {
          * {@inheritDoc}
          */
         @Override
-        public <T> K<Set<T>> set(final String key, final Class<T> type) {
+        public <U> K<Set<U>> set(final String key, final Class<U> type) {
             return wrapped.set(baseKey + key, type);
         }
 
@@ -320,7 +407,7 @@ final class KonfigurationKombiner implements Konfiguration {
          * {@inheritDoc}
          */
         @Override
-        public <T> K<T> custom(final String key, final Class<T> type) {
+        public <U> K<U> custom(final String key, final Class<U> type) {
             return wrapped.custom(baseKey + key, type);
         }
 
@@ -329,18 +416,9 @@ final class KonfigurationKombiner implements Konfiguration {
             return wrapped.contains(baseKey + key);
         }
 
-
-        /**
-         * Does not return false or true, as clients might wait for this method
-         * it in a while loop and wait for it to return true, indicating a
-         * change being applied. Simply fails fast.
-         *
-         * @throws KonfigurationException
-         *         always.
-         */
         @Override
-        public boolean update() {
-            throw new UnsupportedOperationException("update is not available from read-only view");
+        public String getName() {
+            return this.wrapped.getName();
         }
 
 
@@ -352,22 +430,6 @@ final class KonfigurationKombiner implements Konfiguration {
             requireNonNull(key, "key");
             final String newKey = this.baseKey + "." + key;
             return new KonfigurationSubsetView(this.wrapped, newKey);
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public Konfiguration readonly() {
-            return this;
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public boolean isReadonly() {
-            return true;
         }
 
 
@@ -391,7 +453,8 @@ final class KonfigurationKombiner implements Konfiguration {
 
     private static final class KonfigurationKombinerHelper {
 
-        private final Collection<KonfigSource> sources;
+        private final Konfiguration origin;
+        private final Collection<Konfiguration> sources;
 
         private final Object UPDATE_LOCK = new Object();
         private final ReadWriteLock VALUES_LOCK = new ReentrantReadWriteLock();
@@ -402,13 +465,15 @@ final class KonfigurationKombiner implements Konfiguration {
 
         private final WeakHashMap<KeyObserver, Collection<String>> keyObservers = new WeakHashMap<>();
 
-        KonfigurationKombinerHelper(Collection<KonfigSource> sources) {
-            this.sources = sources;
+        KonfigurationKombinerHelper(final Konfiguration origin,
+                                    final Collection<Konfiguration> sources) {
+            this.origin = requireNonNull(origin, "origin");
+            this.sources = requireNonNull(sources, "sources");
         }
 
         // --------------------
 
-        private Object putValue(final KonfigSource source,
+        private Object putValue(final Konfiguration source,
                                 final String name,
                                 final Class<?> dataType,
                                 final Class<?> elementType) {
@@ -437,19 +502,20 @@ final class KonfigurationKombiner implements Konfiguration {
             return result;
         }
 
-        private <T> T getValue(String name, T def, boolean mustExist) {
+        private <U> U getValue(String name, U def, boolean mustExist) {
             Lock lock = null;
             try {
                 lock = VALUES_LOCK.readLock();
                 lock.lock();
 
                 if (valueCache.containsKey(name)) {
-                    @SuppressWarnings("unchecked") final T get = (T) valueCache.get(name);
+                    @SuppressWarnings("unchecked")
+                    final U get = (U) valueCache.get(name);
                     return get;
                 }
 
                 if (mustExist)
-                    throw new KonfigurationMissingKeyException(name);
+                    throw new KfgMissingKeyException(name);
 
                 return def;
             }
@@ -461,17 +527,18 @@ final class KonfigurationKombiner implements Konfiguration {
 
         // --------------------
 
-        <T> K<T> getWrappedValue(String name, Class<?> dataType, Class<?> elementType) {
-
+        <U> K<U> getWrappedValue(final String key0,
+                                 final Class<?> dataType,
+                                 final Class<?> elementType) {
             // We can not do this, in order to support default values.
-            //    if(does not exist) throw new KonfigurationMissingKeyException(key);
+            //    if(does not exist) throw new KfgMissingKeyException(key);
 
             Lock readLock = null;
             try {
                 readLock = VALUES_LOCK.readLock();
                 readLock.lock();
-                if (this.kvalCache.containsKey(name))
-                    return this.getWrappedValue0(name, dataType, elementType);
+                if (this.kvalCache.containsKey(key0))
+                    return this.getWrappedValue0(key0, dataType, elementType);
             }
             finally {
                 if (readLock != null)
@@ -484,17 +551,17 @@ final class KonfigurationKombiner implements Konfiguration {
                 writeLock.lock();
 
                 // Cache was already populated between two locks.
-                if (this.kvalCache.containsKey(name))
-                    return this.getWrappedValue0(name, dataType, elementType);
+                if (this.kvalCache.containsKey(key0))
+                    return this.getWrappedValue0(key0, dataType, elementType);
 
-                for (final KonfigSource source : sources)
-                    if (source.contains(name)) {
-                        this.putValue(source, name, dataType, elementType);
+                for (final Konfiguration source : sources)
+                    if (source.contains(key0)) {
+                        this.putValue(source, key0, dataType, elementType);
                         break;
                     }
 
-                final KonfigVImpl<T> rr = new KonfigVImpl<>(this, name, dataType, elementType);
-                this.kvalCache.put(name, rr);
+                final KonfigVImpl<U> rr = new KonfigVImpl<>(this, key0, dataType, elementType);
+                this.kvalCache.put(key0, rr);
                 return rr;
             }
             finally {
@@ -503,66 +570,66 @@ final class KonfigurationKombiner implements Konfiguration {
             }
         }
 
-        private <T> K<T> getWrappedValue0(String name, Class<?> dataType, Class<?> elementType) {
-
-            final KonfigVImpl<?> r = this.kvalCache.get(name);
+        private <U> K<U> getWrappedValue0(final String key0,
+                                          final Class<?> dataType,
+                                          final Class<?> elementType) {
+            final KonfigVImpl<?> r = this.kvalCache.get(key0);
 
             if (r.isSameAs(dataType, elementType)) {
-                @SuppressWarnings("unchecked") final K<T> cast = (K<T>) r;
+                @SuppressWarnings("unchecked")
+                final K<U> cast = (K<U>) r;
                 return cast;
-            } else {
-                throw new KonfigurationTypeException(TypeName.typeName(dataType, elementType),
-                                                     TypeName.typeName(r.getDataType(), r.getElementType()),
-                                                     name);
+            }
+            else {
+                throw new KfgTypeException(this.origin, key0, null, dataType, null, r);
             }
         }
 
         // --------------------
 
-
         boolean update() {
             synchronized (UPDATE_LOCK) {
-                boolean isUpdatable = false;
-                for (final KonfigSource source : this.sources)
-                    if (source.isUpdatable()) {
-                        isUpdatable = true;
-                        break;
-                    }
-                if (!isUpdatable)
+                if (!hasUpdate())
                     return false;
 
-                final List<KonfigSource> updatedSources = new ArrayList<>(this.sources.size());
-                for (final KonfigSource source : this.sources)
-                    updatedSources.add(source.isUpdatable()
-                                       ? source.copyAndUpdate()
-                                       : source);
+                final List<Konfiguration> updatedSources = this.sources
+                        .stream()
+                        .filter(x -> x != this.origin)
+                        .map(x -> x.hasUpdate() ? x.update() : x)
+                        .collect(Collectors.toList());
 
                 final Map<String, Object> newCache = new HashMap<>();
                 final Set<String> updatedKeys = new HashSet<>();
 
-                final Map<KeyObserver, Collection<String>> observers = update0(updatedSources, newCache, updatedKeys);
+                final Map<KeyObserver, Collection<String>> observers =
+                        update0(updatedSources, newCache, updatedKeys);
                 if (observers == null)
                     return false;
 
-                for (final Map.Entry<KeyObserver, Collection<String>> o : observers.entrySet()) {
-                    // Never empty or null.
-                    final Collection<String> interestedKeys = o.getValue();
-                    final KeyObserver observer = o.getKey();
-                    for (final String updatedKey : updatedKeys)
-                        if (interestedKeys.contains(updatedKey))
-                            observer.accept(updatedKey);
-                    if (interestedKeys.contains(""))
-                        observer.accept("");
-                }
+                observers.forEach((observer, interestedKeys) -> {
+                    Stream<String> s = updatedKeys.stream();
+                    if (!interestedKeys.contains(KeyObserver.LISTEN_TO_ALL))
+                        s = s.filter(interestedKeys::contains);
+                    s.forEach(observer);
+                });
 
                 return true;
+            }
+        }
+
+        boolean hasUpdate() {
+            synchronized (UPDATE_LOCK) {
+                return this.sources
+                        .stream()
+                        .filter(x -> x != this.origin)
+                        .anyMatch(Konfiguration::hasUpdate);
             }
         }
 
         /**
          * Thread safe (lock guarded) part of {@link #update()}.
          */
-        private Map<KeyObserver, Collection<String>> update0(List<KonfigSource> updatedSources,
+        private Map<KeyObserver, Collection<String>> update0(List<Konfiguration> updatedSources,
                                                              Map<String, Object> newCache,
                                                              Set<String> updatedKeys) {
             Lock vLock = null;
@@ -581,14 +648,14 @@ final class KonfigurationKombiner implements Konfiguration {
                         final Object value = each.getValue();
                         boolean found = false;
                         boolean changed = false;
-                        for (final KonfigSource source : updatedSources) {
+                        for (final Konfiguration source : updatedSources) {
                             if (source.contains(name)) {
                                 found = true;
                                 final KonfigVImpl kVal = kvalCache.get(name);
                                 final Object newVal = this.putValue(source,
-                                                                    name,
-                                                                    kVal.getDataType(),
-                                                                    kVal.getElementType());
+                                        name,
+                                        kVal.getDataType(),
+                                        kVal.getElementType());
                                 newCache.put(name, newVal);
                                 changed = !newVal.equals(value);
                                 break;
@@ -620,8 +687,6 @@ final class KonfigurationKombiner implements Konfiguration {
                     vLock.unlock();
             }
         }
-
-        // --------------------
 
         void deregister(final KeyObserver observer, final String key) {
             Lock lock = null;
@@ -655,7 +720,8 @@ final class KonfigurationKombiner implements Konfiguration {
                     final HashSet<String> put = new HashSet<>(1);
                     put.add(key);
                     this.keyObservers.put(observer, put);
-                } else {
+                }
+                else {
                     this.keyObservers.get(observer).add(key);
                 }
             }
@@ -680,102 +746,99 @@ final class KonfigurationKombiner implements Konfiguration {
             return false;
         }
 
+    }
 
-        // --------------------
+    private static final class KonfigVImpl<U> implements K<U> {
+
+        private final KonfigurationKombinerHelper origin;
+        private final String key;
+        private final Class<?> dataType;
+        private final Class<?> elementType;
+
+        private KonfigVImpl(KonfigurationKombinerHelper origin, String key, Class<?> dataType, Class<?> elementType) {
+            this.origin = origin;
+            this.key = key;
+            this.dataType = dataType;
+            this.elementType = elementType;
+        }
 
 
-        private static final class KonfigVImpl<T> implements K<T> {
+        boolean isSameAs(Class<?> dataType, Class<?> elementType) {
+            return Objects.equals(this.getDataType(), dataType)
+                    && Objects.equals(this.getElementType(), elementType);
+        }
 
-            private final KonfigurationKombinerHelper origin;
-            private final String key;
-            private final Class<?> dataType;
-            private final Class<?> elementType;
+        Class<?> getDataType() {
+            return this.dataType;
+        }
 
-            private KonfigVImpl(KonfigurationKombinerHelper origin, String key, Class<?> dataType, Class<?> elementType) {
-                this.origin = origin;
-                this.key = key;
-                this.dataType = dataType;
-                this.elementType = elementType;
+        Class<?> getElementType() {
+            return this.elementType;
+        }
+
+
+        @Override
+        public String getKey() {
+            return this.key;
+        }
+
+        @Override
+        public U v() {
+            return this.origin.getValue(key, null, true);
+        }
+
+        @Override
+        public U v(final U defaultValue) {
+            return this.origin.getValue(key, defaultValue, false);
+        }
+
+        @Override
+        public K<U> deregister(final KeyObserver observer) {
+            this.origin.deregister(observer, this.key);
+            return this;
+        }
+
+        @Override
+        public K<U> register(final KeyObserver observer) {
+            requireNonNull(observer, "observer");
+            this.origin.register(observer, this.key);
+            return this;
+        }
+
+        @Override
+        public String toString() {
+            try {
+                return format("KonfigV(%s=%s)", this.key, this.v().toString());
             }
-
-
-            boolean isSameAs(Class<?> dataType, Class<?> elementType) {
-                return Objects.equals(this.getDataType(), dataType) && Objects.equals(this.getElementType(), elementType);
+            catch (final Exception e) {
+                return format("KonfigV(%s=?)", this.key);
             }
+        }
 
-            Class<?> getDataType() {
-                return this.dataType;
-            }
+        @Override
+        public boolean equals(Object o) {
+            if (this == o)
+                return true;
+            if (o == null || getClass() != o.getClass())
+                return false;
+            KonfigVImpl<?> konfigV = (KonfigVImpl<?>) o;
+            return Objects.equals(origin, konfigV.origin) && Objects.equals(key, konfigV.key);
+        }
 
-            Class<?> getElementType() {
-                return this.elementType;
-            }
-
-
-            @Override
-            public String getKey() {
-                return this.key;
-            }
-
-            @Override
-            public T v() {
-                return this.origin.getValue(key, null, true);
-            }
-
-            @Override
-            public T v(final T defaultValue) {
-                return this.origin.getValue(key, defaultValue, false);
-            }
-
-            @Override
-            public K<T> deregister(final KeyObserver observer) {
-                this.origin.deregister(observer, this.key);
-                return this;
-            }
-
-            @Override
-            public K<T> register(final KeyObserver observer) {
-                requireNonNull(observer, "observer");
-                this.origin.register(observer, this.key);
-                return this;
-            }
-
-            @Override
-            public String toString() {
-                try {
-                    return String.format("KonfigV(%s=%s)", this.key, this.v().toString());
-                }
-                catch (final Exception e) {
-                    return String.format("KonfigV(%s=?)", this.key);
-                }
-            }
-
-            @Override
-            public boolean equals(Object o) {
-                if (this == o)
-                    return true;
-                if (o == null || getClass() != o.getClass())
-                    return false;
-                KonfigVImpl<?> konfigV = (KonfigVImpl<?>) o;
-                return Objects.equals(origin, konfigV.origin) && Objects.equals(key, konfigV.key);
-            }
-
-            @Override
-            public int hashCode() {
-
-                return Objects.hash(origin, key);
-            }
-
+        @Override
+        public int hashCode() {
+            return Objects.hash(origin, key);
         }
 
     }
 
-    private static Collection<KonfigSource> helper(
-            final KonfigSource k0,
-            final KonfigSource k1,
-            final KonfigSource k2,
-            final KonfigSource... sources) {
-        final List<KonfigSource> all = new ArrayList<>();
+
+    private static Collection<Konfiguration> helper(
+            final Konfiguration k0,
+            final Konfiguration k1,
+            final Konfiguration k2,
+            final Konfiguration... sources) {
+        final List<Konfiguration> all = new ArrayList<>();
         Collections.addAll(all, k0, k1, k2);
         Collections.addAll(all, sources);
         return all;

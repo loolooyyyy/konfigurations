@@ -52,14 +52,14 @@ public class YamlKonfigSourceTest extends KonfigValueTestMixin {
     @Test
     public void testNotUpdatable() throws Exception {
 
-        assertFalse(this.k().isUpdatable());
+        assertFalse(this.k().hasUpdate());
     }
 
     @Test
     public void testUpdatable() throws Exception {
 
         yaml = yaml1;
-        assertTrue(this.k().isUpdatable());
+        assertTrue(this.k().hasUpdate());
     }
 
 

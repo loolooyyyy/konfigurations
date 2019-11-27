@@ -9,10 +9,9 @@ package io.koosha.konfiguration;
  *
  * <p>Thread-safe
  *
- * @param <T>
- *         type of value being wrapped
+ * @param <U> type of value being wrapped
  */
-public interface K<T> {
+public interface K<U> {
 
     /**
      * Register to receive update notifications for changes in value of this
@@ -28,14 +27,11 @@ public interface K<T> {
      * only weak references and the observer will be garbage collected. Keep a
      * reference to the observer yourself.
      *
-     * @param observer
-     *         listener being registered for key {@link #getKey()}
-     *
+     * @param observer listener being registered for key {@link #getKey()}
      * @return this
-     *
      * @see #deregister(KeyObserver)
      */
-    K<T> register(KeyObserver observer);
+    K<U> register(KeyObserver observer);
 
     /**
      * De-register a listener previously registered via
@@ -50,14 +46,11 @@ public interface K<T> {
      * only weak references and the observer will be garbage collected. Keep a
      * reference to the observer yourself.
      *
-     * @param observer
-     *         listener being registered for key {@link #getKey()}
-     *
+     * @param observer listener being registered for key {@link #getKey()}
      * @return this
-     *
      * @see #register(KeyObserver)
      */
-    K<T> deregister(KeyObserver observer);
+    K<U> deregister(KeyObserver observer);
 
     /**
      * Unique key of this konfiguration.
@@ -74,12 +67,10 @@ public interface K<T> {
      * <p>Thread-safe.
      *
      * @return Actual value of this konfiguration.
-     *
-     * @throws KonfigurationMissingKeyException
-     *         if the value has been removed from original konfiguration source.
+     * @throws KfgMissingKeyException if the value has been removed from original konfiguration source.
      * @see #v(Object)
      */
-    T v();
+    U v();
 
     /**
      * Similar to {@link #v()}, but returns the supplied default if this
@@ -87,15 +78,12 @@ public interface K<T> {
      *
      * <p>Thread-safe.
      *
-     * @param defaultValue
-     *         default value to use if key of this konfiguration has been
-     *         removed from the original source.
-     *
+     * @param defaultValue default value to use if key of this konfiguration has been
+     *                     removed from the original source.
      * @return actual value of this konfiguration, or defaultValue if the key of
      * this konfiguration has been removed from the original source.
-     *
      * @see #v()
      */
-    T v(T defaultValue);
+    U v(U defaultValue);
 
 }

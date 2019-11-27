@@ -16,7 +16,7 @@ import static org.testng.Assert.assertTrue;
 
 
 @SuppressWarnings({"RedundantThrows", "WeakerAccess"})
-public class InMemoryKonfigSourceTest extends KonfigValueTestMixin {
+public class MapKonfigSourceTest extends KonfigValueTestMixin {
 
     protected Map<String, Object> map;
     protected Map<String, Object> map0;
@@ -87,13 +87,13 @@ public class InMemoryKonfigSourceTest extends KonfigValueTestMixin {
 
     @Test
     public void testNotUpdatable() throws Exception {
-        assertFalse(this.k().isUpdatable());
+        assertFalse(this.k().hasUpdate());
     }
 
     @Test
     public void testUpdatable() throws Exception {
         map = map1;
-        assertTrue(this.k().isUpdatable());
+        assertTrue(this.k().hasUpdate());
     }
 
 }
