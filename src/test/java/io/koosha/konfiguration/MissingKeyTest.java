@@ -25,7 +25,7 @@ public class MissingKeyTest {
     public void setup() {
 
         this.returnFourTaee = true;
-        this.k = Konfiguration.kombine(KonfigSource.inMemory(sup));
+        this.k = Konfiguration.kombine(Konfiguration.inMemory(sup));
     }
 
     @Test
@@ -34,7 +34,7 @@ public class MissingKeyTest {
         k.string("i.do.not.exist");
     }
 
-    @Test(expectedExceptions = KonfigurationMissingKeyException.class)
+    @Test(expectedExceptions = KfgMissingKeyException.class)
     public void testMissingKey() {
 
         k.string("i.do.not.exist").v();

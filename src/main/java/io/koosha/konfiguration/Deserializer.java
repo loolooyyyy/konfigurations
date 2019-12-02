@@ -1,20 +1,24 @@
 package io.koosha.konfiguration;
 
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 
-public interface Deserializer<F> {
+/**
+ * Deserialize values out of config source.
+ *
+ * @param <S> konfig source.
+ */
+public interface Deserializer<S> {
 
-    <T> T custom(F from, Class<T> type) throws IOException;
+    Object custom(S source, Q<?> type);
 
-    <T> List<T> list(F from, Class<T> type) throws IOException;
+    <U> List<U> list(S source, Q<List<U>> type);
 
-    <T> Map<String, T> map(F from, Class<T> type) throws IOException;
+    <U> Set<?> set(S source, Q<U> type);
 
-    <T> Set<T> set(F from, Class<T> type) throws IOException;
+    <U, V> Map<U, V> map(S source, Q<Map<U, V>> type);
 
 }

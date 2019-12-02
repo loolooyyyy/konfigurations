@@ -13,7 +13,7 @@ public class YamlCustomValueTest {
 
     @Test
     public void testCustomValue() {
-        final DummyCustom bang = KonfigSource.snakeYaml(
+        final DummyCustom bang = Konfiguration.snakeYaml(
                 () -> "bang:\n  str : hello\n  i: 99")
                 .custom("bang", DummyCustom.class);
         assertEquals(bang.i, 99);
@@ -22,7 +22,7 @@ public class YamlCustomValueTest {
 
     @Test
     public void testCustomValue2() {
-        final DummyCustom2 bang = KonfigSource.snakeYaml(
+        final DummyCustom2 bang = Konfiguration.snakeYaml(
                 () -> {
                     try {
                         return new Scanner(new File(

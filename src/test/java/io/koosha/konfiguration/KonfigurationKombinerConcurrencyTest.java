@@ -44,11 +44,11 @@ public class KonfigurationKombinerConcurrencyTest {
 
         this.reset();
 
-        KonfigSource IN_MEM_2_SOURCE = KonfigSource.inMemory(() -> KonfigurationKombinerConcurrencyTest.this.MAP2);
+        Konfiguration IN_MEM_2_SOURCE = Konfiguration.inMemory(() -> KonfigurationKombinerConcurrencyTest.this.MAP2);
 
-        KonfigSource inMemSource = KonfigSource.inMemory(() -> KonfigurationKombinerConcurrencyTest.this.map);
+        Konfiguration inMemSource = Konfiguration.inMemory(() -> KonfigurationKombinerConcurrencyTest.this.map);
 
-        KonfigSource jsonSource = KonfigSource.jacksonJson(() -> KonfigurationKombinerConcurrencyTest.this.json);
+        Konfiguration jsonSource = Konfiguration.jacksonJson(() -> KonfigurationKombinerConcurrencyTest.this.json);
 
         this.k = Konfiguration.kombine(inMemSource, IN_MEM_2_SOURCE, jsonSource);
 

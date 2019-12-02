@@ -14,7 +14,7 @@ public class YamlKonfigSourceTest extends KonfigValueTestMixin {
     private String yaml0;
     private String yaml1;
 
-    private KonfigSource k;
+    private Konfiguration k;
 
     @BeforeClass
     public void classSetup() throws Exception {
@@ -34,11 +34,11 @@ public class YamlKonfigSourceTest extends KonfigValueTestMixin {
     public void setup() throws Exception {
 
         yaml = yaml0;
-        this.k = KonfigSource.snakeYaml(() -> yaml);
+        this.k = Konfiguration.snakeYaml(() -> yaml);
     }
 
     @Override
-    protected KonfigSource k() {
+    protected Konfiguration k() {
         return this.k;
     }
 
@@ -52,14 +52,14 @@ public class YamlKonfigSourceTest extends KonfigValueTestMixin {
     @Test
     public void testNotUpdatable() throws Exception {
 
-        assertFalse(this.k().isUpdatable());
+        assertFalse(this.k().hasUpdate());
     }
 
     @Test
     public void testUpdatable() throws Exception {
 
         yaml = yaml1;
-        assertTrue(this.k().isUpdatable());
+        assertTrue(this.k().hasUpdate());
     }
 
 

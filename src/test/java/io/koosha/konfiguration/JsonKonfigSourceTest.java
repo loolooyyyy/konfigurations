@@ -5,12 +5,12 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertTrue;
+
 // import java.io.File;
 // import java.net.URL;
 // import java.util.Scanner;
-
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertTrue;
 
 
 @SuppressWarnings("RedundantThrows")
@@ -32,7 +32,7 @@ public class JsonKonfigSourceTest extends KonfigValueTestMixin {
     private String json0;
     private String json1;
 
-    private KonfigSource k;
+    private Konfiguration k;
 
     @BeforeClass
     public void classSetup() throws Exception {
@@ -52,7 +52,7 @@ public class JsonKonfigSourceTest extends KonfigValueTestMixin {
     public void setup() throws Exception {
 
         json = json0;
-        this.k = KonfigSource.jacksonJson(() -> json);
+        this.k = Konfiguration.jacksonJson(() -> json);
     }
 
     protected void update() {
@@ -61,21 +61,21 @@ public class JsonKonfigSourceTest extends KonfigValueTestMixin {
         this.k = this.k.copyAndUpdate();
     }
 
-    public KonfigSource k() {
+    public Konfiguration k() {
         return this.k;
     }
 
     @Test
     public void testNotUpdatable() throws Exception {
 
-        assertFalse(this.k().isUpdatable());
+        assertFalse(this.k().hasUpdate());
     }
 
     @Test
     public void testUpdatable() throws Exception {
 
         json = json1;
-        assertTrue(this.k().isUpdatable());
+        assertTrue(this.k().hasUpdate());
     }
 
 }

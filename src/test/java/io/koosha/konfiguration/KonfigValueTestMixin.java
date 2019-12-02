@@ -16,7 +16,7 @@ public abstract class KonfigValueTestMixin {
 
     private static final String ERR_MSG_TEMPLATE = "required type=.*, but found=.* for key=.*";
 
-    protected abstract KonfigSource k();
+    protected abstract Konfiguration k();
 
     protected abstract void update();
 
@@ -102,27 +102,27 @@ public abstract class KonfigValueTestMixin {
     // BAD CASES
 
 
-    @Test(expectedExceptions = KonfigurationTypeException.class,
+    @Test(expectedExceptions = KfgTypeException.class,
           expectedExceptionsMessageRegExp = ERR_MSG_TEMPLATE)
     public void testBadInt0() throws Exception {
         this.k().int_("aBool");
     }
 
-    @Test(expectedExceptions = KonfigurationTypeException.class,
+    @Test(expectedExceptions = KfgTypeException.class,
           expectedExceptionsMessageRegExp = ERR_MSG_TEMPLATE)
     public void testBadInt1() throws Exception {
 
         this.k().int_("aLong");
     }
 
-    @Test(expectedExceptions = KonfigurationTypeException.class,
+    @Test(expectedExceptions = KfgTypeException.class,
           expectedExceptionsMessageRegExp = ERR_MSG_TEMPLATE)
     public void testBadInt2() throws Exception {
 
         this.k().int_("aString");
     }
 
-    @Test(expectedExceptions = KonfigurationTypeException.class,
+    @Test(expectedExceptions = KfgTypeException.class,
           expectedExceptionsMessageRegExp = ERR_MSG_TEMPLATE)
     public void testBadInt3() throws Exception {
 
@@ -130,21 +130,21 @@ public abstract class KonfigValueTestMixin {
     }
 
 
-    @Test(expectedExceptions = KonfigurationTypeException.class,
+    @Test(expectedExceptions = KfgTypeException.class,
           expectedExceptionsMessageRegExp = ERR_MSG_TEMPLATE)
     public void testBadDouble0() throws Exception {
 
         this.k().double_("aBool");
     }
 
-    @Test(expectedExceptions = KonfigurationTypeException.class,
+    @Test(expectedExceptions = KfgTypeException.class,
           expectedExceptionsMessageRegExp = ERR_MSG_TEMPLATE)
     public void testBadDouble1() throws Exception {
 
         this.k().double_("aLong");
     }
 
-    @Test(expectedExceptions = KonfigurationTypeException.class,
+    @Test(expectedExceptions = KfgTypeException.class,
           expectedExceptionsMessageRegExp = ERR_MSG_TEMPLATE)
     public void testBadDouble() throws Exception {
 
@@ -152,21 +152,21 @@ public abstract class KonfigValueTestMixin {
     }
 
 
-    @Test(expectedExceptions = KonfigurationTypeException.class,
+    @Test(expectedExceptions = KfgTypeException.class,
           expectedExceptionsMessageRegExp = ERR_MSG_TEMPLATE)
     public void testBadLong0() throws Exception {
 
         this.k().long_("aBool");
     }
 
-    @Test(expectedExceptions = KonfigurationTypeException.class,
+    @Test(expectedExceptions = KfgTypeException.class,
           expectedExceptionsMessageRegExp = ERR_MSG_TEMPLATE)
     public void testBadLong1() throws Exception {
 
         this.k().long_("aString");
     }
 
-    @Test(expectedExceptions = KonfigurationTypeException.class,
+    @Test(expectedExceptions = KfgTypeException.class,
           expectedExceptionsMessageRegExp = ERR_MSG_TEMPLATE)
     public void testBadLong2() throws Exception {
 
@@ -174,21 +174,21 @@ public abstract class KonfigValueTestMixin {
     }
 
 
-    @Test(expectedExceptions = KonfigurationTypeException.class,
+    @Test(expectedExceptions = KfgTypeException.class,
           expectedExceptionsMessageRegExp = ERR_MSG_TEMPLATE)
     public void testBadString0() throws Exception {
 
         this.k().string("aInt");
     }
 
-    @Test(expectedExceptions = KonfigurationTypeException.class,
+    @Test(expectedExceptions = KfgTypeException.class,
           expectedExceptionsMessageRegExp = ERR_MSG_TEMPLATE)
     public void testBadString1() throws Exception {
 
         this.k().string("aBool");
     }
 
-    @Test(expectedExceptions = KonfigurationTypeException.class,
+    @Test(expectedExceptions = KfgTypeException.class,
           expectedExceptionsMessageRegExp = ERR_MSG_TEMPLATE)
     public void testBadString2() throws Exception {
 
@@ -196,14 +196,14 @@ public abstract class KonfigValueTestMixin {
     }
 
 
-    @Test(expectedExceptions = KonfigurationTypeException.class,
+    @Test(expectedExceptions = KfgTypeException.class,
           expectedExceptionsMessageRegExp = ERR_MSG_TEMPLATE)
     public void testBadList0() throws Exception {
 
         this.k().list("aInt", Integer.class);
     }
 
-    @Test(expectedExceptions = KonfigurationTypeException.class,
+    @Test(expectedExceptions = KfgTypeException.class,
           expectedExceptionsMessageRegExp = ERR_MSG_TEMPLATE)
     public void testBadList1() throws Exception {
 

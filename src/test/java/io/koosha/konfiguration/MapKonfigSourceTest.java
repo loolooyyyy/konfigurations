@@ -16,13 +16,13 @@ import static org.testng.Assert.assertTrue;
 
 
 @SuppressWarnings({"RedundantThrows", "WeakerAccess"})
-public class InMemoryKonfigSourceTest extends KonfigValueTestMixin {
+public class MapKonfigSourceTest extends KonfigValueTestMixin {
 
     protected Map<String, Object> map;
     protected Map<String, Object> map0;
     protected Map<String, Object> map1;
 
-    private KonfigSource k;
+    private Konfiguration k;
 
     @BeforeClass
     public void classSetup() throws Exception {
@@ -72,7 +72,7 @@ public class InMemoryKonfigSourceTest extends KonfigValueTestMixin {
     public void setup() throws Exception {
 
         this.map = this.map0;
-        this.k = KonfigSource.inMemory(() -> map);
+        this.k = Konfiguration.inMemory(() -> map);
     }
 
     @Override
@@ -81,19 +81,19 @@ public class InMemoryKonfigSourceTest extends KonfigValueTestMixin {
         this.k = this.k.copyAndUpdate();
     }
 
-    public KonfigSource k() {
+    public Konfiguration k() {
         return this.k;
     }
 
     @Test
     public void testNotUpdatable() throws Exception {
-        assertFalse(this.k().isUpdatable());
+        assertFalse(this.k().hasUpdate());
     }
 
     @Test
     public void testUpdatable() throws Exception {
         map = map1;
-        assertTrue(this.k().isUpdatable());
+        assertTrue(this.k().hasUpdate());
     }
 
 }

@@ -27,7 +27,7 @@ public final class KonfigurationKombinerTest {
     public void setup() {
 
         this.flag.set(true);
-        this.k = Konfiguration.kombine(KonfigSource.inMemory(sup));
+        this.k = Konfiguration.kombine(Konfiguration.inMemory(sup));
     }
 
     @Test
@@ -41,7 +41,7 @@ public final class KonfigurationKombinerTest {
         assertEquals(k.int_("xxx").v(), (Integer) 99);
     }
 
-    @Test(expectedExceptions = KonfigurationTypeException.class)
+    @Test(expectedExceptions = KfgTypeException.class)
     public void testV3() throws Exception {
 
         k.string("xxx");
@@ -62,7 +62,7 @@ public final class KonfigurationKombinerTest {
     }
 
 
-    @Test(expectedExceptions = KonfigurationMissingKeyException.class)
+    @Test(expectedExceptions = KfgMissingKeyException.class)
     public void testNoDefaultValue() {
 
         k.long_("some bla bla bla").v();

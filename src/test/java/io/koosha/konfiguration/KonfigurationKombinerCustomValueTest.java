@@ -14,7 +14,7 @@ public class KonfigurationKombinerCustomValueTest {
 
     final String key = "theKey";
 
-    private Konfiguration k = Konfiguration.kombine(KonfigSource.inMemory(() -> Collections.singletonMap(
+    private Konfiguration k = Konfiguration.kombine(Konfiguration.inMemory(() -> Collections.singletonMap(
             key,
             value)));
 
