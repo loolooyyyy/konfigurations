@@ -1,39 +1,26 @@
 package io.koosha.konfiguration;
 
+import net.jcip.annotations.ThreadSafe;
+import org.jetbrains.annotations.Nullable;
 
-@SuppressWarnings({"unused", "WeakerAccess"})
+@ThreadSafe
 public class KfgMissingKeyException extends KfgException {
 
-    public KfgMissingKeyException(final Konfiguration source,
-                                  final String key,
-                                  final Q<?> neededType,
-                                  final Object actualValue,
-                                  final String message,
-                                  final Throwable cause) {
-        super(source, key, neededType, actualValue, message, cause);
+    public KfgMissingKeyException(@Nullable final Konfiguration source,
+                                  @Nullable final String key) {
+        super(source, key, null, null);
     }
 
-    public KfgMissingKeyException(final Konfiguration source,
-                                  final String key,
-                                  final Q<?> neededType,
-                                  final Object actualValue,
-                                  final String message) {
-        super(source, key, neededType, actualValue, message);
+    public KfgMissingKeyException(@Nullable final Konfiguration source,
+                                  @Nullable final String key,
+                                  @Nullable final String message) {
+        super(source, key, null, null, message);
     }
 
-    public KfgMissingKeyException(final Konfiguration source,
-                                  final String key,
-                                  final Q<?> neededType,
-                                  final Object actualValue,
-                                  final Throwable cause) {
-        super(source, key, neededType, actualValue, cause);
-    }
-
-    public KfgMissingKeyException(final Konfiguration source,
-                                  final String key,
-                                  final Q<?> neededType,
-                                  final Object actualValue) {
-        super(source, key, neededType, actualValue);
+    public KfgMissingKeyException(@Nullable final Konfiguration source,
+                                  @Nullable final String key,
+                                  @Nullable final Q<?> type) {
+        super(source, key, type, null);
     }
 
 }

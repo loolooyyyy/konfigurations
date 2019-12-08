@@ -1,22 +1,33 @@
 package io.koosha.konfiguration;
 
 
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.NonNull;
+import net.jcip.annotations.Immutable;
+import net.jcip.annotations.ThreadSafe;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-
-import static java.util.Objects.requireNonNull;
+import java.util.*;
 
 
+@SuppressWarnings("unused")
+@ThreadSafe
+@Immutable
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public abstract class Q<TYPE> {
 
+    @Nullable
     private final ParameterizedType pt;
+
+    @NotNull
     private final Class<TYPE> klass;
 
-    Q(final Class<TYPE> type) {
+    Q(@NotNull @NonNull final Class<TYPE> type) {
         this.pt = null;
         this.klass = type;
     }
@@ -43,9 +54,8 @@ public abstract class Q<TYPE> {
      */
     @Override
     public final String toString() {
-        return String.format("Q<>::%s::%s",
-                this.typeName(),
-                this.klass() == null ? "?" : this.klass().getTypeName()
+        return String.format("Q<>::%s",
+                this.klass().getTypeName()
         );
     }
 
@@ -61,7 +71,7 @@ public abstract class Q<TYPE> {
      * {@inheritDoc}
      */
     @Override
-    public final boolean equals(Object obj) {
+    public final boolean equals(@Nullable final Object obj) {
         if (!(obj instanceof Q))
             return false;
         final Q<?> other = (Q<?>) obj;
@@ -69,31 +79,36 @@ public abstract class Q<TYPE> {
                 Objects.equals(this.klass, other.klass);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    protected final Object clone() throws CloneNotSupportedException {
-        throw new CloneNotSupportedException();
+
+    @Contract(pure = true)
+    final boolean matchesType(final Q<?> other) {
+        if (other == null)
+            return true;
+        // TODO
+        return other.klass().isAssignableFrom(this.klass());
+    }
+
+    @Contract(pure = true)
+    final boolean matchesValue(final Object v) {
+        if (v == null)
+            return true;
+        // TODO
+        return v.getClass().isAssignableFrom(this.klass());
     }
 
 
-    /**
-     * Check if given object matches type of Q instance.
-     *
-     * @param value value to check
-     * @return true if types are matching (value is assignable to the type
-     * represented by Q instance).
-     */
-    public final boolean matches(Object value) {
-        requireNonNull(value, "value");
-        return value.getClass().isAssignableFrom(this.klass());
+    @Contract(pure = true)
+    public static boolean matchesType(final Q<?> q0, final Q<?> q1) {
+        if (q0 == null || q1 == null)
+            return true;
+        return q0.matchesType(q1);
     }
 
-    public final boolean matchesType(Q<?> other) {
-        requireNonNull(other, "type");
-        return other.getClass().isAssignableFrom(this.klass())
-                ;
+    @Contract(pure = true)
+    public static boolean matchesValue(final Q<?> q0, final Object value) {
+        if (q0 == null)
+            return true;
+        return q0.matchesValue(value);
     }
 
 
@@ -102,60 +117,22 @@ public abstract class Q<TYPE> {
      *
      * @return getter: type parameters TYPE of the Q instance
      */
+    @Contract(pure = true)
+    @NotNull
     public final Class<TYPE> klass() {
         return klass;
-    }
-
-    /**
-     * Getter: {@link TypeName} of the Q instance.
-     *
-     * @return getter: {@link TypeName} of the Q instance.
-     */
-    public final TypeName typeName() {
-        if (klass() == null)
-            return TypeName.CUSTOM;
-
-        if (List.class.isAssignableFrom(klass()))
-            return TypeName.LIST;
-        else if (Map.class.isAssignableFrom(klass()))
-            return TypeName.MAP;
-        else if (Set.class.isAssignableFrom(klass()))
-            return TypeName.SET;
-
-        else if (Double.class.isAssignableFrom(klass()))
-            return TypeName.DOUBLE;
-        else if (Float.class.isAssignableFrom(klass()))
-            return TypeName.FLOAT;
-        else if (Long.class.isAssignableFrom(klass()))
-            return TypeName.LONG;
-        else if (Integer.class.isAssignableFrom(klass()))
-            return TypeName.INT;
-        else if (Short.class.isAssignableFrom(klass()))
-            return TypeName.SHORT;
-        else if (Byte.class.isAssignableFrom(klass()))
-            return TypeName.BYTE;
-
-        else if (Boolean.class.isAssignableFrom(klass()))
-            return TypeName.BOOL;
-        else if (Character.class.isAssignableFrom(klass()))
-            return TypeName.CHAR;
-
-        else if (String.class.isAssignableFrom(klass()))
-            return TypeName.STRING;
-
-        else
-            return TypeName.CUSTOM;
     }
 
     /**
      * If Q represents a collection, get type argument of the collection.
      *
      * @return type argument of the collection represented by Q instance.
-     * @throws IllegalStateException if Q does not represent a collection.
+     * @throws KfgIllegalStateException if Q does not represent a collection.
      */
+    @Nullable
     public final Type getCollectionContainedType() {
-        if (!this.typeName().isSet() && !this.typeName().isList())
-            throw new IllegalStateException("not a list or set");
+        if (!this.isSet() && !this.isList())
+            throw new KfgIllegalStateException(null, "type is not a set or list");
         return this.pt == null ? null : this.pt.getActualTypeArguments()[0];
     }
 
@@ -163,11 +140,12 @@ public abstract class Q<TYPE> {
      * If Q represents a map, get type argument of the map's key.
      *
      * @return type argument of the map's key represented by Q instance.
-     * @throws IllegalStateException if Q does not represent a map.
+     * @throws KfgIllegalStateException if Q does not represent a map.
      */
+    @Nullable
     public final Type getMapKeyType() {
-        if (!this.typeName().isMap())
-            throw new IllegalStateException("not a map");
+        if (!this.isMap())
+            throw new KfgIllegalStateException(null, null, Q.UNKNOWN_MAP, null, "type is not a map");
         return this.pt == null ? null : this.pt.getActualTypeArguments()[0];
     }
 
@@ -175,12 +153,79 @@ public abstract class Q<TYPE> {
      * If Q represents a map, get type argument of the map's value.
      *
      * @return type argument of the map's value represented by Q instance.
-     * @throws IllegalStateException if Q does not represent a map.
+     * @throws KfgIllegalStateException if Q does not represent a map.
      */
+    @Nullable
     public final Type getMapValueType() {
-        if (!this.typeName().isMap())
-            throw new IllegalStateException("not a map");
+        if (!this.isMap())
+            throw new KfgIllegalStateException(null, null, Q.UNKNOWN_MAP, null, "type is not a map");
         return this.pt == null ? null : this.pt.getActualTypeArguments()[1];
+    }
+
+
+    @Contract(pure = true)
+    public final boolean isBool() {
+        return Boolean.class.isAssignableFrom(this.klass);
+    }
+
+    @Contract(pure = true)
+    public final boolean isChar() {
+        return Character.class.isAssignableFrom(this.klass);
+    }
+
+    @Contract(pure = true)
+    public final boolean isString() {
+        return String.class.isAssignableFrom(this.klass);
+    }
+
+    @Contract(pure = true)
+    public final boolean isByte() {
+        return Byte.class.isAssignableFrom(this.klass);
+    }
+
+    @Contract(pure = true)
+    public final boolean isShort() {
+        return Short.class.isAssignableFrom(this.klass);
+    }
+
+    @Contract(pure = true)
+    public final boolean isInt() {
+        return Integer.class.isAssignableFrom(this.klass);
+    }
+
+    @Contract(pure = true)
+    public final boolean isLong() {
+        return Long.class.isAssignableFrom(this.klass);
+    }
+
+    @Contract(pure = true)
+    public final boolean isFloat() {
+        return Float.class.isAssignableFrom(this.klass);
+    }
+
+    @Contract(pure = true)
+    public final boolean isDouble() {
+        return Double.class.isAssignableFrom(this.klass);
+    }
+
+    @Contract(pure = true)
+    public final boolean isSet() {
+        return Set.class.isAssignableFrom(this.klass);
+    }
+
+    @Contract(pure = true)
+    public final boolean isList() {
+        return List.class.isAssignableFrom(this.klass);
+    }
+
+    @Contract(pure = true)
+    public final boolean isMap() {
+        return Map.class.isAssignableFrom(this.klass);
+    }
+
+    @Contract(pure = true)
+    public final boolean isNull() {
+        return Void.class.isAssignableFrom(this.klass);
     }
 
     // =========================================================================
@@ -192,53 +237,53 @@ public abstract class Q<TYPE> {
      * @param <U>   Generic type of requested class.
      * @return a Q instance representing Class&lt;U&gt;
      */
-    public static <U> Q<U> of(final Class<U> klass) {
+    @NotNull
+    @Contract(value = "_ -> new",
+            pure = true)
+    public static <U> Q<U> of(@NotNull @NonNull final Class<U> klass) {
         return new QImpl<>(klass);
     }
 
-    public static Q<Boolean> BOOL = of(Boolean.class);
-    public static Q<Character> CHAR = of(Character.class);
+    public static final Q<Boolean> BOOL = of(Boolean.class);
+    public static final Q<Character> CHAR = of(Character.class);
 
-    public static Q<Byte> BYTE = of(Byte.class);
-    public static Q<Short> SHORT = of(Short.class);
-    public static Q<Integer> INT = of(Integer.class);
-    public static Q<Long> LONG = of(Long.class);
-    public static Q<Float> FLOAT = of(Float.class);
-    public static Q<Double> DOUBLE = of(Double.class);
+    public static final Q<Byte> BYTE = of(Byte.class);
+    public static final Q<Short> SHORT = of(Short.class);
+    public static final Q<Integer> INT = of(Integer.class);
+    public static final Q<Long> LONG = of(Long.class);
+    public static final Q<Float> FLOAT = of(Float.class);
+    public static final Q<Double> DOUBLE = of(Double.class);
 
-    public static Q<String> STRING = of(String.class);
+    public static final Q<String> STRING = of(String.class);
 
-    public static Q<Map<?, ?>> UNKNOWN_MAP = of_(Map.class);
-    public static Q<Set<?>> UNKNOWN_SET = of_(Set.class);
-    public static Q<List<?>> UNKNOWN_LIST = of_(List.class);
+    public static final Q<Map<?, ?>> UNKNOWN_MAP = of_(Map.class);
+    public static final Q<Set<?>> UNKNOWN_SET = of_(Set.class);
+    public static final Q<List<?>> UNKNOWN_LIST = of_(List.class);
+    public static final Q<Collection<?>> UNKNOWN_COLLECTION = of_(Collection.class);
 
+    public static final Q<Object> OBJECT = of_(Object.class);
+    public static final Q<?> UNKNOWN = OBJECT;
 
     // =========================================================================
 
-    // Nowhere else to put this. alias of Objects.requireNonNull(...).
-    static <T> T nn(final T t, final String name) {
-        return requireNonNull(t, name);
-    }
-
+    @ThreadSafe
+    @Immutable
     private static final class QImpl<U> extends Q<U> {
-        private QImpl(final Class<U> type) {
+        private QImpl(@NotNull @NonNull final Class<U> type) {
             super(type);
         }
     }
 
     @SuppressWarnings("unchecked")
-    private static <U> Q<U> of_(final Class<?> klass) {
+    @NotNull
+    @Contract(value = "_ -> new",
+            pure = true)
+    private static <U> Q<U> of_(@NotNull @NonNull final Class<?> klass) {
         return (Q<U>) of(klass);
     }
 
-    private static class J<A extends J<A>> extends Q<A> {
-    };
-
-    private static class Z extends J<Z> {
-    }
-
-    private static void checkIsClassOrParametrizedType(final Type p, Type root) {
-        new Q<J<Z>>(){};
+    @Contract(pure = true)
+    private static void checkIsClassOrParametrizedType(@Nullable final Type p, @Nullable Type root) {
         if (root == null)
             root = p;
 

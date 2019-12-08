@@ -1,19 +1,57 @@
 package io.koosha.konfiguration;
 
+import lombok.Getter;
+import net.jcip.annotations.ThreadSafe;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import static io.koosha.konfiguration.KfgException.nameOf;
 import static io.koosha.konfiguration.KfgException.toStringOf;
 
+@Getter
+@ThreadSafe
 public class KfgIllegalStateException extends IllegalStateException {
 
+    @Nullable
     private final String source;
+
+    @Nullable
     private final String key;
+
+    @Nullable
     private final Q<?> neededType;
+
+    @Nullable
     private final String actualValue;
 
-    public KfgIllegalStateException(final Konfiguration source,
-                                    final String key,
-                                    final Q<?> neededType,
-                                    final Object actualValue,
+    public KfgIllegalStateException(@Nullable final Konfiguration source,
+                                    final String message) {
+        this(source, null, null, null, message);
+    }
+
+    public KfgIllegalStateException(@Nullable final Konfiguration source,
+                                    final String message,
+                                    final Throwable t) {
+        this(source, null, null, null, message, t);
+    }
+
+
+    public KfgIllegalStateException(@Nullable final Konfiguration source,
+                                    @Nullable final String key,
+                                    @Nullable final Q<?> neededType,
+                                    @Nullable final Object actualValue,
+                                    final String message) {
+        super(message);
+        this.source = nameOf(source);
+        this.key = key;
+        this.neededType = neededType;
+        this.actualValue = toStringOf(actualValue);
+    }
+
+    public KfgIllegalStateException(@Nullable final Konfiguration source,
+                                    @Nullable final String key,
+                                    @Nullable final Q<?> neededType,
+                                    @Nullable final Object actualValue,
                                     final String message,
                                     final Throwable cause) {
         super(message, cause);
@@ -23,55 +61,14 @@ public class KfgIllegalStateException extends IllegalStateException {
         this.actualValue = toStringOf(actualValue);
     }
 
-    public KfgIllegalStateException(final Konfiguration source,
-                                    final String key,
-                                    final Q<?> neededType,
-                                    final Object actualValue,
-                                    String message) {
-        super(message);
+    public KfgIllegalStateException(@NotNull final Konfiguration source,
+                                    @Nullable final String key,
+                                    @Nullable final Q<?> neededType,
+                                    @Nullable final Object actualValue) {
         this.source = nameOf(source);
         this.key = key;
         this.neededType = neededType;
         this.actualValue = toStringOf(actualValue);
-    }
-
-    public KfgIllegalStateException(final Konfiguration source,
-                                    final String key,
-                                    final Q<?> neededType,
-                                    final Object actualValue,
-                                    Throwable cause) {
-        super(cause);
-        this.source = nameOf(source);
-        this.key = key;
-        this.neededType = neededType;
-        this.actualValue = toStringOf(actualValue);
-    }
-
-    public KfgIllegalStateException(final Konfiguration source,
-                                    final String key,
-                                    final Q<?> neededType,
-                                    final Object actualValue) {
-        this.source = nameOf(source);
-        this.key = key;
-        this.neededType = neededType;
-        this.actualValue = toStringOf(actualValue);
-    }
-
-
-    public String getSource() {
-        return source;
-    }
-
-    public String getKey() {
-        return key;
-    }
-
-    public Q<?> getNeededType() {
-        return neededType;
-    }
-
-    public String getActualValue() {
-        return actualValue;
     }
 
 }

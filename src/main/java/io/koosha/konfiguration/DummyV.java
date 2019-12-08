@@ -1,9 +1,22 @@
 package io.koosha.konfiguration;
 
 
-import java.util.*;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.experimental.Accessors;
+import net.jcip.annotations.Immutable;
+import net.jcip.annotations.ThreadSafe;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import static io.koosha.konfiguration.Q.nn;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import static java.lang.String.format;
 
 
@@ -25,60 +38,47 @@ import static java.lang.String.format;
  * @param <U> type of konfig value this object holds.
  */
 @SuppressWarnings({"unused", "WeakerAccess"})
+@ThreadSafe
+@Immutable
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public final class DummyV<U> implements K<U> {
 
+    @Accessors(fluent = true)
+    @Getter(onMethod_ = @NotNull)
+    @NotNull
+    @NonNull
     private final String key;
+
+    @Nullable
     private final U v;
-    private final boolean hasValue;
 
-    private DummyV(final String key, final U v, final boolean hasValue) {
-        nn(key, "key");
-        this.key = key;
-        this.v = v;
-        this.hasValue = hasValue;
-    }
+    private final boolean exists;
 
-    /**
-     * For konfiguration value holding no actual value ({@link #v()} always
-     * fails).
-     *
-     * @param key key representing this konfiguration value.
-     * @throws NullPointerException if the key is null
-     */
-    private DummyV(final String key) {
-        this(key, null, false);
-    }
+    @Accessors(fluent = true)
+    @Getter(onMethod_ = @Nullable)
+    @Nullable
+    private final Q<U> type;
 
     /**
-     * For konfiguration value holding v as value and key as its key.
-     *
-     * @param key key representing this konfiguration value.
-     * @param v   value this konfiguration holds (can be null).
-     * @throws NullPointerException if the key is null
-     */
-    private DummyV(final String key, final U v) {
-        this(key, v, true);
-    }
-
-
-    /**
-     * No-op. does nothing.
+     * Will do an UnsupportedOperationException.
      */
     @Override
-    public K<U> deregister(final KeyObserver observer) {
-        // Note that this.v is constant and never changes, but in combination
-        // to other sources, it might!
-        return this;
+    @Contract(pure = true,
+            value = "_-> fail")
+    @NotNull
+    public K<U> deregister(@NonNull @NotNull final KeyObserver observer) {
+        throw new UnsupportedOperationException("DummyV::deregister(...)");
     }
 
     /**
-     * No-op. does nothing.
+     * Will do an UnsupportedOperationException.
      */
     @Override
-    public K<U> register(final KeyObserver observer) {
-        // Note that this.v is constant and never changes, but in combination
-        // to other sources, it might!
-        return this;
+    @NotNull
+    @Contract(pure = true,
+            value = "_ -> fail")
+    public K<U> register(@NonNull @NotNull final KeyObserver observer) {
+        throw new UnsupportedOperationException("DummyV::register(...)");
     }
 
 
@@ -86,27 +86,22 @@ public final class DummyV<U> implements K<U> {
      * {@inheritDoc}
      */
     @Override
-    public String getKey() {
-        return this.key;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
+    @Nullable
+    @Contract(pure = true)
     public U v() {
-        if (this.hasValue)
+        if (this.exists())
             return this.v;
 
-        throw new KfgMissingKeyException(this.key);
+        throw new KfgMissingKeyException(null, this.key, this.type);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public U v(final U defaultValue) {
-        return this.hasValue ? this.v : defaultValue;
+    @Contract(pure = true)
+    public boolean exists() {
+        return this.exists;
     }
 
     /**
@@ -114,175 +109,676 @@ public final class DummyV<U> implements K<U> {
      */
     @Override
     public String toString() {
+        String vStr;
+        String keyStr = this.key;
         try {
-            return format("KonfigV(%s=%s)", this.key, this.v().toString());
+            vStr = String.valueOf(this.v);
         }
-        catch (final Exception e) {
-            return format("KonfigV(%s=?)", this.key);
+        catch (final Throwable e) {
+            vStr = "";
+            keyStr = "!" + key;
         }
+        return format("K[exists=%b,%s=%s]", this.exists, keyStr, vStr);
     }
 
     // ________________________________________________ PREDEFINED CONST VALUES
 
-    private static final DummyV<?> NULL = new DummyV<>("", null);
+    @NotNull
+    @Contract(pure = true,
+            value = " _ -> new")
+    public static <U> K<U> null_(@Nullable final Q<U> type) {
+        return null_(type, "");
+    }
 
-    @SuppressWarnings("unchecked")
-    public static <U> K<U> null_() {
-        return (K<U>) NULL;
+    @NotNull
+    @Contract(pure = true,
+            value = " _, _ -> new")
+    public static <U> K<U> null_(@Nullable final Q<U> type,
+                                 @NonNull @NotNull final String key) {
+        return of(null, type, key);
     }
 
 
-    public static <U> K<U> of(final U u) {
-        return u == null ? null_() : of(u);
+    @NotNull
+    @Contract(pure = true,
+            value = " _, _ -> new")
+    public static <U> K<U> of(@Nullable final U u,
+                              @Nullable final Q<U> type) {
+        return of(u, type, "");
     }
 
-    public static <U> K<U> of(final String key, final U u) {
-        nn(key, "key");
-        return new DummyV<>(key, u);
+    @NotNull
+    @Contract(pure = true,
+            value = "_, _, _ -> new")
+    public static <U> K<U> of(@Nullable final U u,
+                              @Nullable final Q<U> type,
+                              @NonNull @NotNull final String key) {
+        return new DummyV<>(key, u, true, type);
     }
 
 
+    @NotNull
+    @Contract(pure = true,
+            value = " _ -> new")
+    public static <U> K<U> missing(@Nullable final Q<U> type) {
+        return missing(type, "");
+    }
+
+    @NotNull
+    @Contract(pure = true,
+            value = " _, _ -> new")
+    public static <U> K<U> missing(@Nullable final Q<U> type,
+                                   @NonNull @NotNull final String key) {
+        return new DummyV<>(key, null, false, type);
+    }
+
+
+    @NotNull
+    @Contract(pure = true,
+            value = " _ -> new")
+    public static K<Boolean> false_(@NonNull @NotNull final String key) {
+        return of(false, Q.BOOL, key);
+    }
+
+    @NotNull
+    @Contract(pure = true,
+            value = " _ -> new")
+    public static K<Boolean> true_(@NonNull @NotNull final String key) {
+        return of(true, Q.BOOL, key);
+    }
+
+    @NotNull
+    @Contract(pure = true,
+            value = " -> new")
     public static K<Boolean> false_() {
-        return of(false);
+        return false_("");
     }
 
+    @NotNull
+    @Contract(pure = true,
+            value = "-> new")
     public static K<Boolean> true_() {
-        return of(true);
+        return true_("");
     }
 
 
+    @NotNull
+    @Contract(pure = true,
+            value = "-> new")
     public static K<Integer> mOne() {
-        return of(-1);
+        return mOne("");
     }
 
+    @NotNull
+    @Contract(pure = true,
+            value = "-> new")
     public static K<Integer> zero() {
-        return of(0);
+        return zero("");
     }
 
+    @NotNull
+    @Contract(pure = true,
+            value = "-> new")
     public static K<Integer> one() {
-        return of(1);
+        return one("");
+    }
+
+    @NotNull
+    @Contract(pure = true,
+            value = "_ -> new")
+    public static K<Integer> mOne(@NonNull @NotNull final String key) {
+        return of(-1, Q.INT, key);
+    }
+
+    @NotNull
+    @Contract(pure = true,
+            value = "_ -> new")
+    public static K<Integer> zero(@NonNull @NotNull final String key) {
+        return of(0, Q.INT, key);
+    }
+
+    @NotNull
+    @Contract(pure = true,
+            value = "_ -> new")
+    public static K<Integer> one(@NonNull @NotNull final String key) {
+        return of(1, Q.INT, key);
     }
 
 
-    public static <U> K<Collection<U>> emptyCollection() {
-        return of(Collections.emptyList());
+    @NotNull
+    @Contract(pure = true,
+            value = "_ -> new")
+    public static K<Boolean> bool(@Nullable final Boolean v) {
+        return bool(v, "");
     }
 
-    public static <U> K<List<U>> emptyList() {
-        return of(Collections.emptyList());
-    }
-
-    public static <U, V> K<Map<U, V>> emptyMap() {
-        return of(Collections.emptyMap());
-    }
-
-    public static <U> K<Set<U>> emptySet() {
-        return of(Collections.emptySet());
-    }
-
-
-    public static K<Boolean> bool(final Boolean v) {
+    @NotNull
+    @Contract(pure = true,
+            value = "_, _ -> new")
+    public static K<Boolean> bool(@Nullable final Boolean v,
+                                  @NonNull @NotNull final String key) {
         if (v == null)
-            return null_();
-        return v ? true_() : false_();
+            return null_(Q.BOOL);
+        return v ? true_(key) : false_(key);
     }
 
-    public static K<Character> char_(final Character v) {
-        return of(v);
+    @NotNull
+    @Contract(pure = true,
+            value = "-> new")
+    public static K<Boolean> bool() {
+        return missing(Q.BOOL);
     }
 
-    public static K<String> string(final String v) {
-        return of(v);
-    }
-
-
-    public static K<Byte> byte_(final Byte v) {
-        return of(v);
-    }
-
-    public static K<Short> short_(final Short v) {
-        return of(v);
-    }
-
-    public static K<Integer> int_(final Integer v) {
-        return of(v);
-    }
-
-    public static K<Long> long_(final Long v) {
-        return of(v);
+    @NotNull
+    @Contract(pure = true,
+            value = "_ -> new")
+    public static K<Boolean> bool(@NonNull @NotNull final String key) {
+        return missing(Q.BOOL, key);
     }
 
 
-    public static K<Float> float_(final Float v) {
-        return of(v);
+    @NotNull
+    @Contract(pure = true,
+            value = "_ -> new")
+    public static K<Character> char_(@NotNull final Character v) {
+        return of(v, Q.CHAR);
     }
 
-    public static K<Double> double_(final Double v) {
-        return of(v);
+    @NotNull
+    @Contract(pure = true,
+            value = "_, _ -> new")
+    public static K<Character> char_(final Character v,
+                                     @NonNull @NotNull final String key) {
+        return of(v, Q.CHAR, key);
+    }
+
+    @NotNull
+    @Contract(pure = true,
+            value = "-> new")
+    public static K<Character> char_() {
+        return char_("");
+    }
+
+    @NotNull
+    @Contract(pure = true,
+            value = "_ -> new")
+    public static K<Character> char_(@NonNull @NotNull final String key) {
+        return missing(Q.CHAR, key);
     }
 
 
-    public static <U> K<List<U>> list(final List<U> v) {
-        return of(v);
+    @NotNull
+    @Contract(pure = true,
+            value = "_ -> new")
+    public static K<String> stringV(@Nullable final Object v) {
+        return stringV(String.valueOf(v), "");
     }
 
-    public static <U> K<Set<U>> set(final Set<U> s) {
-        return of(s);
+    @NotNull
+    @Contract(pure = true,
+            value = "_, _ -> new")
+    public static K<String> stringV(@Nullable final Object v,
+                                    @NonNull @NotNull final String key) {
+        return of(String.valueOf(v), Q.STRING, key);
     }
 
-    public static <U, V> K<Map<U, V>> map(final Map<U, V> v) {
-        return of(v);
+    @NotNull
+    @Contract(pure = true,
+            value = "-> new")
+    public static K<String> stringM() {
+        return stringM("");
     }
 
-    public static <U, V> K<Map<U, V>> map(final U k, final V v) {
-        final Map<U, V> m = new HashMap<>();
-        m.put(k, v);
-        return of(Collections.unmodifiableMap(m));
+    @NotNull
+    @Contract(pure = true,
+            value = "_ -> new")
+    public static K<String> stringM(@NonNull @NotNull final String key) {
+        return missing(Q.STRING, key);
     }
 
-    public static <U, V> K<Map<U, V>> map(final U k0, final V v0,
-                                          final U k1, final V v1) {
-        final Map<U, V> m = new HashMap<>();
-        m.put(k0, v0);
-        m.put(k1, v1);
-        return of(Collections.unmodifiableMap(m));
+
+    @NotNull
+    @Contract(pure = true,
+            value = "_ -> new")
+    public static K<Byte> byte_(@Nullable final Byte v) {
+        return byte_(v, "");
     }
 
-    public static <U, V> K<Map<U, V>> map(final U k0, final V v0,
-                                          final U k1, final V v1,
-                                          final U k2, final V v2) {
-        final Map<U, V> m = new HashMap<>();
-        m.put(k0, v0);
-        m.put(k1, v1);
-        m.put(k2, v2);
-        return of(Collections.unmodifiableMap(m));
+    @NotNull
+    @Contract(pure = true,
+            value = "_, _ -> new")
+    public static K<Byte> byte_(@Nullable final Byte v,
+                                @NonNull @NotNull final String key) {
+        return of(v, Q.BYTE, key);
     }
 
-    public static <U, V> K<Map<U, V>> map(final U k0, final V v0,
-                                          final U k1, final V v1,
-                                          final U k2, final V v2,
-                                          final Object... values) {
-        nn(values, "values");
+    @NotNull
+    @Contract(pure = true,
+            value = "-> new")
+    public static K<Byte> byte_() {
+        return byte_("");
+    }
 
-        if (values.length == 0)
-            return map(k0, v0, k1, v1, k2, v2);
+    @NotNull
+    @Contract(pure = true,
+            value = "_ -> new")
+    public static K<Byte> byte_(@NonNull @NotNull final String key) {
+        return missing(Q.BYTE, key);
+    }
 
-        if (values.length % 2 != 0)
-            throw new IllegalArgumentException("mismatched number of keys and values: " + values.length);
 
-        final Map<U, V> m = new HashMap<>();
-        m.put(k0, v0);
-        m.put(k1, v1);
-        m.put(k2, v2);
-        for (int i = 0; i < values.length; i += 2) {
-            @SuppressWarnings("unchecked")
-            U k = (U) values[i];
-            @SuppressWarnings("unchecked")
-            V v = (V) values[i + 1];
-            m.put(k, v);
-        }
+    @NotNull
+    @Contract(pure = true,
+            value = "_ -> new")
+    public static K<Short> short_(@Nullable final Short v) {
+        return short_(v, "");
+    }
 
-        return of(Collections.unmodifiableMap(m));
+    @NotNull
+    @Contract(pure = true,
+            value = "_, _ -> new")
+    public static K<Short> short_(final Short v,
+                                  @NonNull @NotNull final String key) {
+        return of(v, Q.SHORT, key);
+    }
+
+    @NotNull
+    @Contract(pure = true,
+            value = "-> new")
+    public static K<Short> short_() {
+        return short_("");
+    }
+
+    @NotNull
+    @Contract(pure = true,
+            value = "_ -> new")
+    public static K<Short> short_(@NonNull @NotNull final String key) {
+        return missing(Q.SHORT, key);
+    }
+
+
+    @NotNull
+    @Contract(pure = true,
+            value = "_ -> new")
+    public static K<Integer> int_(@Nullable final Integer v) {
+        return int_(v, "");
+    }
+
+    @NotNull
+    @Contract(pure = true,
+            value = "_, _ -> new")
+    public static K<Integer> int_(final Integer v,
+                                  @NonNull @NotNull final String key) {
+        return of(v, Q.INT, key);
+    }
+
+    @NotNull
+    @Contract(pure = true,
+            value = "-> new")
+    public static K<Integer> int_() {
+        return int_("");
+    }
+
+    @NotNull
+    @Contract(pure = true,
+            value = "_ -> new")
+    public static K<Integer> int_(@NonNull @NotNull final String key) {
+        return missing(Q.INT, key);
+    }
+
+
+    @NotNull
+    @Contract(pure = true,
+            value = "_ -> new")
+    public static K<Long> long_(@Nullable final Long v) {
+        return long_(v, "");
+    }
+
+    @NotNull
+    @Contract(pure = true,
+            value = "_, _ -> new")
+    public static K<Long> long_(@Nullable final Long v,
+                                @NonNull @NotNull final String key) {
+        return of(v, Q.LONG, key);
+    }
+
+    @NotNull
+    @Contract(pure = true,
+            value = "-> new")
+    public static K<Long> long_() {
+        return long_("");
+    }
+
+    @NotNull
+    @Contract(pure = true,
+            value = "_ -> new")
+    public static K<Long> long_(@NonNull @NotNull final String key) {
+        return missing(Q.LONG, key);
+    }
+
+    @NotNull
+    @Contract(pure = true,
+            value = "_ -> new")
+
+    public static K<Float> float_(@Nullable final Float v) {
+        return float_(v, "");
+    }
+
+    @NotNull
+    @Contract(pure = true,
+            value = "_, _ -> new")
+    public static K<Float> float_(@Nullable final Float v,
+                                  @NonNull @NotNull final String key) {
+        return of(v, Q.FLOAT, key);
+    }
+
+    @NotNull
+    @Contract(pure = true,
+            value = "-> new")
+    public static K<Float> float_() {
+        return float_("");
+    }
+
+    @NotNull
+    @Contract(pure = true,
+            value = "_ -> new")
+    public static K<Float> float_(@NonNull @NotNull final String key) {
+        return missing(Q.FLOAT, key);
+    }
+
+
+    @NotNull
+    @Contract(pure = true,
+            value = "_ -> new")
+    public static K<Double> double_(@Nullable final Double v) {
+        return double_(v, "");
+    }
+
+    @NotNull
+    @Contract(pure = true,
+            value = "_, _ -> new")
+    public static K<Double> double_(@Nullable final Double v,
+                                    @NonNull @NotNull final String key) {
+        return of(v, Q.DOUBLE, key);
+    }
+
+    @NotNull
+    @Contract(pure = true,
+            value = "-> new")
+    public static K<Double> double_() {
+        return double_("");
+    }
+
+    @NotNull
+    @Contract(pure = true,
+            value = "_ -> new")
+    public static K<Double> double_(@NonNull @NotNull final String key) {
+        return missing(Q.DOUBLE, key);
+    }
+
+    // =========================================================================
+
+    @NotNull
+    @Contract(pure = true,
+            value = "_ -> new")
+    public static <U> K<List<U>> list(@Nullable final List<U> v) {
+        return list(v, "");
+    }
+
+    @NotNull
+    @Contract(pure = true,
+            value = "_, _ -> new")
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static <U> K<List<U>> list(@Nullable final List<U> v,
+                                      @NonNull @NotNull final String key) {
+        return list(v, key, (Q) Q.UNKNOWN_LIST);
+    }
+
+    @NotNull
+    @Contract(pure = true,
+            value = "_, _ -> new")
+    public static <U> K<List<U>> list(@Nullable final List<U> v,
+                                      @Nullable final Q<List<U>> type) {
+        return list(v, "", type);
+    }
+
+    @NotNull
+    @Contract(pure = true,
+            value = "_, _, _ -> new")
+    public static <U> K<List<U>> list(@Nullable final List<U> v,
+                                      @NonNull @NotNull final String key,
+                                      @Nullable final Q<List<U>> type) {
+        return of(v, type, key);
+    }
+
+
+    @NotNull
+    @Contract(pure = true,
+            value = "-> new")
+    public static <U> K<List<U>> list() {
+        return list("");
+    }
+
+    @NotNull
+    @Contract(pure = true,
+            value = "_ -> new")
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static <U> K<List<U>> list(@NonNull @NotNull final String key) {
+        return list(key, (Q) Q.UNKNOWN_LIST);
+    }
+
+    @NotNull
+    @Contract(pure = true,
+            value = "_ -> new")
+    public static <U> K<List<U>> list(@Nullable final Q<List<U>> type) {
+        return list("", type);
+    }
+
+    @NotNull
+    @Contract(pure = true,
+            value = "_, _ -> new")
+    public static <U> K<List<U>> list(@NonNull @NotNull final String key,
+                                      @Nullable final Q<List<U>> type) {
+        return missing(type, key);
+    }
+
+    // =========================================================================
+
+    @NotNull
+    @Contract(pure = true,
+            value = "_ -> new")
+    public static <U> K<Set<U>> set(@Nullable final Set<U> v) {
+        return set(v, "");
+    }
+
+    @NotNull
+    @Contract(pure = true,
+            value = "_, _ -> new")
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static <U> K<Set<U>> set(@Nullable final Set<U> v,
+                                    @NonNull @NotNull final String key) {
+        return set(v, key, (Q) Q.UNKNOWN_SET);
+    }
+
+    @NotNull
+    @Contract(pure = true,
+            value = "_, _ -> new")
+    public static <U> K<Set<U>> set(@Nullable final Set<U> v,
+                                    @Nullable final Q<Set<U>> type) {
+        return set(v, "", type);
+    }
+
+    @NotNull
+    @Contract(pure = true,
+            value = "_, _, _ -> new")
+    public static <U> K<Set<U>> set(@Nullable final Set<U> v,
+                                    @NonNull @NotNull final String key,
+                                    @Nullable final Q<Set<U>> type) {
+        return of(v, type, key);
+    }
+
+
+    @NotNull
+    @Contract(pure = true,
+            value = "-> new")
+    public static <U> K<Set<U>> set() {
+        return set("");
+    }
+
+    @NotNull
+    @Contract(pure = true,
+            value = "_ -> new")
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static <U> K<Set<U>> set(@NonNull @NotNull final String key) {
+        return set(key, (Q) Q.UNKNOWN_SET);
+    }
+
+    @NotNull
+    @Contract(pure = true,
+            value = "_ -> new")
+    public static <U> K<Set<U>> set(@Nullable final Q<Set<U>> type) {
+        return set("", type);
+    }
+
+    @NotNull
+    @Contract(pure = true,
+            value = "_, _ -> new")
+    public static <U> K<Set<U>> set(@NonNull @NotNull final String key,
+                                    @Nullable final Q<Set<U>> type) {
+        return missing(type, key);
+    }
+
+    // =========================================================================
+
+    @NotNull
+    @Contract(pure = true,
+            value = "_ -> new")
+    public static <U> K<Collection<U>> collection(@Nullable final Collection<U> v) {
+        return collection(v, "");
+    }
+
+    @NotNull
+    @Contract(pure = true,
+            value = "_, _ -> new")
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static <U> K<Collection<U>> collection(@Nullable final Collection<U> v,
+                                                  @NonNull @NotNull final String key) {
+        return collection(v, key, (Q) Q.UNKNOWN_COLLECTION);
+    }
+
+    @NotNull
+    @Contract(pure = true,
+            value = "_, _ -> new")
+    public static <U> K<Collection<U>> collection(@Nullable final Collection<U> v,
+                                                  @Nullable final Q<Collection<U>> type) {
+        return collection(v, "", type);
+    }
+
+    @NotNull
+    @Contract(pure = true,
+            value = "_, _, _ -> new")
+    public static <U> K<Collection<U>> collection(@Nullable final Collection<U> v,
+                                                  @NonNull @NotNull final String key,
+                                                  @Nullable final Q<Collection<U>> type) {
+        return of(v, type, key);
+    }
+
+
+    @NotNull
+    @Contract(pure = true,
+            value = "-> new")
+    public static <U> K<Collection<U>> collection() {
+        return collection("");
+    }
+
+    @NotNull
+    @Contract(pure = true,
+            value = "_ -> new")
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static <U> K<Collection<U>> collection(@NonNull @NotNull final String key) {
+        return collection(key, (Q) Q.UNKNOWN_COLLECTION);
+    }
+
+    @NotNull
+    @Contract(pure = true,
+            value = "_ -> new")
+    public static <U> K<Collection<U>> collection(@NonNull @NotNull final Q<Collection<U>> type) {
+        return collection("", type);
+    }
+
+    @NotNull
+    @Contract(pure = true,
+            value = "_, _ -> new")
+    public static <U> K<Collection<U>> collection(@NonNull @NotNull final String key,
+                                                  @Nullable final Q<Collection<U>> type) {
+        return missing(type, key);
+    }
+
+
+    // =========================================================================
+
+    @NotNull
+    @Contract(pure = true,
+            value = "_ -> new")
+    public static <U, V> K<Map<U, V>> map(@Nullable final Map<U, V> v) {
+        return map(v, "");
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    @NotNull
+    @Contract(pure = true,
+            value = "_, _ -> new")
+    public static <U, V> K<Map<U, V>> map(@Nullable final Map<U, V> v,
+                                          @NonNull @NotNull final String key) {
+        return map(v, key, (Q) Q.UNKNOWN_MAP);
+    }
+
+    @NotNull
+    @Contract(pure = true,
+            value = "_, _ -> new")
+    public static <U, V> K<Map<U, V>> map(@Nullable final Map<U, V> v,
+                                          @Nullable final Q<Map<U, V>> type) {
+        return map(v, "", type);
+    }
+
+    @NotNull
+    @Contract(pure = true,
+            value = "_, _, _ -> new")
+    public static <U, V> K<Map<U, V>> map(@Nullable final Map<U, V> v,
+                                          @NonNull @NotNull final String key,
+                                          @Nullable final Q<Map<U, V>> type) {
+        return of(v, type, key);
+    }
+
+    @NotNull
+    @Contract(pure = true,
+            value = "-> new")
+    public static <U, V> K<Map<U, V>> map() {
+        return map("");
+    }
+
+    @NotNull
+    @Contract(pure = true,
+            value = "_ -> new")
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static <U, V> K<Map<U, V>> map(@NonNull @NotNull final String key) {
+        return map(key, (Q) Q.UNKNOWN_LIST);
+    }
+
+    @NotNull
+    @Contract(pure = true,
+            value = "_ -> new")
+    public static <U, V> K<Map<U, V>> map(@Nullable final Q<Map<U, V>> type) {
+        return map("", type);
+    }
+
+    @NotNull
+    @Contract(pure = true,
+            value = "_, _ -> new")
+    public static <U, V> K<Map<U, V>> map(@NonNull @NotNull final String key,
+                                          @Nullable final Q<Map<U, V>> type) {
+        return missing(type, key);
     }
 
 }
+

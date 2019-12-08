@@ -24,12 +24,12 @@ public class KonfigurationKombinerConcurrencyTest {
         // URL url0 = getClass().getResource("sample0.json");
         // File file0 = new File(url0.toURI());
         // this.JSON0 = new Scanner(file0, "UTF8").useDelimiter("\\Z").next();
-        this.JSON0 = JsonKonfigSourceTest.SAMPLE_0;
+        this.JSON0 = SourceJacksonJsonTest.SAMPLE_0;
 
         // URL url1 = getClass().getResource("sample1.json");
         // File file1 = new File(url1.toURI());
         // this.JSON1 = new Scanner(file1, "UTF8").useDelimiter("\\Z").next();
-        this.JSON1 = JsonKonfigSourceTest.SAMPLE_1;
+        this.JSON1 = SourceJacksonJsonTest.SAMPLE_1;
 
         this.MAP0 = Map.of("aInt", 12, "aBool", false, "aIntList", asList(1, 0, 2), "aLong", 88L);
 

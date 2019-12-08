@@ -14,13 +14,6 @@ public class DummyVTest {
     private final static String key = "sample.key";
 
     @Test
-    public void testDeregister() throws Exception {
-        DummyV<?> dummyV = new DummyV<>(key, null);
-        assertSame(dummyV.deregister((KeyObserver) k -> {
-        }), dummyV);
-    }
-
-    @Test
     public void testRegister() throws Exception {
         DummyV<?> dummyV = new DummyV<>(key);
         assertSame(dummyV.register((KeyObserver) k -> {
@@ -85,35 +78,6 @@ public class DummyVTest {
         assertEquals(DummyV.string(value).v("something"), value);
     }
 
-    @Test
-    public void testEmptyCollection() throws Exception {
-        Collection<Object> value = Arrays.asList(new Object(), new Object());
-        assertTrue(DummyV.emptyCollection().v().isEmpty());
-        assertTrue(DummyV.emptyCollection().v(value).isEmpty());
-    }
-
-    @Test
-    public void testEmptyList() throws Exception {
-        List<Object> value = Arrays.asList(new Object(), new Object());
-        assertTrue(DummyV.emptyList().v().isEmpty());
-        assertTrue(DummyV.emptyList().v(value).isEmpty());
-    }
-
-    @Test
-    public void testEmptyMap() throws Exception {
-        Map<Object, Object> value = new HashMap<>();
-        value.put(new Object(), new Object());
-        value.put(new Object(), new Object());
-        assertTrue(DummyV.emptyMap().v().isEmpty());
-        assertTrue(DummyV.emptyMap().v(value).isEmpty());
-    }
-
-    @Test
-    public void testEmptySet() throws Exception {
-        Set<Object> value = new HashSet<>(Arrays.asList(new Object(), new Object()));
-        assertTrue(DummyV.emptySet().v().isEmpty());
-        assertTrue(DummyV.emptySet().v(value).isEmpty());
-    }
 
     @Test
     public void testList() throws Exception {

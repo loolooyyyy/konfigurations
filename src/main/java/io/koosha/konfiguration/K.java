@@ -1,6 +1,14 @@
 package io.koosha.konfiguration;
 
 
+import lombok.NonNull;
+import net.jcip.annotations.Immutable;
+import net.jcip.annotations.ThreadSafe;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+
 /**
  * Konfig value wrapper.
  *
@@ -11,6 +19,8 @@ package io.koosha.konfiguration;
  *
  * @param <U> type of value being wrapped
  */
+@ThreadSafe
+@Immutable
 public interface K<U> {
 
     /**
@@ -27,11 +37,13 @@ public interface K<U> {
      * only weak references and the observer will be garbage collected. Keep a
      * reference to the observer yourself.
      *
-     * @param observer listener being registered for key {@link #getKey()}
+     * @param observer listener being registered for key {@link #key()}
      * @return this
      * @see #deregister(KeyObserver)
      */
-    K<U> register(KeyObserver observer);
+    @NotNull
+    @Contract(mutates = "this")
+    K<U> register(@NonNull @NotNull KeyObserver observer);
 
     /**
      * De-register a listener previously registered via
@@ -46,11 +58,14 @@ public interface K<U> {
      * only weak references and the observer will be garbage collected. Keep a
      * reference to the observer yourself.
      *
-     * @param observer listener being registered for key {@link #getKey()}
+     * @param observer listener being registered for key {@link #key()}
      * @return this
      * @see #register(KeyObserver)
      */
-    K<U> deregister(KeyObserver observer);
+    @NotNull
+    @Contract(mutates = "this")
+    K<U> deregister(@NonNull @NotNull KeyObserver observer);
+
 
     /**
      * Unique key of this konfiguration.
@@ -59,7 +74,30 @@ public interface K<U> {
      *
      * @return unique key of this konfiguration.
      */
-    String getKey();
+    @NotNull
+    @Contract(pure = true)
+    String key();
+
+    /**
+     * Underlying type represented by this konfig key.
+     *
+     * @return Underlying type represented by this konfig key.
+     */
+    @Nullable
+    @Contract(pure = true)
+    Q<U> type();
+
+    /**
+     * If the value denoted by {@link #key()} in the original source exists.
+     *
+     * <p>Thread-safe.
+     *
+     * @return If the value denoted by {@link #key()} in the original source
+     * exists.
+     */
+    @Contract(pure = true)
+    boolean exists();
+
 
     /**
      * Actual value of this konfiguration.
@@ -70,6 +108,8 @@ public interface K<U> {
      * @throws KfgMissingKeyException if the value has been removed from original konfiguration source.
      * @see #v(Object)
      */
+    @Nullable
+    @Contract(mutates = "this")
     U v();
 
     /**
@@ -84,6 +124,17 @@ public interface K<U> {
      * this konfiguration has been removed from the original source.
      * @see #v()
      */
-    U v(U defaultValue);
+    @SuppressWarnings("unused")
+    @Nullable
+    @Contract(mutates = "this")
+    default U v(@Nullable U defaultValue) {
+        // Operation is not atomic.
+        try {
+            return this.exists() ? this.v() : defaultValue;
+        }
+        catch (KfgMissingKeyException mk) {
+            return defaultValue;
+        }
+    }
 
 }

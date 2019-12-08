@@ -1,61 +1,74 @@
 package io.koosha.konfiguration;
 
+import lombok.Getter;
+import lombok.experimental.Accessors;
+import net.jcip.annotations.ThreadSafe;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 
 import static java.lang.String.format;
 
-
-@SuppressWarnings("WeakerAccess")
+@Accessors(fluent = true)
+@Getter(onMethod_ = {@Nullable})
+@SuppressWarnings("unused")
+@ThreadSafe
 public class KfgException extends RuntimeException {
 
+    @Nullable
     private final String source;
+
+    @Nullable
     private final String key;
+
+    @Nullable
     private final Q<?> neededType;
+
+    @Nullable
     private final String actualValue;
 
-    public KfgException(final Konfiguration source,
-                        final String key,
-                        final Q<?> neededType,
-                        final Object actualValue,
-                        final String message,
-                        final Throwable cause) {
+    public KfgException(@Nullable final String source,
+                        @Nullable final String key,
+                        @Nullable final Q<?> neededType,
+                        @Nullable final Object actualValue,
+                        @Nullable final String message,
+                        @Nullable final Throwable cause) {
         super(message, cause);
-        this.source = nameOf(source);
+        this.source = source;
         this.key = key;
         this.neededType = neededType;
         this.actualValue = toStringOf(actualValue);
     }
 
-    public KfgException(final Konfiguration source,
-                        final String key,
-                        final Q<?> neededType,
-                        final Object actualValue,
-                        String message) {
+    public KfgException(@Nullable final String source,
+                        @Nullable final String key,
+                        @Nullable final Q<?> neededType,
+                        @Nullable final Object actualValue,
+                        @Nullable String message) {
         super(message);
-        this.source = nameOf(source);
+        this.source = source;
         this.key = key;
         this.neededType = neededType;
         this.actualValue = toStringOf(actualValue);
     }
 
-    public KfgException(final Konfiguration source,
-                        final String key,
-                        final Q<?> neededType,
-                        final Object actualValue,
-                        Throwable cause) {
+    public KfgException(@Nullable final String source,
+                        @Nullable final String key,
+                        @Nullable final Q<?> neededType,
+                        @Nullable final Object actualValue,
+                        @Nullable final Throwable cause) {
         super(cause);
-        this.source = nameOf(source);
+        this.source = source;
         this.key = key;
         this.neededType = neededType;
         this.actualValue = toStringOf(actualValue);
     }
 
-    public KfgException(final Konfiguration source,
-                        final String key,
-                        final Q<?> neededType,
-                        final Object actualValue) {
-        this.source = nameOf(source);
+    public KfgException(@Nullable final String source,
+                        @Nullable final String key,
+                        @Nullable final Q<?> neededType,
+                        @Nullable final Object actualValue) {
+        this.source = source;
         this.key = key;
         this.neededType = neededType;
         this.actualValue = toStringOf(actualValue);
@@ -69,44 +82,33 @@ public class KfgException extends RuntimeException {
     public String toString() {
         return format("%s[key=%s,  neededType=%s, actualValue=%s]",
                 this.getClass().getName(),
-                this.getKey(),
-                this.getNeededType(),
-                this.getActualValue());
+                this.key(),
+                this.neededType(),
+                this.actualValue());
     }
 
 
-    public String getSource() {
-        return source;
+    public boolean hasSource() {
+        return this.source() != null;
     }
 
-    public String getKey() {
-        return key;
+    public boolean hasKey() {
+        return this.key() != null;
     }
 
-    public Q<?> getNeededType() {
-        return neededType;
+    public boolean hasNeededType() {
+        return this.neededType() != null;
     }
 
-    public String getActualValue() {
-        return actualValue;
+    public boolean hasActualValue() {
+        return this.actualValue() != null;
     }
 
-
-    static String nameOf(final Konfiguration k) {
-        if (k == null)
-            return null;
-        try {
-            return k.getName();
-        }
-        catch (Throwable t) {
-            return "[Konfiguration.getName()]->" + msgOf(t);
-        }
-    }
 
     static String msgOf(final Throwable t) {
-        if (t == null)
-            return "[null exception]->[null exception]";
-        return format("[throwable::%s]->[%s]", t.getClass().getName(), t.getMessage());
+        return t == null
+               ? "[null exception]->[null exception]"
+               : format("[throwable::%s]->[%s]", t.getClass().getName(), t.getMessage());
     }
 
     static String toStringOf(final Object value) {

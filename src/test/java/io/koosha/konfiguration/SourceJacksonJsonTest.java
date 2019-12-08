@@ -14,7 +14,7 @@ import static org.testng.Assert.assertTrue;
 
 
 @SuppressWarnings("RedundantThrows")
-public class JsonKonfigSourceTest extends KonfigValueTestMixin {
+public class SourceJacksonJsonTest extends KonfigValueTestMixin {
 
     static final String SAMPLE_0 = "{ \"aInt\": 12, \"aBool\": true, " +
             "\"aIntList\": [1, 0, 2], \"aStringList\": [\"a\", \"B\", \"c\"], " +
@@ -40,12 +40,12 @@ public class JsonKonfigSourceTest extends KonfigValueTestMixin {
         // URL url0 = getClass().getResource("sample0.json");
         // File file0 = new File(url0.toURI());
         // this.json0 = new Scanner(file0, "UTF8").useDelimiter("\\Z").next();
-        this.json0 = JsonKonfigSourceTest.SAMPLE_0;
+        this.json0 = SourceJacksonJsonTest.SAMPLE_0;
 
         // URL url1 = getClass().getResource("sample1.json");
         // File file1 = new File(url1.toURI());
         // this.json1 = new Scanner(file1, "UTF8").useDelimiter("\\Z").next();
-        this.json1 = JsonKonfigSourceTest.SAMPLE_1;
+        this.json1 = SourceJacksonJsonTest.SAMPLE_1;
     }
 
     @BeforeMethod
