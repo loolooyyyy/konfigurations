@@ -11,6 +11,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -190,8 +191,8 @@ final class SubsetView implements Konfiguration {
     @Contract(mutates = "this")
     @NonNull
     @NotNull
-    public <U> K<U> custom(final String key,
-                           final Q<U> type) {
+    public <U> K<U> custom(@NotNull @NonNull final String key,
+                           @Nullable final Q<U> type) {
         return wrapped.custom(key(key), type);
     }
 
@@ -212,8 +213,8 @@ final class SubsetView implements Konfiguration {
     @NonNull
     @Contract(mutates = "this")
     @NotNull
-    public Konfiguration registerSoft(@NotNull @NonNull final KeyObserver observer,
-                                      @NotNull @NonNull final String key) {
+    public Handle registerSoft(@NotNull @NonNull final KeyObserver observer,
+                               @NotNull @NonNull final String key) {
         return this.wrapped.registerSoft(observer, key(key));
     }
 
@@ -224,9 +225,9 @@ final class SubsetView implements Konfiguration {
     @NonNull
     @NotNull
     @Contract(mutates = "this")
-    public Konfiguration deregisterSoft(@NotNull @NonNull final KeyObserver observer,
-                                        @NotNull @NonNull final String key) {
-        return this.wrapped.deregisterSoft(observer, key(key));
+    public Konfiguration deregister(@NotNull @NonNull final Handle observer,
+                                    @NotNull @NonNull final String key) {
+        return this.wrapped.deregister(observer, key(key));
     }
 
     /**
@@ -234,19 +235,9 @@ final class SubsetView implements Konfiguration {
      */
     @Override
     @Contract(mutates = "this")
-    public @NonNull @NotNull Konfiguration registerHard(@NotNull @NonNull final KeyObserver observer,
-                                                        @NotNull @NonNull final String key) {
-        return this.wrapped.registerHard(observer, key(key));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    @Contract(mutates = "this")
-    public @NonNull @NotNull Konfiguration deregisterHard(@NotNull @NonNull final KeyObserver observer,
-                                                          @NotNull @NonNull final String key) {
-        return this.wrapped.deregisterHard(observer, key(key));
+    public @NonNull @NotNull Handle register(@NotNull @NonNull final KeyObserver observer,
+                                             @NotNull @NonNull final String key) {
+        return this.wrapped.register(observer, key(key));
     }
 
     /**
@@ -281,15 +272,19 @@ final class SubsetView implements Konfiguration {
     @Contract(pure = true,
             value = "-> fail")
     public Manager manager() {
-        throw new KfgIllegalStateException(this, "do not call manager() in your code");
+        throw new KfgIllegalStateException(this.name(), "do not call manager() in your code");
     }
 
     @NotNull
     @Contract(pure = true,
             value = "_ -> _")
     private String key(@NonNull @NotNull final String key) {
+        if (Objects.equals(key, KeyObserver.LISTEN_TO_ALL))
+            return key;
+
         if (key.startsWith("."))
             throw new KfgIllegalArgumentException(this, "key must not start with a dot: " + key);
+
         return this.baseKey + key;
     }
 

@@ -28,6 +28,34 @@ public class KfgException extends RuntimeException {
     private final String actualValue;
 
     public KfgException(@Nullable final String source,
+                        @Nullable final Throwable cause) {
+        super(cause);
+        this.source = source;
+        this.key = null;
+        this.neededType = null;
+        this.actualValue = null;
+    }
+
+    public KfgException(@Nullable final String source,
+                        @Nullable final String message) {
+        super(message);
+        this.source = source;
+        this.key = null;
+        this.neededType = null;
+        this.actualValue = null;
+    }
+
+    public KfgException(@Nullable final String source,
+                        @Nullable final String message,
+                        @Nullable final Throwable cause) {
+        super(message, cause);
+        this.source = source;
+        this.key = null;
+        this.neededType = null;
+        this.actualValue = null;
+    }
+
+    public KfgException(@Nullable final String source,
                         @Nullable final String key,
                         @Nullable final Q<?> neededType,
                         @Nullable final Object actualValue,

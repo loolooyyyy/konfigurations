@@ -1,6 +1,5 @@
 package io.koosha.konfiguration.impl.v0;
 
-import io.koosha.konfiguration.Konfiguration;
 import io.koosha.konfiguration.Q;
 import io.koosha.konfiguration.ext.KfgSnakeYamlAssertionError;
 import io.koosha.konfiguration.ext.KfgSnakeYamlError;
@@ -11,6 +10,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.BaseConstructor;
 import org.yaml.snakeyaml.constructor.Constructor;
 import org.yaml.snakeyaml.error.YAMLException;
 import org.yaml.snakeyaml.nodes.*;
@@ -23,8 +23,10 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.Arrays.asList;
+import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 
 /**
@@ -35,176 +37,12 @@ import static java.util.stream.Collectors.toList;
  *
  * <p>Thread safe and immutable.
  */
-final class ExtYamlSource extends StorageSource {
-
-    /**
-     * Yaml is <b>NOT</b> thread-safe, as noted in the library's doc.
-     */
-    private static final ThreadLocal<Yaml> defaultSupplier =
-            ThreadLocal.withInitial(() -> new Yaml(new ByConstructorConstructor<>(
-                    (Class<? extends ConstructorProperties>) ConstructorProperties.class,
-                    (Function<? super ConstructorProperties, String[]>) ConstructorProperties::value
-            )));
+final class ExtYamlSource extends AbstractKonfiguration {
 
     private static final Pattern DOT = Pattern.compile(Pattern.quote("."));
+    private final boolean unsafe;
 
-    // ================================
-
-    private final Supplier<Yaml> mapperSupplier;
-    private final Supplier<String> yaml;
-
-    private int lastHash;
-    private final Map<String, ?> root;
-
-    @Getter
-    @Accessors(fluent = true)
-    private final Manager manager = new Manager() {
-        @Override
-        @Contract(pure = true)
-        public boolean hasUpdate() {
-            final String newYaml = yaml.get();
-            if (newYaml == null)
-                return false;
-            final int newHash = newYaml.hashCode();
-            return newHash != lastHash;
-        }
-
-        @Override
-        @NotNull
-        @Contract(mutates = "this")
-        public Konfiguration update() {
-            return new ExtYamlSource(name(), readonly(), yaml, mapperSupplier);
-        }
-    };
-
-    /**
-     * Creates an instance with a default Yaml parser.
-     *
-     * @param yaml constant yaml string as backing storage.
-     */
-    ExtYamlSource(final String name,
-                  final boolean readonly,
-                  final Supplier<String> yaml) {
-        this(name, readonly, yaml, defaultSupplier::get);
-    }
-
-    /**
-     * Creates an instance with the given Yaml parser.
-     *
-     * @param yaml   backing store provider. Must always return a non-null valid yaml
-     *               string.
-     * @param mapper {@link Yaml} provider. Must always return a valid non-null Yaml,
-     *               and if required, it must be able to deserialize custom types, so
-     *               that {@link #custom(String, Q)} works as well.
-     * @throws NullPointerException if any of its arguments are null.
-     * @throws KfgSnakeYamlError    if org.yaml.snakeyaml library is not in the classpath. it
-     *                              specifically looks for the class: "org.yaml.snakeyaml"
-     * @throws KfgSnakeYamlError    if the storage (yaml string) returned by yaml string is null.
-     */
-    ExtYamlSource(@NotNull @NonNull final String name,
-                  final boolean readonly,
-                  @NotNull @NonNull final Supplier<String> yaml,
-                  @NotNull @NonNull final Supplier<Yaml> mapper) {
-        super(name, readonly, () -> null);
-        this.storageProvider = () -> new Storage<String>() {
-            @Override
-            @NotNull
-            @Contract(pure = true)
-            public String name() {
-                return name;
-            }
-
-            @Override
-            public boolean isNull(@NotNull String key, @Nullable Q<?> type) {
-                return false;
-            }
-
-            @Override
-            public boolean has(@NotNull String key, @Nullable Q<?> type) {
-                try {
-                    ExtYamlSource.this.get(key);
-                    return true;
-                }
-                catch (KfgSnakeYamlAssertionError k) {
-                    return false;
-                }
-            }
-
-            @Override
-            public @Nullable Object get(@NotNull String key, @Nullable Q<?> type) {
-                return ExtYamlSource.this.get(key);
-            }
-
-        };
-
-        this.yaml = yaml;
-        this.mapperSupplier = mapper;
-
-        // Check early, so we're not fooled with a dummy object reader.
-        try {
-            Class.forName("org.yaml.snakeyaml.Yaml");
-        }
-        catch (final ClassNotFoundException e) {
-            throw new KfgSnakeYamlError(this,
-                    "org.yaml.snakeyaml library is required to be" +
-                            " present in the class path, can not find the class:" +
-                            "org.yaml.snakeyaml.Yaml", e);
-        }
-
-        final String newYaml = this.yaml.get();
-        Objects.requireNonNull(newYaml, "storage is null");
-        this.lastHash = newYaml.hashCode();
-
-        final Yaml newMapper = mapper.get();
-        Objects.requireNonNull(newMapper, "mapper is null");
-        this.root = Collections.unmodifiableMap(newMapper.load(newYaml));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    boolean isNull(@NonNull @NotNull String key) {
-        try {
-            return get(key) == null;
-        }
-        catch (KfgSnakeYamlAssertionError e) {
-            return false;
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean has(@NotNull @NonNull final String key,
-                       @Nullable Q<?> type) {
-        try {
-            return Q.matchesValue(type, get(key));
-        }
-        catch (KfgSnakeYamlAssertionError e) {
-            return false;
-        }
-    }
-
-    private Object get(@NotNull @NonNull final String key) {
-        Map<?, ?> node = root;
-        final String[] split = DOT.split(key);
-        for (int i = 0; i < split.length; i++) {
-            final String k = split[i];
-            final Object n = node.get(k);
-            final boolean isLast = i == split.length - 1;
-
-            if (isLast)
-                return n;
-            if (!(n instanceof Map))
-                throw new KfgSnakeYamlAssertionError(this, "assertion error");
-            node = (Map<?, ?>) n;
-        }
-        throw new KfgSnakeYamlAssertionError(this, "assertion error");
-    }
-
-    private static final class ByConstructorConstructor<A extends Annotation> extends Constructor {
+    static final class ByConstructorConstructor<A extends Annotation> extends Constructor {
 
         private final Class<? extends A> marker;
         private final Function<? super A, String[]> markerExtractor;
@@ -237,11 +75,8 @@ final class ExtYamlSource extends StorageSource {
             return constructors.get(0);
         }
 
-        ByConstructorConstructor(final Class<? extends A> marker,
-                                 final Function<? super A, String[]> markerExtractor) {
-            super();
-            nn(marker, "marker");
-            nn(markerExtractor, "markerExtractor");
+        ByConstructorConstructor(@NonNull @NotNull final Class<? extends A> marker,
+                                 @NotNull @NonNull final Function<? super A, String[]> markerExtractor) {
             this.marker = marker;
             this.markerExtractor = markerExtractor;
             this.yamlClassConstructors.put(NodeId.mapping, new KonstructMapping());
@@ -380,7 +215,7 @@ final class ExtYamlSource extends StorageSource {
                         c0 = null;
                     }
 
-                nn(c0, "no constructor found for: " + node);
+                requireNonNull(c0, "no constructor found for: " + node);
 
                 try {
                     c0.setAccessible(true);
@@ -448,11 +283,246 @@ final class ExtYamlSource extends StorageSource {
             }
         }
 
-        private static <T> T nn(final T t, final String name) {
-            return Objects.requireNonNull(t, name);
+    }
+
+    static final BaseConstructor defaultBaseConstructor = new ByConstructorConstructor<>(
+            (Class<? extends ConstructorProperties>) ConstructorProperties.class,
+            (Function<? super ConstructorProperties, String[]>) ConstructorProperties::value
+    );
+
+    static final ThreadLocal<Yaml> defaultYamlSupplier = ThreadLocal.withInitial(() -> new Yaml(defaultBaseConstructor));
+
+    private final Supplier<Yaml> mapper;
+    private final Supplier<String> yaml;
+
+    private int lastHash;
+    private final Map<String, ?> root;
+
+    @Getter
+    @Accessors(fluent = true)
+    private final Manager manager = new Manager() {
+        @Override
+        @Contract(pure = true)
+        public boolean hasUpdate() {
+            final String newYaml = yaml.get();
+            return newYaml != null && newYaml.hashCode() != lastHash;
         }
 
+        @Override
+        @Contract(pure = true,
+                value = "-> new")
+        public @NotNull Map<String, Stream<Integer>> update() {
+            return new ExtYamlSource(name(), yaml, mapper, unsafe);
+        }
+    };
+
+    @NonNull
+    @NotNull
+    @Getter
+    @Accessors(fluent = true)
+    private final String name;
+
+    /**
+     * Creates an instance with the given Yaml parser.
+     *
+     * @param yaml   backing store provider. Must always return a non-null valid yaml
+     *               string.
+     * @param mapper {@link Yaml} provider. Must always return a valid non-null Yaml,
+     *               and if required, it must be able to deserialize custom types, so
+     *               that {@link #custom(String, Q)} works as well.
+     * @throws NullPointerException if any of its arguments are null.
+     * @throws KfgSnakeYamlError    if org.yaml.snakeyaml library is not in the classpath. it
+     *                              specifically looks for the class: "org.yaml.snakeyaml"
+     * @throws KfgSnakeYamlError    if the storage (yaml string) returned by yaml string is null.
+     */
+    ExtYamlSource(@NotNull @NonNull final String name,
+                  @NotNull @NonNull final Supplier<String> yaml,
+                  @NotNull @NonNull final Supplier<Yaml> mapper,
+                  final boolean unsafe) {
+        this.name = name;
+        this.yaml = yaml;
+        this.mapper = mapper;
+        this.unsafe = unsafe;
+
+        // Check early, so we 're not fooled with a dummy object reader.
+        try {
+            Class.forName("org.yaml.snakeyaml.Yaml");
+        }
+        catch (final ClassNotFoundException e) {
+            throw new KfgSnakeYamlError(this,
+                    "org.yaml.snakeyaml library is required to be" +
+                            " present in the class path, can not find the" +
+                            "class: org.yaml.snakeyaml.Yaml", e);
+        }
+
+        final String newYaml = this.yaml.get();
+        requireNonNull(newYaml, "supplied storage is null");
+        this.lastHash = newYaml.hashCode();
+
+        final Yaml newMapper = mapper.get();
+        requireNonNull(newMapper, "supplied mapper is null");
+        this.root = Collections.unmodifiableMap(newMapper.load(newYaml));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @NotNull
+    Object bool0(@NotNull @NonNull final String key) {
+        return get(key);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @NotNull
+    Object char0(@NotNull @NonNull final String key) {
+        return get(key);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @NotNull
+    Object string0(@NotNull @NonNull final String key) {
+        return get(key);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @NotNull
+    Number number0(@NotNull @NonNull final String key) {
+        return (Number) get(key);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @NotNull
+    Number numberDouble0(@NotNull @NonNull final String key) {
+        return (Number) get(key);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @NotNull
+    List<?> list0(@NotNull @NonNull final String key,
+                  @NotNull @NonNull final Q<? extends List<?>> type) {
+        this.ensureSafe(type);
+
+        final Object g = this.get(key);
+        final Yaml mapper = this.mapper.get();
+        final String yamlAgain = mapper.dump(g);
+        return mapper.loadAs(yamlAgain, type.klass());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @NotNull
+    Set<?> set0(@NotNull @NonNull final String key,
+                @NotNull @NonNull final Q<? extends Set<?>> type) {
+        this.ensureSafe(type);
+
+        final Object g = this.get(key);
+        final Yaml mapper = this.mapper.get();
+        final String yamlAgain = mapper.dump(g);
+        return mapper.loadAs(yamlAgain, type.klass());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @NotNull
+    Map<?, ?> map0(@NotNull @NonNull final String key,
+                   @NotNull @NonNull final Q<? extends Map<?, ?>> type) {
+        this.ensureSafe(type);
+
+        final Object g = this.get(key);
+        final Yaml mapper = this.mapper.get();
+        final String yamlAgain = mapper.dump(g);
+        return mapper.loadAs(yamlAgain, type.klass());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @NotNull
+    Object custom0(@NotNull @NonNull final String key,
+                   @NotNull @NonNull final Q<?> type) {
+        this.ensureSafe(type);
+
+        final Object g = this.get(key);
+        final Yaml mapper = this.mapper.get();
+        final String yamlAgain = mapper.dump(g);
+        return mapper.loadAs(yamlAgain, type.klass());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    boolean isNull(@NonNull @NotNull String key) {
+        try {
+            return get(key) == null;
+        }
+        catch (final KfgSnakeYamlAssertionError e) {
+            return false;
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean has(@NotNull @NonNull final String key,
+                       @Nullable final Q<?> type) {
+        try {
+            return Q.matchesValue(type, get(key));
+        }
+        catch (final KfgSnakeYamlAssertionError e) {
+            return false;
+        }
+    }
+
+    private Object get(@NotNull @NonNull final String key) {
+        Map<?, ?> node = root;
+        final String[] split = DOT.split(key);
+        for (int i = 0; i < split.length; i++) {
+            final String k = split[i];
+            final Object n = node.get(k);
+            final boolean isLast = i == split.length - 1;
+
+            if (isLast)
+                return n;
+            if (!(n instanceof Map))
+                throw new KfgSnakeYamlAssertionError(this, "assertion error");
+            node = (Map<?, ?>) n;
+        }
+        throw new KfgSnakeYamlAssertionError(this, "assertion error");
+    }
+
+    private void ensureSafe(@Nullable final Q<?> type) {
+        //        Constructor constructor = new Constructor(Customer.class);
+        //        TypeDescription customTypeDescription = new TypeDescription(Customer.class);
+        //        customTypeDescription.addPropertyParameters("contactDetails", Contact.class);
+        //        constructor.addTypeDescription(customTypeDescription);
+        //        Yaml yaml = new Yaml(constructor);
+        if (this.unsafe)
+            return;
+        if (type == null || type.isParametrized())
+            throw new UnsupportedOperationException("yaml does not support parameterized yet.");
     }
 
 }
-

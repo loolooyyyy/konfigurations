@@ -27,13 +27,18 @@ public abstract class Q<TYPE> {
     @NotNull
     private final Class<TYPE> klass;
 
+    @Nullable
+    private final Object meta;
+
     Q(@NotNull @NonNull final Class<TYPE> type) {
         this.pt = null;
         this.klass = type;
+
+        this.meta = null;
     }
 
     @SuppressWarnings("unchecked")
-    protected Q() {
+    protected Q(final Object meta) {
         final Type t = ((ParameterizedType) this.getClass().getGenericSuperclass())
                 .getActualTypeArguments()[0];
 
@@ -47,6 +52,12 @@ public abstract class Q<TYPE> {
             this.pt = null;
             this.klass = (Class<TYPE>) t;
         }
+
+        this.meta = meta;
+    }
+
+    protected Q() {
+        this(null);
     }
 
     /**
@@ -77,6 +88,15 @@ public abstract class Q<TYPE> {
         final Q<?> other = (Q<?>) obj;
         return Objects.equals(this.pt, other.pt) &&
                 Objects.equals(this.klass, other.klass);
+    }
+
+    public final boolean isParametrized() {
+        return this.pt != null;
+    }
+
+    @Nullable
+    public final Object meta() {
+        return this.meta;
     }
 
 

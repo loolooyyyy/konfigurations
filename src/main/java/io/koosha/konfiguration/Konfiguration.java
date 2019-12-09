@@ -11,6 +11,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 
 /**
@@ -402,44 +403,13 @@ public interface Konfiguration {
      * references.
      *
      * @param observer the listener to register.
-     * @return this.
-     * @see #deregisterSoft(KeyObserver, String)
-     * @see #deregisterSoft(KeyObserver)
-     * @see #registerSoft(KeyObserver, String)
-     * @see #registerSoft(KeyObserver)
-     * @see #deregisterHard(KeyObserver, String)
-     * @see #deregisterHard(KeyObserver)
-     * @see #registerHard(KeyObserver, String)
-     * @see #registerHard(KeyObserver)
-     * @see KeyObserver#LISTEN_TO_ALL
+     * @return handle usable for deregister.
      */
     @NonNull
     @NotNull
     @Contract(mutates = "this")
-    default Konfiguration registerSoft(@NotNull @NonNull final KeyObserver observer) {
+    default Handle registerSoft(@NotNull @NonNull final KeyObserver observer) {
         return this.registerSoft(observer, KeyObserver.LISTEN_TO_ALL);
-    }
-
-    /**
-     * De-Register a previously registered listener from all events.
-     *
-     * @param observer the listener to de-register.
-     * @return this.
-     * @see #deregisterSoft(KeyObserver, String)
-     * @see #deregisterSoft(KeyObserver)
-     * @see #registerSoft(KeyObserver, String)
-     * @see #registerSoft(KeyObserver)
-     * @see #deregisterHard(KeyObserver, String)
-     * @see #deregisterHard(KeyObserver)
-     * @see #registerHard(KeyObserver, String)
-     * @see #registerHard(KeyObserver)
-     * @see KeyObserver#LISTEN_TO_ALL
-     */
-    @NonNull
-    @NotNull
-    @Contract(mutates = "this")
-    default Konfiguration deregisterSoft(@NotNull @NonNull final KeyObserver observer) {
-        return this.deregisterSoft(observer, KeyObserver.LISTEN_TO_ALL);
     }
 
     /**
@@ -448,49 +418,14 @@ public interface Konfiguration {
      * <em>Does</em> hold an strong reference to the observer.
      *
      * @param observer the listener to register.
-     * @return this.
-     * @see #deregisterSoft(KeyObserver, String)
-     * @see #deregisterSoft(KeyObserver)
-     * @see #registerSoft(KeyObserver, String)
-     * @see #registerSoft(KeyObserver)
-     * @see #deregisterHard(KeyObserver, String)
-     * @see #deregisterHard(KeyObserver)
-     * @see #registerHard(KeyObserver, String)
-     * @see #registerHard(KeyObserver)
-     * @see KeyObserver#LISTEN_TO_ALL
+     * @return handle usable for deregister.
      */
     @NonNull
     @NotNull
     @Contract(mutates = "this")
-    default Konfiguration registerHard(@NotNull @NonNull final KeyObserver observer) {
-        return this.registerHard(observer, KeyObserver.LISTEN_TO_ALL);
+    default Handle register(@NotNull @NonNull final KeyObserver observer) {
+        return this.register(observer, KeyObserver.LISTEN_TO_ALL);
     }
-
-    /**
-     * De-Register a previously registered listener from all events.
-     *
-     * <p>Thread-safe.
-     *
-     * @param observer the listener to de-register.
-     * @return this.
-     * @see #deregisterSoft(KeyObserver, String)
-     * @see #deregisterSoft(KeyObserver)
-     * @see #registerSoft(KeyObserver, String)
-     * @see #registerSoft(KeyObserver)
-     * @see #deregisterHard(KeyObserver, String)
-     * @see #deregisterHard(KeyObserver)
-     * @see #registerHard(KeyObserver, String)
-     * @see #registerHard(KeyObserver)
-     * @see KeyObserver#LISTEN_TO_ALL
-     */
-    @NonNull
-    @NotNull
-    @Contract(mutates = "this")
-    default Konfiguration deregisterHard(@NotNull @NonNull final KeyObserver observer) {
-        return this.deregisterHard(observer, KeyObserver.LISTEN_TO_ALL);
-    }
-
-    // =================================
 
     /**
      * Register a listener to be notified of updates to a key.
@@ -500,46 +435,13 @@ public interface Konfiguration {
      *
      * @param observer the listener to register.
      * @param key      the key to listen too.
-     * @return this.
-     * @see #deregisterSoft(KeyObserver, String)
-     * @see #deregisterSoft(KeyObserver)
-     * @see #registerSoft(KeyObserver, String)
-     * @see #registerSoft(KeyObserver)
-     * @see #deregisterHard(KeyObserver, String)
-     * @see #deregisterHard(KeyObserver)
-     * @see #registerHard(KeyObserver, String)
-     * @see #registerHard(KeyObserver)
-     * @see KeyObserver#LISTEN_TO_ALL
+     * @return handle usable for deregister().
      */
     @NonNull
     @NotNull
     @Contract(mutates = "this")
-    Konfiguration registerSoft(@NotNull KeyObserver observer,
-                               @NotNull String key);
-
-    /**
-     * De-Register a previously registered listener of a key.
-     *
-     * <p>Thread-safe.
-     *
-     * @param observer the listener to de-register.
-     * @return this.
-     * @see #deregisterSoft(KeyObserver, String)
-     * @see #deregisterSoft(KeyObserver)
-     * @see #registerSoft(KeyObserver, String)
-     * @see #registerSoft(KeyObserver)
-     * @see #deregisterHard(KeyObserver, String)
-     * @see #deregisterHard(KeyObserver)
-     * @see #registerHard(KeyObserver, String)
-     * @see #registerHard(KeyObserver)
-     * @see KeyObserver#LISTEN_TO_ALL
-     */
-    @NonNull
-    @NotNull
-    @Contract(mutates = "this")
-    Konfiguration deregisterSoft(@NotNull KeyObserver observer,
-                                 @NotNull String key);
-
+    Handle registerSoft(@NotNull KeyObserver observer,
+                        @NotNull String key);
 
     /**
      * Register a listener to be notified of updates to a key.
@@ -548,45 +450,42 @@ public interface Konfiguration {
      *
      * @param observer the listener to register.
      * @param key      the key to listen too.
-     * @return this.
-     * @see #deregisterSoft(KeyObserver, String)
-     * @see #deregisterSoft(KeyObserver)
-     * @see #registerSoft(KeyObserver, String)
-     * @see #registerSoft(KeyObserver)
-     * @see #deregisterHard(KeyObserver, String)
-     * @see #deregisterHard(KeyObserver)
-     * @see #registerHard(KeyObserver, String)
-     * @see #registerHard(KeyObserver)
-     * @see KeyObserver#LISTEN_TO_ALL
+     * @return handle usable for deregister().
      */
     @NonNull
     @NotNull
     @Contract(mutates = "this")
-    Konfiguration registerHard(@NotNull KeyObserver observer,
-                               @NotNull String key);
+    Handle register(@NotNull KeyObserver observer,
+                    @NotNull String key);
 
     /**
-     * De-Register a previously registered listener of a key.
+     * Deregister a previously registered listener of a key.
      *
      * <p>Thread-safe.
      *
-     * @param observer the listener to de-register.
+     * @param observer handle returned by one of register methods.
      * @return this.
-     * @see #deregisterSoft(KeyObserver, String)
-     * @see #deregisterSoft(KeyObserver)
-     * @see #registerSoft(KeyObserver, String)
-     * @see #registerSoft(KeyObserver)
-     * @see #deregisterHard(KeyObserver, String)
-     * @see #deregisterHard(KeyObserver)
-     * @see #registerHard(KeyObserver, String)
-     * @see #registerHard(KeyObserver)
-     * @see KeyObserver#LISTEN_TO_ALL
      */
     @NonNull
     @NotNull
     @Contract(mutates = "this")
-    Konfiguration deregisterHard(@NotNull KeyObserver observer,
-                                 @NotNull String key);
+    Konfiguration deregister(@NotNull Handle observer,
+                             @NotNull String key);
+
+    /**
+     * Deregister a previously registered listener of a key.
+     *
+     * <p>Thread-safe.
+     *
+     * @param observer handle returned by one of register methods.
+     * @return this.
+     */
+    @NonNull
+    @NotNull
+    @Contract(mutates = "this")
+    default Konfiguration deregister(@NotNull Handle observer) {
+        return this.deregister(observer, KeyObserver.LISTEN_TO_ALL);
+    }
 
 
     // =========================================================================
@@ -687,9 +586,9 @@ public interface Konfiguration {
          * can return this instance itself if no update is available.
          * @throws KfgException TODO
          */
-        @NotNull
         @Contract(mutates = "this")
-        Konfiguration update();
+        @NotNull
+        Map<String, Stream<Runnable>> update();
 
     }
 

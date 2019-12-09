@@ -47,7 +47,7 @@ abstract class AbstractKonfiguration implements Konfiguration {
         final Object v = this.bool0(key);
         final Boolean vv = toBool(v);
         if (vv == null)
-            throw new KfgTypeException(this, key, q, v);
+            throw new KfgTypeException(this.name(), key, q, v);
         return this.k(key, q, vv);
     }
 
@@ -79,7 +79,7 @@ abstract class AbstractKonfiguration implements Konfiguration {
                     vv = str.charAt(0);
             }
             catch (final ClassCastException cce1) {
-                throw new KfgTypeException(this, key, q, v);
+                throw new KfgTypeException(this.name(), key, q, v);
             }
         }
         return this.k(key, q, vv);
@@ -106,7 +106,7 @@ abstract class AbstractKonfiguration implements Konfiguration {
             vv = (String) v;
         }
         catch (final ClassCastException cce) {
-            throw new KfgTypeException(this, key, q, v);
+            throw new KfgTypeException(this.name(), key, q, v);
         }
 
         return this.k(key, q, vv);
@@ -126,11 +126,11 @@ abstract class AbstractKonfiguration implements Konfiguration {
         if (this.isNull(key))
             return null_(key, q);
 
-        final Object v = this.byte0(key);
+        final Number v = this.number0(key);
 
         final Long vv = toByte(v);
         if (vv == null)
-            throw new KfgTypeException(this, key, q, v);
+            throw new KfgTypeException(this.name(), key, q, v);
 
         return this.k(key, q, vv.byteValue());
     }
@@ -149,11 +149,11 @@ abstract class AbstractKonfiguration implements Konfiguration {
         if (this.isNull(key))
             return null_(key, q);
 
-        final Object v = this.short0(key);
+        final Number v = this.number0(key);
 
         final Long vv = toShort(v);
         if (vv == null)
-            throw new KfgTypeException(this, key, q, v);
+            throw new KfgTypeException(this.name(), key, q, v);
 
         return this.k(key, q, vv.shortValue());
     }
@@ -172,11 +172,11 @@ abstract class AbstractKonfiguration implements Konfiguration {
         if (this.isNull(key))
             return null_(key, q);
 
-        final Object v = this.int0(key);
+        final Number v = this.number0(key);
 
         final Long vv = toInt(v);
         if (vv == null)
-            throw new KfgTypeException(this, key, q, v);
+            throw new KfgTypeException(this.name(), key, q, v);
 
         return this.k(key, q, vv.intValue());
     }
@@ -195,11 +195,11 @@ abstract class AbstractKonfiguration implements Konfiguration {
         if (this.isNull(key))
             return null_(key, q);
 
-        final Object v = this.long0(key);
+        final Number v = this.number0(key);
 
         final Long vv = toLong(v);
         if (vv == null)
-            throw new KfgTypeException(this, key, q, v);
+            throw new KfgTypeException(this.name(), key, q, v);
 
         return this.k(key, q, vv);
     }
@@ -218,11 +218,11 @@ abstract class AbstractKonfiguration implements Konfiguration {
         if (this.isNull(key))
             return null_(key, q);
 
-        final Object v = this.float0(key);
+        final Number v = this.numberDouble0(key);
 
         final Float vv = toFloat(v);
         if (vv == null)
-            throw new KfgTypeException(this, key, q, v);
+            throw new KfgTypeException(this.name(), key, q, v);
 
         return this.k(key, q, vv);
     }
@@ -241,11 +241,11 @@ abstract class AbstractKonfiguration implements Konfiguration {
         if (this.isNull(key))
             return null_(key, q);
 
-        final Object v = this.double0(key);
+        final Number v = this.numberDouble0(key);
 
         final Double vv = toDouble(v);
         if (vv == null)
-            throw new KfgTypeException(this, key, q, v);
+            throw new KfgTypeException(this.name(), key, q, v);
 
         return this.k(key, q, vv);
     }
@@ -276,7 +276,7 @@ abstract class AbstractKonfiguration implements Konfiguration {
             vv = (List<?>) v;
         }
         catch (final ClassCastException cce) {
-            throw new KfgTypeException(this, key, type, v);
+            throw new KfgTypeException(this.name(), key, type, v);
         }
 
         this.checkCollectionType(key, type, vv);
@@ -310,7 +310,7 @@ abstract class AbstractKonfiguration implements Konfiguration {
             vv = (Set<?>) v;
         }
         catch (final ClassCastException cce) {
-            throw new KfgTypeException(this, key, type, v);
+            throw new KfgTypeException(this.name(), key, type, v);
         }
 
         this.checkCollectionType(key, type, vv);
@@ -344,7 +344,7 @@ abstract class AbstractKonfiguration implements Konfiguration {
             vv = (Map<?, ?>) v;
         }
         catch (final ClassCastException cce) {
-            throw new KfgTypeException(this, key, type, v);
+            throw new KfgTypeException(this.name(), key, type, v);
         }
 
         this.checkCollectionType(key, type, vv);
@@ -421,22 +421,10 @@ abstract class AbstractKonfiguration implements Konfiguration {
     abstract Object string0(@NotNull final String key);
 
     @NotNull
-    abstract Object byte0(@NotNull final String key);
+    abstract Number number0(@NotNull final String key);
 
     @NotNull
-    abstract Object short0(@NotNull final String key);
-
-    @NotNull
-    abstract Object int0(@NotNull final String key);
-
-    @NotNull
-    abstract Object long0(@NotNull final String key);
-
-    @NotNull
-    abstract Object float0(@NotNull final String key);
-
-    @NotNull
-    abstract Object double0(@NotNull final String key);
+    abstract Number numberDouble0(@NotNull final String key);
 
     @NotNull
     abstract List<?> list0(@NotNull String key,
@@ -465,7 +453,7 @@ abstract class AbstractKonfiguration implements Konfiguration {
                             @NonNull @NotNull final String key,
                             @NonNull @NotNull final Object value) {
         if (!Q.matchesValue(neededType, value))
-            throw new KfgTypeException(this, key, neededType, value);
+            throw new KfgTypeException(this.name(), key, neededType, value);
     }
 
     private void checkCollectionType0(@NonNull @NotNull final String key,
@@ -473,7 +461,7 @@ abstract class AbstractKonfiguration implements Konfiguration {
                                       @NonNull @NotNull final Object value) {
         if (neededType.isMap()) {
             if (!(value instanceof Map))
-                throw new KfgIllegalStateException(this, key, neededType, value, "expecting a map");
+                throw new KfgIllegalStateException(this.name(), key, neededType, value, "expecting a map");
 
 
             for (final Object o : ((Map<?, ?>) value).values())
@@ -482,10 +470,10 @@ abstract class AbstractKonfiguration implements Konfiguration {
                         checkType0(neededType, key, o);
                     }
                     catch (KfgTypeException k) {
-                        throw new KfgTypeException(this, key, neededType, value);
+                        throw new KfgTypeException(this.name(), key, neededType, value);
                     }
                 else if (!allowNullInCollection_(key, neededType, value))
-                    throw new KfgTypeNullException(this, key, neededType);
+                    throw new KfgTypeNullException(this.name(), key, neededType);
 
             for (final Object o : ((Map<?, ?>) value).keySet())
                 if (o != null)
@@ -493,14 +481,14 @@ abstract class AbstractKonfiguration implements Konfiguration {
                         checkType0(neededType, key, o);
                     }
                     catch (KfgTypeException k) {
-                        throw new KfgTypeException(this, key, neededType, value);
+                        throw new KfgTypeException(this.name(), key, neededType, value);
                     }
                 else if (!allowNullInCollection_(key, neededType, value))
-                    throw new KfgTypeNullException(this, key, neededType);
+                    throw new KfgTypeNullException(this.name(), key, neededType);
         }
         else {
             if (!(value instanceof Collection))
-                throw new KfgIllegalStateException(this, key, neededType, value, "expecting a collection");
+                throw new KfgIllegalStateException(this.name(), key, neededType, value, "expecting a collection");
 
             for (final Object o : (Collection<?>) value)
                 if (o != null)
@@ -508,10 +496,10 @@ abstract class AbstractKonfiguration implements Konfiguration {
                         checkType0(neededType, key, o);
                     }
                     catch (KfgTypeException k) {
-                        throw new KfgTypeException(this, key, neededType, value);
+                        throw new KfgTypeException(this.name(), key, neededType, value);
                     }
                 else if (!allowNullInCollection_(key, neededType, value))
-                    throw new KfgTypeNullException(this, key, neededType);
+                    throw new KfgTypeNullException(this.name(), key, neededType);
         }
     }
 
@@ -520,80 +508,85 @@ abstract class AbstractKonfiguration implements Konfiguration {
             value = "null -> null")
     @Nullable
     static Boolean toBool(@Nullable final Object o) {
-        final Long l = toIntegral(o, 0, 1);
-        if (l != null)
-            //noinspection RedundantConditionalExpression
-            return l == 0 ? false : true;
         if (o instanceof Boolean)
             return (Boolean) o;
-        return null;
+
+        if (!(o instanceof Number))
+            return null;
+
+        final Long l = toLong((Number) o);
+        if (l == null)
+            return null;
+
+        //noinspection RedundantConditionalExpression
+        return l == 0 ? false : true;
     }
 
     @Contract(pure = true,
             value = "null -> null")
     @Nullable
-    static Long toByte(@Nullable final Object o) {
+    static Long toByte(@Nullable final Number o) {
         return toIntegral(o, Byte.MIN_VALUE, Byte.MAX_VALUE);
     }
 
     @Contract(pure = true,
             value = "null -> null")
     @Nullable
-    static Long toShort(@Nullable final Object o) {
+    static Long toShort(@Nullable final Number o) {
         return toIntegral(o, Short.MIN_VALUE, Short.MAX_VALUE);
     }
 
     @Contract(pure = true,
             value = "null -> null")
     @Nullable
-    static Long toInt(@Nullable final Object o) {
+    static Long toInt(@Nullable final Number o) {
         return toIntegral(o, Integer.MIN_VALUE, Integer.MAX_VALUE);
     }
 
     @Contract(pure = true,
             value = "null -> null")
     @Nullable
-    static Long toLong(@Nullable final Object o) {
+    static Long toLong(@Nullable final Number o) {
         return toIntegral(o, Long.MIN_VALUE, Long.MAX_VALUE);
     }
 
     @Contract(pure = true,
             value = "null, _, _ -> null")
     @Nullable
-    private static Long toIntegral(@Nullable final Object o,
+    private static Long toIntegral(@Nullable final Number o,
                                    final long min,
                                    final long max) {
-        if (!(o instanceof Number) || o instanceof Double || o instanceof Float)
+        if (o == null || o instanceof Double || o instanceof Float)
             return null;
 
-        if (((Number) o).longValue() < min || max < ((Number) o).longValue())
+        if (o.longValue() < min || max < o.longValue())
             return null;
 
-        return ((Number) o).longValue();
+        return o.longValue();
     }
 
     @Contract(pure = true,
             value = "null -> null")
     @Nullable
-    static Float toFloat(@Nullable final Object o) {
-        if (!(o instanceof Number))
+    static Float toFloat(@Nullable final Number o) {
+        if (o == null)
             return null;
 
-        if (((Number) o).doubleValue() < Float.MIN_VALUE
-                || Float.MAX_VALUE < ((Number) o).doubleValue())
+        if (o.doubleValue() < Float.MIN_VALUE
+                || Float.MAX_VALUE < o.doubleValue())
             return null;
 
-        return ((Number) o).floatValue();
+        return o.floatValue();
     }
 
     @Contract(pure = true,
             value = "null -> null")
     @Nullable
-    static Double toDouble(@Nullable final Object o) {
-        if (!(o instanceof Number))
+    static Double toDouble(@Nullable final Number o) {
+        if (o == null)
             return null;
 
-        return ((Number) o).doubleValue();
+        return o.doubleValue();
     }
 
 
@@ -691,8 +684,10 @@ abstract class AbstractKonfiguration implements Konfiguration {
      * {@inheritDoc}
      */
     @Override
+    @NonNull
     @NotNull
-    public Konfiguration subset(@NotNull @NonNull final String key) {
+    @Contract("_ -> fail")
+    public Handle registerSoft(@NotNull @NonNull KeyObserver observer) {
         throw new UnsupportedOperationException("do not use this directly, put this source in a kombiner");
     }
 
@@ -700,17 +695,21 @@ abstract class AbstractKonfiguration implements Konfiguration {
      * {@inheritDoc}
      */
     @Override
+    @NonNull
+    @Contract("_ -> fail")
     @NotNull
-    public Konfiguration registerSoft(@NotNull @NonNull final KeyObserver observer) {
+    public Handle register(@NotNull @NonNull KeyObserver observer) {
         throw new UnsupportedOperationException("do not use this directly, put this source in a kombiner");
     }
 
     /**
      * {@inheritDoc}
      */
+    @Contract("_, _ -> fail")
     @Override
+    @NonNull
     @NotNull
-    public Konfiguration deregisterSoft(@NotNull @NonNull final KeyObserver observer) {
+    public Handle registerSoft(@NotNull KeyObserver observer, @NotNull String key) {
         throw new UnsupportedOperationException("do not use this directly, put this source in a kombiner");
     }
 
@@ -718,53 +717,32 @@ abstract class AbstractKonfiguration implements Konfiguration {
      * {@inheritDoc}
      */
     @Override
+    @NonNull
+    @Contract("_, _ -> fail")
     @NotNull
-    public Konfiguration registerSoft(@NotNull @NonNull final KeyObserver observer,
-                                      @Nullable final String key) {
+    public Handle register(@NotNull KeyObserver observer, @NotNull String key) {
         throw new UnsupportedOperationException("do not use this directly, put this source in a kombiner");
     }
 
     /**
      * {@inheritDoc}
      */
+    @Contract("_, _ -> fail")
     @Override
+    @NonNull
     @NotNull
-    public Konfiguration deregisterSoft(@NotNull @NonNull final KeyObserver observer,
-                                        @Nullable final String key) {
+    public Konfiguration deregister(@NotNull Handle observer, @NotNull String key) {
         throw new UnsupportedOperationException("do not use this directly, put this source in a kombiner");
     }
 
     /**
      * {@inheritDoc}
      */
+    @Contract("_ -> fail")
     @Override
-    public @NonNull @NotNull Konfiguration registerHard(@NotNull @NonNull KeyObserver observer) {
-        throw new UnsupportedOperationException("do not use this directly, put this source in a kombiner");
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public @NonNull @NotNull Konfiguration deregisterHard(@NotNull @NonNull KeyObserver observer) {
-        throw new UnsupportedOperationException("do not use this directly, put this source in a kombiner");
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public @NonNull @NotNull Konfiguration registerHard(@NotNull @NonNull KeyObserver observer,
-                                                        @Nullable String key) {
-        throw new UnsupportedOperationException("do not use this directly, put this source in a kombiner");
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public @NonNull @NotNull Konfiguration deregisterHard(@NotNull @NonNull KeyObserver observer,
-                                                          @Nullable String key) {
+    @NonNull
+    @NotNull
+    public Konfiguration deregister(@NotNull Handle observer) {
         throw new UnsupportedOperationException("do not use this directly, put this source in a kombiner");
     }
 

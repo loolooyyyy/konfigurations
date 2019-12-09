@@ -22,11 +22,11 @@ import org.jetbrains.annotations.Nullable;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
-import static io.koosha.konfiguration.impl.v0.Factory.toStringOf;
+import static java.util.Objects.requireNonNull;
 
 /**
  * Reads konfig from a json source (supplied as string).
@@ -39,6 +39,15 @@ import static io.koosha.konfiguration.impl.v0.Factory.toStringOf;
 @Immutable
 @ThreadSafe
 final class ExtJacksonJsonSource extends AbstractKonfiguration {
+
+    @Contract(pure = true,
+            value = "->new")
+    @NotNull
+    static ObjectMapper defaultJacksonObjectMapper() {
+        final ObjectMapper mapper = new ObjectMapper();
+        mapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+        return mapper;
+    }
 
     private final Supplier<ObjectMapper> mapperSupplier;
     private final Supplier<String> json;
@@ -58,16 +67,13 @@ final class ExtJacksonJsonSource extends AbstractKonfiguration {
         @Contract(pure = true)
         public boolean hasUpdate() {
             final String newJson = json.get();
-            if (newJson == null)
-                return false;
-            final int newHash = newJson.hashCode();
-            return newHash != lastHash;
+            return newJson != null && newJson.hashCode() != lastHash;
         }
 
         @Override
-        @NotNull
-        @Contract(mutates = "this")
-        public Konfiguration update() {
+        @Contract(pure = true,
+                value = "-> new")
+        public @NotNull Map<String, Stream<Integer>> update() {
             return new ExtJacksonJsonSource(name(), json, mapperSupplier);
         }
     };
@@ -96,40 +102,10 @@ final class ExtJacksonJsonSource extends AbstractKonfiguration {
                                    final JsonNode node,
                                    final String key) {
         if (!condition)
-            throw new KfgTypeException(this.name, key, required, node);
+            throw new KfgTypeException(this.name(), key, required, node);
         if (node.isNull())
-            throw new KfgTypeNullException(this.name(), key, required, toStringOf(node));
+            throw new KfgTypeNullException(this.name(), key, required);
         return node;
-    }
-
-    @Contract(pure = true,
-            value = "->new")
-    @NotNull
-    static ObjectMapper defaultJacksonObjectMapper() {
-        final ObjectMapper mapper = new ObjectMapper();
-        mapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
-        return mapper;
-    }
-
-    /**
-     * Creates an instance with a default object mapper provided by
-     * {@link #defaultJacksonObjectMapper()} ()}.
-     *
-     * @param name     name of this source
-     * @param readonly if this source should never update itself.
-     * @param json     constant json string as backing storage.
-     */
-    ExtJacksonJsonSource(@NonNull @NotNull final String name,
-                         final boolean readonly,
-                         @NotNull @NonNull final Supplier<String> json) {
-        this(name, readonly, json, new Supplier<ObjectMapper>() {
-            private final ObjectMapper mapper = defaultJacksonObjectMapper();
-
-            @Override
-            public ObjectMapper get() {
-                return mapper;
-            }
-        });
     }
 
     /**
@@ -169,8 +145,8 @@ final class ExtJacksonJsonSource extends AbstractKonfiguration {
         this.json = json;
         this.mapperSupplier = objectMapper;
 
-        Objects.requireNonNull(this.json.get(), "storage provided null");
-        Objects.requireNonNull(this.mapperSupplier.get(), "mapper provided null");
+        requireNonNull(this.json.get(), "supplied json is null");
+        requireNonNull(this.mapperSupplier.get(), "supplied mapper is null");
 
         final JsonNode update;
         try {
@@ -181,7 +157,7 @@ final class ExtJacksonJsonSource extends AbstractKonfiguration {
             throw new KfgJacksonError(this, "error parsing json string", e);
         }
 
-        Objects.requireNonNull(update, "root element is null");
+        requireNonNull(update, "root element is null");
 
         this.root = update;
         this.lastHash = this.json.get().hashCode();
@@ -225,49 +201,10 @@ final class ExtJacksonJsonSource extends AbstractKonfiguration {
     /**
      * {@inheritDoc}
      */
-    @Override
-    @NotNull
-    @Synchronized
-    Byte byte0(@NotNull @NonNull final String key) {
-        final JsonNode at = node(key);
-        return checkJsonType(
-                at.isShort() || at.isInt() || at.isLong(),
-                Q.BYTE, at, key).numberValue().byteValue();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    @NotNull
-    @Synchronized
-    Short short0(@NotNull @NonNull final String key) {
-        final JsonNode at = node(key);
-        return checkJsonType(
-                at.isShort() || at.isInt() || at.isLong(),
-                Q.SHORT, at, key).numberValue().shortValue();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    @NotNull
-    @Synchronized
-    Integer int0(@NotNull @NonNull final String key) {
-        final JsonNode at = node(key);
-        return checkJsonType(
-                at.isShort() || at.isInt() || at.isLong(),
-                Q.INT, at, key).numberValue().intValue();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     @NotNull
     @Override
     @Synchronized
-    Long long0(@NotNull @NonNull final String key) {
+    Number number0(@NotNull @NonNull final String key) {
         final JsonNode at = node(key);
         return checkJsonType(
                 at.isShort() || at.isInt() || at.isLong(),
@@ -280,24 +217,7 @@ final class ExtJacksonJsonSource extends AbstractKonfiguration {
     @NotNull
     @Override
     @Synchronized
-    Float float0(@NotNull @NonNull final String key) {
-        final JsonNode at = node(key);
-        return checkJsonType(
-                at.isFloat()
-                        || at.isDouble()
-                        || at.isShort()
-                        || at.isInt()
-                        || at.isLong(),
-                Q.FLOAT, at, key).floatValue();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @NotNull
-    @Override
-    @Synchronized
-    Double double0(@NotNull @NonNull final String key) {
+    Number numberDouble0(@NotNull @NonNull final String key) {
         final JsonNode at = node(key);
         return checkJsonType(
                 at.isFloat()
@@ -327,7 +247,7 @@ final class ExtJacksonJsonSource extends AbstractKonfiguration {
             return reader.readValue(at.traverse(), javaType);
         }
         catch (final IOException e) {
-            throw new KfgTypeException(this.name, key, type, at, "type mismatch", e);
+            throw new KfgTypeException(this.name(), key, type, at, "type mismatch", e);
         }
     }
 
@@ -353,12 +273,12 @@ final class ExtJacksonJsonSource extends AbstractKonfiguration {
             s = reader.readValue(at.traverse(), javaType);
         }
         catch (final IOException e) {
-            throw new KfgTypeException(this.name, key, Q.UNKNOWN_LIST, type, "type mismatch", e);
+            throw new KfgTypeException(this.name(), key, Q.UNKNOWN_LIST, type, "type mismatch", e);
         }
 
         final List<?> l = this.list0(key, Q.UNKNOWN_LIST);
         if (l.size() != s.size())
-            throw new KfgTypeException(this.name, key, type, at, "type mismatch, duplicate values");
+            throw new KfgTypeException(this.name(), key, type, at, "type mismatch, duplicate values");
 
         return s;
     }
@@ -382,7 +302,7 @@ final class ExtJacksonJsonSource extends AbstractKonfiguration {
             return reader.readValue(at.traverse(), javaType);
         }
         catch (final IOException e) {
-            throw new KfgTypeException(this.name, key, Q.UNKNOWN_LIST, type, "type mismatch", e);
+            throw new KfgTypeException(this.name(), key, Q.UNKNOWN_LIST, type, "type mismatch", e);
         }
     }
 
@@ -401,7 +321,7 @@ final class ExtJacksonJsonSource extends AbstractKonfiguration {
             return reader.readValue(traverse, type.klass());
         }
         catch (final IOException e) {
-            throw new KfgTypeException(this.name, key, type, null, "jackson error", e);
+            throw new KfgTypeException(this.name(), key, type, null, "jackson error", e);
         }
     }
 

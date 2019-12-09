@@ -1,12 +1,10 @@
 package io.koosha.konfiguration.impl.v0;
 
-import io.koosha.konfiguration.Deserializer;
-import io.koosha.konfiguration.KfgSourceException;
-import io.koosha.konfiguration.Konfiguration;
-import io.koosha.konfiguration.Q;
+import io.koosha.konfiguration.*;
 import io.koosha.konfiguration.ext.KfgPreferencesError;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -21,6 +19,7 @@ import java.util.Set;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.NodeChangeListener;
 import java.util.prefs.Preferences;
+import java.util.stream.Stream;
 
 /**
  * Reads konfig from a {@link Preferences} source.
@@ -38,9 +37,15 @@ import java.util.prefs.Preferences;
  */
 final class ExtPreferencesSource extends AbstractKonfiguration {
 
-    private final Deserializer<Preferences> deser;
+    private final Deserializer deser;
     private final Preferences source;
     private final int lastHash;
+
+    @NonNull
+    @NotNull
+    @Getter
+    @Accessors(fluent = true)
+    private final String name;
 
     @Accessors(fluent = true)
     @Getter
@@ -48,32 +53,32 @@ final class ExtPreferencesSource extends AbstractKonfiguration {
         @Override
         @Contract(pure = true)
         public boolean hasUpdate() {
-            return lastHash != hashOf(source);
+            return lastHash != hashOf();
         }
 
         @Override
-        @NotNull
-        @Contract(mutates = "this")
-        public Konfiguration update() {
+        @Contract(pure = true,
+                value = "-> new")
+        public @NotNull Map<String, Stream<Integer>> update() {
             return ExtPreferencesSource.this;
         }
     };
 
     ExtPreferencesSource(@NotNull @NonNull final String name,
-                         final boolean readonly,
                          @NonNull @NotNull final Preferences preferences,
-                         @Nullable final Deserializer<Preferences> deserializer) {
-        super(readonly, name);
+                         @Nullable final Deserializer deserializer) {
+        this.name = name;
         this.source = preferences;
         this.deser = deserializer;
-        this.lastHash = hashOf(source);
+        this.lastHash = hashOf();
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    @NotNull Object bool0(@NotNull String key) {
+    @NotNull
+    Object bool0(@NotNull @NonNull final String key) {
         return this.source.getBoolean(sane(key), false);
     }
 
@@ -81,7 +86,11 @@ final class ExtPreferencesSource extends AbstractKonfiguration {
      * {@inheritDoc}
      */
     @Override
-    @NotNull Object char0(@NotNull String key) {
+    @NotNull
+    Object char0(@NotNull @NonNull final String key) {
+        final String s = ((String) this.string0(sane(key)));
+        if (s.length() != 1)
+            throw new KfgTypeException(this.name(), key, Q.CHAR, s);
         return ((String) this.string0(sane(key))).charAt(0);
     }
 
@@ -89,7 +98,8 @@ final class ExtPreferencesSource extends AbstractKonfiguration {
      * {@inheritDoc}
      */
     @Override
-    @NotNull Object string0(@NotNull String key) {
+    @NotNull
+    Object string0(@NotNull @NonNull final String key) {
         return this.source.get(sane(key), null);
     }
 
@@ -97,31 +107,8 @@ final class ExtPreferencesSource extends AbstractKonfiguration {
      * {@inheritDoc}
      */
     @Override
-    @NotNull Object byte0(@NotNull String key) {
-        return this.source.getInt(sane(key), 0);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    @NotNull Object short0(@NotNull String key) {
-        return this.source.getInt(sane(key), 0);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    @NotNull Object int0(@NotNull String key) {
-        return this.source.getInt(sane(key), 0);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    @NotNull Object long0(@NotNull String key) {
+    @NotNull
+    Number number0(@NotNull @NonNull final String key) {
         return this.source.getLong(sane(key), 0);
     }
 
@@ -129,40 +116,21 @@ final class ExtPreferencesSource extends AbstractKonfiguration {
      * {@inheritDoc}
      */
     @Override
-    @NotNull Object float0(@NotNull String key) {
-        return this.source.getFloat(sane(key), 0);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    @NotNull Object double0(@NotNull String key) {
+    @NotNull
+    Number numberDouble0(@NotNull @NonNull final String key) {
         return this.source.getDouble(sane(key), 0);
     }
 
     /**
      * {@inheritDoc}
      */
-    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     @NotNull
-    List<?> list0(@NotNull String key, @NotNull Q<? extends List<?>> type) {
+    List<?> list0(@NotNull @NonNull final String key,
+                  @NotNull @NonNull final Q<? extends List<?>> type) {
         if (this.deser == null)
             throw new KfgPreferencesError(this, "deserializer not set");
-        return this.deser.list(this.source.node(sane(key)), (Q) type);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    @NotNull
-    Set<?> set0(@NotNull String key, @NotNull Q<? extends Set<?>> type) {
-        if (this.deser == null)
-            throw new KfgPreferencesError(this, "deserializer not set");
-        return this.deser.set(this.source.node(sane(key)), (Q) type);
+        return this.deser.deserialize(this.source.getByteArray(sane(key), new byte[0]), type);
     }
 
     /**
@@ -170,37 +138,51 @@ final class ExtPreferencesSource extends AbstractKonfiguration {
      */
     @Override
     @NotNull
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    Map<?, ?> map0(@NotNull String key, @NotNull Q<? extends Map<?, ?>> type) {
+    Set<?> set0(@NotNull @NonNull final String key,
+                @NotNull @NonNull final Q<? extends Set<?>> type) {
         if (this.deser == null)
             throw new KfgPreferencesError(this, "deserializer not set");
-        return this.deser.map(this.source.node(sane(key)), (Q) type);
+        return this.deser.deserialize(this.source.getByteArray(sane(key), new byte[0]), type);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    @NotNull Object custom0(@NotNull String key, @NotNull Q<?> type) {
+    @NotNull
+    Map<?, ?> map0(@NotNull @NonNull final String key,
+                   @NotNull @NonNull final Q<? extends Map<?, ?>> type) {
         if (this.deser == null)
             throw new KfgPreferencesError(this, "deserializer not set");
-        return this.deser.custom(this.source, type);
+        return this.deser.deserialize(this.source.getByteArray(sane(key), new byte[0]), type);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    boolean isNull(@NonNull @NotNull String key) {
-        return false;
+    @NotNull
+    Object custom0(@NotNull @NonNull final String key,
+                   @NotNull @NonNull final Q<?> type) {
+        if (this.deser == null)
+            throw new KfgPreferencesError(this, "deserializer not set");
+        return this.deser.deserialize(this.source.getByteArray(sane(key), new byte[0]), type);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public boolean has(@NotNull String key,
-                       @Nullable Q<?> type) {
+    boolean isNull(@NonNull @NotNull final String key) {
+        return this.source.get(sane(key), null) == null;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean has(@NotNull @NonNull final String key,
+                       @Nullable final Q<?> type) {
         try {
             return source.nodeExists(sane(key));
         }
@@ -209,19 +191,22 @@ final class ExtPreferencesSource extends AbstractKonfiguration {
         }
     }
 
-    private int hashOf(@NonNull @NotNull final Preferences pref) {
-        final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-        try {
-            pref.exportSubtree(buffer);
-        }
-        catch (IOException | BackingStoreException e) {
-            throw new KfgSourceException(this, null, null, null, "could not calculate hash of the java.util.prefs.Preferences source", null);
-        }
-        return Arrays.hashCode(buffer.toByteArray());
+    @SneakyThrows
+    private String sane(@NotNull @NonNull final String key) {
+        if (!this.source.nodeExists(key))
+            throw new KfgIllegalStateException(this.name(), "missing key; " + key);
+        return key.replace('.', '/');
     }
 
-    private static String sane(@NotNull @NonNull final String key) {
-        return key.replace('.', '/');
+    private int hashOf() {
+        final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        try {
+            this.source.exportSubtree(buffer);
+        }
+        catch (IOException | BackingStoreException e) {
+            throw new KfgSourceException(this, "could not calculate hash of the java.util.prefs.Preferences source", e);
+        }
+        return Arrays.hashCode(buffer.toByteArray());
     }
 
 }
