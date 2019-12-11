@@ -15,6 +15,7 @@ import lombok.NonNull;
 import lombok.Synchronized;
 import lombok.experimental.Accessors;
 import net.jcip.annotations.ThreadSafe;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -24,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
-import java.util.stream.Stream;
 
 import static java.util.Objects.requireNonNull;
 
@@ -38,7 +38,8 @@ import static java.util.Objects.requireNonNull;
  */
 @Immutable
 @ThreadSafe
-final class ExtJacksonJsonSource extends AbstractKonfiguration {
+@ApiStatus.Internal
+final class ExtJacksonJsonSource extends Source {
 
     @Contract(pure = true,
             value = "->new")
@@ -62,7 +63,11 @@ final class ExtJacksonJsonSource extends AbstractKonfiguration {
 
     @Accessors(fluent = true)
     @Getter
-    private final Manager manager = new Manager() {
+    private final KonfigurationManager0 manager = new KonfigurationManager0() {
+
+        /**
+         * {@inheritDoc}
+         */
         @Override
         @Contract(pure = true)
         public boolean hasUpdate() {
@@ -70,17 +75,23 @@ final class ExtJacksonJsonSource extends AbstractKonfiguration {
             return newJson != null && newJson.hashCode() != lastHash;
         }
 
-        @Override
+        /**
+         * {@inheritDoc}
+         */
         @Contract(pure = true,
                 value = "-> new")
-        public @NotNull Map<String, Stream<Integer>> update() {
-            return new ExtJacksonJsonSource(name(), json, mapperSupplier);
+        @Override
+        public @NotNull Konfiguration0 _update() {
+            return this.hasUpdate()
+                   ? new ExtJacksonJsonSource(name(), json, mapperSupplier)
+                   : ExtJacksonJsonSource.this;
         }
+
     };
 
     private JsonNode node_(@NonNull @NotNull final String key) {
         if (key.isEmpty())
-            throw new KfgMissingKeyException(this, key, "empty konfig key");
+            throw new KfgMissingKeyException(this.name(), key, "empty konfig key");
 
         final String k = "/" + key.replace('.', '/');
         return this.root.findPath(k);
@@ -89,11 +100,11 @@ final class ExtJacksonJsonSource extends AbstractKonfiguration {
     @Synchronized
     private JsonNode node(@NotNull @NonNull final String key) {
         if (key.isEmpty())
-            throw new KfgMissingKeyException(this, key, "empty konfig key");
+            throw new KfgMissingKeyException(this.name(), key, "empty konfig key");
 
         final JsonNode node = node_(key);
         if (node.isMissingNode())
-            throw new KfgMissingKeyException(this, key);
+            throw new KfgMissingKeyException(this.name(), key);
         return node;
     }
 
@@ -136,7 +147,7 @@ final class ExtJacksonJsonSource extends AbstractKonfiguration {
         }
         catch (final ClassNotFoundException e) {
             // XXX
-            throw new KfgJacksonError(this,
+            throw new KfgJacksonError(this.name(),
                     "jackson library is required to be present in " +
                             "the class path, can not find the class: " +
                             "com.fasterxml.jackson.databind.JsonNode", e);
@@ -154,7 +165,7 @@ final class ExtJacksonJsonSource extends AbstractKonfiguration {
         }
         catch (final IOException e) {
             // XXX
-            throw new KfgJacksonError(this, "error parsing json string", e);
+            throw new KfgJacksonError(this.name(), "error parsing json string", e);
         }
 
         requireNonNull(update, "root element is null");

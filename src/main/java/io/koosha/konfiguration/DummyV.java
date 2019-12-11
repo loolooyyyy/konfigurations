@@ -8,6 +8,7 @@ import lombok.NonNull;
 import lombok.experimental.Accessors;
 import net.jcip.annotations.Immutable;
 import net.jcip.annotations.ThreadSafe;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -23,14 +24,6 @@ import static java.lang.String.format;
 /**
  * Dummy konfig value, holding a constant konfig value with no source.
  *
- * <p>Good for use in cases where a konfiguration source is not available but a
- * konfiguration value is needed.
- *
- * <p>Thread-safe and immutable.
- *
- * <p>{@link #deregister(KeyObserver)} and {@link #register(KeyObserver)} do NOT
- * work.
- *
  * <p>Regarding equals and hashcode: Each instance of DummyV is considered to be
  * from a different origin (in contrast to _KonfigVImpl, so only each
  * object is equal to itself only, even with same key and values.
@@ -41,10 +34,11 @@ import static java.lang.String.format;
 @ThreadSafe
 @Immutable
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
+@ApiStatus.AvailableSince(Factory.VERSION_1)
 public final class DummyV<U> implements K<U> {
 
     @Accessors(fluent = true)
-    @Getter(onMethod_ = @NotNull)
+    @Getter
     @NotNull
     @NonNull
     private final String key;
@@ -55,32 +49,40 @@ public final class DummyV<U> implements K<U> {
     private final boolean exists;
 
     @Accessors(fluent = true)
-    @Getter(onMethod_ = @Nullable)
+    @Getter
     @Nullable
     private final Q<U> type;
 
+
     /**
-     * Will do an UnsupportedOperationException.
+     * {@inheritDoc}
      */
     @Override
     @Contract(pure = true,
-            value = "_-> fail")
+            value = "_-> this")
     @NotNull
-    public K<U> deregister(@NonNull @NotNull final KeyObserver observer) {
-        throw new UnsupportedOperationException("DummyV::deregister(...)");
+    public K<U> deregister(@NonNull @NotNull final Handle observer) {
+        return this;
     }
 
     /**
-     * Will do an UnsupportedOperationException.
+     * {@inheritDoc}
      */
     @Override
     @NotNull
-    @Contract(pure = true,
-            value = "_ -> fail")
-    public K<U> register(@NonNull @NotNull final KeyObserver observer) {
-        throw new UnsupportedOperationException("DummyV::register(...)");
+    public Handle registerSoft(@NonNull @NotNull KeyObserver observer) {
+        return Handle.M_1;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @NotNull
+    @Contract(pure = true)
+    public Handle register(@NonNull @NotNull final KeyObserver observer) {
+        return Handle.M_1;
+    }
 
     /**
      * {@inheritDoc}
@@ -93,6 +95,20 @@ public final class DummyV<U> implements K<U> {
             return this.v;
 
         throw new KfgMissingKeyException(null, this.key, this.type);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @NotNull
+    @Override
+    public U vn() {
+        final U v = this.v();
+
+        if (v == null)
+            throw new KfgMissingKeyException(null, this.key, this.type);
+
+        return v;
     }
 
     /**

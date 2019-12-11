@@ -6,6 +6,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import net.jcip.annotations.Immutable;
 import net.jcip.annotations.ThreadSafe;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -28,7 +29,9 @@ import java.util.Set;
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 @ThreadSafe
 @Immutable
-abstract class AbstractKonfiguration implements Konfiguration {
+@ApiStatus.Internal
+@ApiStatus.NonExtendable
+abstract class Source implements Konfiguration0 {
 
     /**
      * {@inheritDoc}
@@ -39,7 +42,7 @@ abstract class AbstractKonfiguration implements Konfiguration {
         final Q<Boolean> q = Q.BOOL;
 
         if (this.has(key, q))
-            throw new KfgAssertionException(this, key, q, null, "missing key");
+            throw new KfgAssertionException(this.name(), key, q, null, "missing key");
 
         if (this.isNull(key))
             return this.null_(key, q);
@@ -60,7 +63,7 @@ abstract class AbstractKonfiguration implements Konfiguration {
         final Q<Character> q = Q.CHAR;
 
         if (this.has(key, q))
-            throw new KfgAssertionException(this, key, q, null, "missing key");
+            throw new KfgAssertionException(this.name(), key, q, null, "missing key");
 
         if (this.isNull(key))
             return this.null_(key, q);
@@ -94,7 +97,7 @@ abstract class AbstractKonfiguration implements Konfiguration {
         final Q<String> q = Q.STRING;
 
         if (this.has(key, q))
-            throw new KfgAssertionException(this, key, q, null, "missing key");
+            throw new KfgAssertionException(this.name(), key, q, null, "missing key");
 
         if (this.isNull(key))
             return null_(key, q);
@@ -121,7 +124,7 @@ abstract class AbstractKonfiguration implements Konfiguration {
         final Q<Byte> q = Q.BYTE;
 
         if (this.has(key, q))
-            throw new KfgAssertionException(this, key, q, null, "missing key");
+            throw new KfgAssertionException(this.name(), key, q, null, "missing key");
 
         if (this.isNull(key))
             return null_(key, q);
@@ -144,7 +147,7 @@ abstract class AbstractKonfiguration implements Konfiguration {
         final Q<Short> q = Q.SHORT;
 
         if (this.has(key, q))
-            throw new KfgAssertionException(this, key, q, null, "missing key");
+            throw new KfgAssertionException(this.name(), key, q, null, "missing key");
 
         if (this.isNull(key))
             return null_(key, q);
@@ -167,7 +170,7 @@ abstract class AbstractKonfiguration implements Konfiguration {
         final Q<Integer> q = Q.INT;
 
         if (this.has(key, q))
-            throw new KfgAssertionException(this, key, q, null, "missing key");
+            throw new KfgAssertionException(this.name(), key, q, null, "missing key");
 
         if (this.isNull(key))
             return null_(key, q);
@@ -190,7 +193,7 @@ abstract class AbstractKonfiguration implements Konfiguration {
         final Q<Long> q = Q.LONG;
 
         if (this.has(key, q))
-            throw new KfgAssertionException(this, key, q, null, "missing key");
+            throw new KfgAssertionException(this.name(), key, q, null, "missing key");
 
         if (this.isNull(key))
             return null_(key, q);
@@ -213,7 +216,7 @@ abstract class AbstractKonfiguration implements Konfiguration {
         final Q<Float> q = Q.FLOAT;
 
         if (this.has(key, q))
-            throw new KfgAssertionException(this, key, q, null, "missing key");
+            throw new KfgAssertionException(this.name(), key, q, null, "missing key");
 
         if (this.isNull(key))
             return null_(key, q);
@@ -236,7 +239,7 @@ abstract class AbstractKonfiguration implements Konfiguration {
         final Q<Double> q = Q.DOUBLE;
 
         if (this.has(key, q))
-            throw new KfgAssertionException(this, key, q, null, "missing key");
+            throw new KfgAssertionException(this.name(), key, q, null, "missing key");
 
         if (this.isNull(key))
             return null_(key, q);
@@ -258,7 +261,7 @@ abstract class AbstractKonfiguration implements Konfiguration {
     public final <U> K<List<U>> list(@NonNull @NotNull final String key,
                                      @Nullable Q<List<U>> type) {
         if (this.has(key, type))
-            throw new KfgAssertionException(this, key, type, null, "missing key");
+            throw new KfgAssertionException(this.name(), key, type, null, "missing key");
 
         if (type == null) {
             @SuppressWarnings({"unchecked", "rawtypes"})
@@ -292,7 +295,7 @@ abstract class AbstractKonfiguration implements Konfiguration {
     public final <U> K<Set<U>> set(@NonNull @NotNull final String key,
                                    @Nullable Q<Set<U>> type) {
         if (this.has(key, type))
-            throw new KfgAssertionException(this, key, type, null, "missing key");
+            throw new KfgAssertionException(this.name(), key, type, null, "missing key");
 
         if (type == null) {
             @SuppressWarnings({"unchecked", "rawtypes"})
@@ -326,7 +329,7 @@ abstract class AbstractKonfiguration implements Konfiguration {
     public final <U, V> K<Map<U, V>> map(@NonNull @NotNull final String key,
                                          @Nullable Q<Map<U, V>> type) {
         if (this.has(key, type))
-            throw new KfgAssertionException(this, key, type, null, "missing key");
+            throw new KfgAssertionException(this.name(), key, type, null, "missing key");
 
         if (type == null) {
             @SuppressWarnings({"unchecked", "rawtypes"})
@@ -361,7 +364,7 @@ abstract class AbstractKonfiguration implements Konfiguration {
     public final <U> K<U> custom(@NonNull @NotNull final String key,
                                  @Nullable final Q<U> type) {
         if (this.has(key, type))
-            throw new KfgAssertionException(this, key, type, null, "missing key");
+            throw new KfgAssertionException(this.name(), key, type, null, "missing key");
 
         if (this.isNull(key))
             return null_(key, type);
@@ -398,7 +401,7 @@ abstract class AbstractKonfiguration implements Konfiguration {
         }
 
         if (type == null && !this.supportsUnTyped())
-            throw new KfgAssertionException(this, key, null, null, "untyped is not supported");
+            throw new KfgAssertionException(this.name(), key, null, null, "untyped is not supported");
 
         final Object v = type == null
                          ? this.custom0(key)
@@ -680,11 +683,21 @@ abstract class AbstractKonfiguration implements Konfiguration {
 
     // ============================================================= UNSUPPORTED
 
+
+    /**
+     * {@inheritDoc}
+     */
+    @NotNull
+    @Contract("_ -> fail")
+    @Override
+    public Konfiguration subset(@NotNull String key) {
+        throw new UnsupportedOperationException("do not use this directly, put this source in a kombiner");
+    }
+
     /**
      * {@inheritDoc}
      */
     @Override
-    @NonNull
     @NotNull
     @Contract("_ -> fail")
     public Handle registerSoft(@NotNull @NonNull KeyObserver observer) {
@@ -695,7 +708,6 @@ abstract class AbstractKonfiguration implements Konfiguration {
      * {@inheritDoc}
      */
     @Override
-    @NonNull
     @Contract("_ -> fail")
     @NotNull
     public Handle register(@NotNull @NonNull KeyObserver observer) {
@@ -707,7 +719,6 @@ abstract class AbstractKonfiguration implements Konfiguration {
      */
     @Contract("_, _ -> fail")
     @Override
-    @NonNull
     @NotNull
     public Handle registerSoft(@NotNull KeyObserver observer, @NotNull String key) {
         throw new UnsupportedOperationException("do not use this directly, put this source in a kombiner");
@@ -717,7 +728,6 @@ abstract class AbstractKonfiguration implements Konfiguration {
      * {@inheritDoc}
      */
     @Override
-    @NonNull
     @Contract("_, _ -> fail")
     @NotNull
     public Handle register(@NotNull KeyObserver observer, @NotNull String key) {
@@ -729,7 +739,6 @@ abstract class AbstractKonfiguration implements Konfiguration {
      */
     @Contract("_, _ -> fail")
     @Override
-    @NonNull
     @NotNull
     public Konfiguration deregister(@NotNull Handle observer, @NotNull String key) {
         throw new UnsupportedOperationException("do not use this directly, put this source in a kombiner");
@@ -740,7 +749,6 @@ abstract class AbstractKonfiguration implements Konfiguration {
      */
     @Contract("_ -> fail")
     @Override
-    @NonNull
     @NotNull
     public Konfiguration deregister(@NotNull Handle observer) {
         throw new UnsupportedOperationException("do not use this directly, put this source in a kombiner");

@@ -6,9 +6,8 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.experimental.Accessors;
-import net.jcip.annotations.Immutable;
 import net.jcip.annotations.NotThreadSafe;
-import net.jcip.annotations.ThreadSafe;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -16,30 +15,17 @@ import org.jetbrains.annotations.Nullable;
 import java.lang.ref.WeakReference;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicLong;
 
 @SuppressWarnings("unused")
 @Accessors(fluent = true)
 @EqualsAndHashCode(of = "handle")
 @NotThreadSafe
+@ApiStatus.Internal
 final class Kombiner_Observer {
-
-    @ThreadSafe
-    @Immutable
-    @Accessors(fluent = true)
-    @EqualsAndHashCode(of = "id")
-    private static final class LongH implements Handle {
-
-        private static final AtomicLong id_pool = new AtomicLong(Long.MAX_VALUE);
-
-        @Getter
-        private final long id = id_pool.incrementAndGet();
-
-    }
 
 
     @Getter
-    private final Handle handle = new LongH();
+    private final Handle handle = new HandleImpl();
 
     @Nullable
     private final WeakReference<KeyObserver> soft;

@@ -4,9 +4,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.koosha.konfiguration.Deserializer;
 import io.koosha.konfiguration.Factory;
 import io.koosha.konfiguration.Konfiguration;
+import io.koosha.konfiguration.KonfigurationBuilder;
 import lombok.NonNull;
 import net.jcip.annotations.Immutable;
 import net.jcip.annotations.ThreadSafe;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.yaml.snakeyaml.Yaml;
@@ -15,34 +17,34 @@ import java.util.*;
 import java.util.function.Supplier;
 import java.util.prefs.Preferences;
 
-import static io.koosha.konfiguration.impl.v0.ExportV0.DEFAULT_KONFIG_NAME;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
 import static java.util.Collections.unmodifiableMap;
 
-/**
- * Get an instance from {@link ExportV0}.
- */
 @ThreadSafe
 @Immutable
-public final class FactoryImpl implements Factory {
+@ApiStatus.AvailableSince(Factory.VERSION_8)
+public final class FactoryV0 implements Factory {
 
-    private FactoryImpl() {
+    static final String DEFAULT_KONFIG_NAME = "default_konfig";
+
+    private FactoryV0() {
     }
 
-    private static final Factory INSTANCE = new FactoryImpl();
+    private static final Factory INSTANCE = new FactoryV0();
 
     private static final String VERSION = "io.koosha.konfiguration:7.0.0";
 
-    /**
-     * Get an instance from {@link ExportV0}.
-     *
-     * @return default  instance.
-     */
     @Contract(pure = true)
     @NotNull
-    static Factory defaultInstance() {
-        return FactoryImpl.INSTANCE;
+    public static Factory defaultInstance() {
+        return FactoryV0.INSTANCE;
+    }
+
+    @Contract(pure = true)
+    @NotNull
+    public String defaultKonfigName() {
+        return DEFAULT_KONFIG_NAME;
     }
 
     /**
@@ -57,11 +59,19 @@ public final class FactoryImpl implements Factory {
 
     // ================================================================ KOMBINER
 
+    @Override
+    @Contract("_ ->new")
+    @NotNull
+    public KonfigurationBuilder builder(@NotNull @NonNull final String name) {
+        return new Kombiner_Builder(name);
+    }
+
     /**
      * {@inheritDoc}
      */
     @Override
     @Contract("_, _ -> new")
+    @NotNull
     public Konfiguration kombine(@NotNull @NonNull final String name,
                                  @NotNull @NonNull final Konfiguration k0) {
         return kombine(name, singleton(k0));
@@ -79,7 +89,7 @@ public final class FactoryImpl implements Factory {
         final List<Konfiguration> l = new ArrayList<>();
         l.add(k0);
         l.addAll(asList(sources));
-        return new Kombiner(name, l, LOCK_WAIT_MILLIS__DEFAULT);
+        return new Kombiner(name, l, LOCK_WAIT_MILLIS__DEFAULT, true);
     }
 
     /**
@@ -90,7 +100,7 @@ public final class FactoryImpl implements Factory {
     @Contract("_, _ -> new")
     public Konfiguration kombine(@NotNull @NonNull final String name,
                                  @NonNull @NotNull final Collection<Konfiguration> sources) {
-        return new Kombiner(name, sources, LOCK_WAIT_MILLIS__DEFAULT);
+        return new Kombiner(name, sources, LOCK_WAIT_MILLIS__DEFAULT, true);
     }
 
     /**

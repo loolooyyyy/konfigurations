@@ -2,10 +2,13 @@ package io.koosha.konfiguration.impl.v0;
 
 import io.koosha.konfiguration.KfgIllegalStateException;
 import io.koosha.konfiguration.KfgTypeException;
+import io.koosha.konfiguration.KonfigurationManager;
 import io.koosha.konfiguration.Q;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.experimental.Accessors;
+import net.jcip.annotations.ThreadSafe;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -16,12 +19,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 import static java.util.Arrays.asList;
 import static java.util.Objects.requireNonNull;
 
-final class ExtMapSource extends AbstractKonfiguration {
+@ThreadSafe
+@ApiStatus.Internal
+final class ExtMapSource extends Source {
 
     private static final Pattern DOT = Pattern.compile(Pattern.quote("."));
 
@@ -32,13 +36,17 @@ final class ExtMapSource extends AbstractKonfiguration {
 
     @NonNull
     @NotNull
-    @Getter
     @Accessors(fluent = true)
+    @Getter
     private final String name;
 
     @Accessors(fluent = true)
     @Getter
-    private final Manager manager = new Manager() {
+    private final KonfigurationManager0 manager = new KonfigurationManager0() {
+
+        /**
+         * {@inheritDoc}
+         */
         @Override
         @Contract(pure = true)
         public boolean hasUpdate() {
@@ -49,11 +57,18 @@ final class ExtMapSource extends AbstractKonfiguration {
             return newHash != lastHash;
         }
 
-        @Override
+        /**
+         * {@inheritDoc}
+         */
         @Contract(mutates = "this")
-        public @NotNull Map<String, Stream<Integer>> update() {
-            return new ExtMapSource(name(), map, enableNestedMap);
+        @NotNull
+        @Override
+        public Konfiguration0 _update() {
+            return this.hasUpdate()
+                   ? new ExtMapSource(name(), map, enableNestedMap)
+                   : ExtMapSource.this;
         }
+
     };
 
     @NotNull

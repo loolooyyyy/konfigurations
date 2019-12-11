@@ -1,11 +1,13 @@
 package io.koosha.konfiguration;
 
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.experimental.Accessors;
 import net.jcip.annotations.Immutable;
 import net.jcip.annotations.ThreadSafe;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -18,27 +20,39 @@ import java.util.*;
 @SuppressWarnings("unused")
 @ThreadSafe
 @Immutable
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Accessors(fluent = true)
+@EqualsAndHashCode
+@ApiStatus.AvailableSince(Factory.VERSION_8)
 public abstract class Q<TYPE> {
 
     @Nullable
+    @Getter
+    private final String key;
+
+    @Nullable
+    @Getter
     private final ParameterizedType pt;
 
     @NotNull
+    @Getter
     private final Class<TYPE> klass;
 
-    @Nullable
-    private final Object meta;
-
-    Q(@NotNull @NonNull final Class<TYPE> type) {
+    private Q(@NotNull @NonNull final Class<TYPE> type) {
+        this.key = null;
         this.pt = null;
         this.klass = type;
+    }
 
-        this.meta = null;
+    private Q(@Nullable final String key,
+              @Nullable final ParameterizedType pt,
+              @NotNull @NonNull final Class<TYPE> klass) {
+        this.key = key;
+        this.pt = pt;
+        this.klass = klass;
     }
 
     @SuppressWarnings("unchecked")
-    protected Q(final Object meta) {
+    protected Q() {
         final Type t = ((ParameterizedType) this.getClass().getGenericSuperclass())
                 .getActualTypeArguments()[0];
 
@@ -53,11 +67,7 @@ public abstract class Q<TYPE> {
             this.klass = (Class<TYPE>) t;
         }
 
-        this.meta = meta;
-    }
-
-    protected Q() {
-        this(null);
+        this.key = null;
     }
 
     /**
@@ -70,39 +80,20 @@ public abstract class Q<TYPE> {
         );
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public final int hashCode() {
-        return Objects.hash(this.pt, this.klass);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public final boolean equals(@Nullable final Object obj) {
-        if (!(obj instanceof Q))
-            return false;
-        final Q<?> other = (Q<?>) obj;
-        return Objects.equals(this.pt, other.pt) &&
-                Objects.equals(this.klass, other.klass);
+    public Q<TYPE> withKey(final String key) {
+        return Objects.equals(this.key, key)
+               ? new Q<TYPE>(key, this.pt, this.klass) {}
+               : this;
     }
 
     public final boolean isParametrized() {
         return this.pt != null;
     }
 
-    @Nullable
-    public final Object meta() {
-        return this.meta;
-    }
-
 
     @Contract(pure = true)
     final boolean matchesType(final Q<?> other) {
-        if (other == null)
+        if (other == null || other == this)
             return true;
         // TODO
         return other.klass().isAssignableFrom(this.klass());
@@ -131,17 +122,6 @@ public abstract class Q<TYPE> {
         return q0.matchesValue(value);
     }
 
-
-    /**
-     * Getter: type parameters TYPE of the Q instance
-     *
-     * @return getter: type parameters TYPE of the Q instance
-     */
-    @Contract(pure = true)
-    @NotNull
-    public final Class<TYPE> klass() {
-        return klass;
-    }
 
     /**
      * If Q represents a collection, get type argument of the collection.
@@ -245,6 +225,10 @@ public abstract class Q<TYPE> {
 
     @Contract(pure = true)
     public final boolean isNull() {
+        return isVoid();
+    }
+
+    public final boolean isVoid() {
         return Void.class.isAssignableFrom(this.klass);
     }
 
@@ -261,7 +245,7 @@ public abstract class Q<TYPE> {
     @Contract(value = "_ -> new",
             pure = true)
     public static <U> Q<U> of(@NotNull @NonNull final Class<U> klass) {
-        return new QImpl<>(klass);
+        return new Q<U>(klass) {};
     }
 
     public static final Q<Boolean> BOOL = of(Boolean.class);
@@ -284,15 +268,10 @@ public abstract class Q<TYPE> {
     public static final Q<Object> OBJECT = of_(Object.class);
     public static final Q<?> UNKNOWN = OBJECT;
 
-    // =========================================================================
 
-    @ThreadSafe
-    @Immutable
-    private static final class QImpl<U> extends Q<U> {
-        private QImpl(@NotNull @NonNull final Class<U> type) {
-            super(type);
-        }
-    }
+    public static final Q<?> _VOID = of_(Void.class);
+
+    // =========================================================================
 
     @SuppressWarnings("unchecked")
     @NotNull
@@ -322,6 +301,12 @@ public abstract class Q<TYPE> {
         checkIsClassOrParametrizedType(root, pp.getRawType());
         for (final Type ppp : pp.getActualTypeArguments())
             checkIsClassOrParametrizedType(root, ppp);
+    }
+
+    @Contract(pure = true)
+    public static Q<?> withKey0(@Nullable final Q<?> type,
+                                @NotNull @NonNull final String key) {
+        return type == null ? Q._VOID.withKey(key) : type.withKey(key);
     }
 
 }

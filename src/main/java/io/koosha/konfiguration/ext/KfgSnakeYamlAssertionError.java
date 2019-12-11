@@ -1,6 +1,5 @@
 package io.koosha.konfiguration.ext;
 
-import io.koosha.konfiguration.Konfiguration;
 import io.koosha.konfiguration.Q;
 import lombok.Getter;
 import lombok.experimental.Accessors;
@@ -17,7 +16,7 @@ public class KfgSnakeYamlAssertionError extends KfgSnakeYamlError {
     @Accessors(fluent = true)
     private final Map<String, ?> context;
 
-    public KfgSnakeYamlAssertionError(@Nullable Konfiguration source,
+    public KfgSnakeYamlAssertionError(@Nullable String source,
                                       @Nullable String message,
                                       @Nullable Map<String, ?> context) {
         super(source, message);
@@ -25,20 +24,20 @@ public class KfgSnakeYamlAssertionError extends KfgSnakeYamlError {
     }
 
 
-    public KfgSnakeYamlAssertionError(@Nullable Konfiguration source,
+    public KfgSnakeYamlAssertionError(@Nullable String source,
                                       @Nullable String message) {
         super(source, message);
         this.context = emptyMap();
     }
 
-    public KfgSnakeYamlAssertionError(@Nullable Konfiguration source,
+    public KfgSnakeYamlAssertionError(@Nullable String source,
                                       @Nullable String message,
                                       @Nullable Throwable cause) {
         super(source, message, cause);
         this.context = emptyMap();
     }
 
-    public KfgSnakeYamlAssertionError(@Nullable Konfiguration source,
+    public KfgSnakeYamlAssertionError(@Nullable String source,
                                       @Nullable String key,
                                       @Nullable Q<?> neededType,
                                       @Nullable Object actualValue,
@@ -48,7 +47,7 @@ public class KfgSnakeYamlAssertionError extends KfgSnakeYamlError {
         this.context = emptyMap();
     }
 
-    public KfgSnakeYamlAssertionError(@Nullable Konfiguration source,
+    public KfgSnakeYamlAssertionError(@Nullable String source,
                                       @Nullable String key,
                                       @Nullable Q<?> neededType,
                                       @Nullable Object actualValue,
@@ -57,7 +56,7 @@ public class KfgSnakeYamlAssertionError extends KfgSnakeYamlError {
         this.context = emptyMap();
     }
 
-    public KfgSnakeYamlAssertionError(@Nullable Konfiguration source,
+    public KfgSnakeYamlAssertionError(@Nullable String source,
                                       @Nullable String key,
                                       @Nullable Q<?> neededType,
                                       @Nullable Object actualValue,
@@ -66,7 +65,7 @@ public class KfgSnakeYamlAssertionError extends KfgSnakeYamlError {
         this.context = emptyMap();
     }
 
-    public KfgSnakeYamlAssertionError(@Nullable Konfiguration source,
+    public KfgSnakeYamlAssertionError(@Nullable String source,
                                       @Nullable String key,
                                       @Nullable Q<?> neededType,
                                       @Nullable Object actualValue) {

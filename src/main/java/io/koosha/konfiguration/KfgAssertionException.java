@@ -1,8 +1,5 @@
 package io.koosha.konfiguration;
 
-import io.koosha.konfiguration.KfgException;
-import io.koosha.konfiguration.Konfiguration;
-import io.koosha.konfiguration.Q;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.experimental.Accessors;
@@ -36,14 +33,14 @@ public class KfgAssertionException extends KfgException {
         this.context = context;
     }
 
-    public KfgAssertionException(@Nullable Konfiguration source,
+    public KfgAssertionException(@Nullable String source,
                                  @Nullable String message,
                                  @Nullable Throwable cause) {
         super(source, null, null, message, cause);
         this.context = emptyMap();
     }
 
-    public KfgAssertionException(@Nullable Konfiguration source,
+    public KfgAssertionException(@Nullable String source,
                                  @Nullable String key,
                                  @Nullable Q<?> neededType,
                                  @Nullable Object actualValue,
@@ -53,7 +50,7 @@ public class KfgAssertionException extends KfgException {
         this.context = emptyMap();
     }
 
-    public KfgAssertionException(@Nullable Konfiguration source,
+    public KfgAssertionException(@Nullable String source,
                                  @Nullable String key,
                                  @Nullable Q<?> neededType,
                                  @Nullable Object actualValue,
@@ -62,7 +59,7 @@ public class KfgAssertionException extends KfgException {
         this.context = emptyMap();
     }
 
-    public KfgAssertionException(@Nullable Konfiguration source,
+    public KfgAssertionException(@Nullable String source,
                                  @Nullable String key,
                                  @Nullable Q<?> neededType,
                                  @Nullable Object actualValue,
@@ -71,7 +68,7 @@ public class KfgAssertionException extends KfgException {
         this.context = emptyMap();
     }
 
-    public KfgAssertionException(@Nullable Konfiguration source,
+    public KfgAssertionException(@Nullable String source,
                                  @Nullable String key,
                                  @Nullable Q<?> neededType,
                                  @Nullable Object actualValue) {

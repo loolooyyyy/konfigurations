@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
+import net.jcip.annotations.ThreadSafe;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -19,7 +21,6 @@ import java.util.Set;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.NodeChangeListener;
 import java.util.prefs.Preferences;
-import java.util.stream.Stream;
 
 /**
  * Reads konfig from a {@link Preferences} source.
@@ -35,7 +36,9 @@ import java.util.stream.Stream;
  *
  * <p>For now, pref change listener is not used
  */
-final class ExtPreferencesSource extends AbstractKonfiguration {
+@ApiStatus.Internal
+@ThreadSafe
+final class ExtPreferencesSource extends Source {
 
     private final Deserializer deser;
     private final Preferences source;
@@ -49,19 +52,27 @@ final class ExtPreferencesSource extends AbstractKonfiguration {
 
     @Accessors(fluent = true)
     @Getter
-    private final Manager manager = new Manager() {
+    private final KonfigurationManager0 manager = new KonfigurationManager0() {
+
+        /**
+         * {@inheritDoc}
+         */
         @Override
         @Contract(pure = true)
         public boolean hasUpdate() {
             return lastHash != hashOf();
         }
 
+        /**
+         * {@inheritDoc}
+         */
+        @NotNull
+        @Contract(mutates = "this")
         @Override
-        @Contract(pure = true,
-                value = "-> new")
-        public @NotNull Map<String, Stream<Integer>> update() {
+        public Konfiguration0 _update() {
             return ExtPreferencesSource.this;
         }
+
     };
 
     ExtPreferencesSource(@NotNull @NonNull final String name,
@@ -129,7 +140,7 @@ final class ExtPreferencesSource extends AbstractKonfiguration {
     List<?> list0(@NotNull @NonNull final String key,
                   @NotNull @NonNull final Q<? extends List<?>> type) {
         if (this.deser == null)
-            throw new KfgPreferencesError(this, "deserializer not set");
+            throw new KfgPreferencesError(this.name(), "deserializer not set");
         return this.deser.deserialize(this.source.getByteArray(sane(key), new byte[0]), type);
     }
 
@@ -141,7 +152,7 @@ final class ExtPreferencesSource extends AbstractKonfiguration {
     Set<?> set0(@NotNull @NonNull final String key,
                 @NotNull @NonNull final Q<? extends Set<?>> type) {
         if (this.deser == null)
-            throw new KfgPreferencesError(this, "deserializer not set");
+            throw new KfgPreferencesError(this.name(), "deserializer not set");
         return this.deser.deserialize(this.source.getByteArray(sane(key), new byte[0]), type);
     }
 
@@ -153,7 +164,7 @@ final class ExtPreferencesSource extends AbstractKonfiguration {
     Map<?, ?> map0(@NotNull @NonNull final String key,
                    @NotNull @NonNull final Q<? extends Map<?, ?>> type) {
         if (this.deser == null)
-            throw new KfgPreferencesError(this, "deserializer not set");
+            throw new KfgPreferencesError(this.name(), "deserializer not set");
         return this.deser.deserialize(this.source.getByteArray(sane(key), new byte[0]), type);
     }
 
@@ -165,7 +176,7 @@ final class ExtPreferencesSource extends AbstractKonfiguration {
     Object custom0(@NotNull @NonNull final String key,
                    @NotNull @NonNull final Q<?> type) {
         if (this.deser == null)
-            throw new KfgPreferencesError(this, "deserializer not set");
+            throw new KfgPreferencesError(this.name(), "deserializer not set");
         return this.deser.deserialize(this.source.getByteArray(sane(key), new byte[0]), type);
     }
 
@@ -187,7 +198,7 @@ final class ExtPreferencesSource extends AbstractKonfiguration {
             return source.nodeExists(sane(key));
         }
         catch (Throwable e) {
-            throw new KfgSourceException(this, key, null, null, "error checking existence of key", e);
+            throw new KfgSourceException(this.name(), key, null, null, "error checking existence of key", e);
         }
     }
 
@@ -204,7 +215,7 @@ final class ExtPreferencesSource extends AbstractKonfiguration {
             this.source.exportSubtree(buffer);
         }
         catch (IOException | BackingStoreException e) {
-            throw new KfgSourceException(this, "could not calculate hash of the java.util.prefs.Preferences source", e);
+            throw new KfgSourceException(this.name(), "could not calculate hash of the java.util.prefs.Preferences source", e);
         }
         return Arrays.hashCode(buffer.toByteArray());
     }

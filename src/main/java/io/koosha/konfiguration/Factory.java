@@ -1,7 +1,7 @@
 package io.koosha.konfiguration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.koosha.konfiguration.*;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.yaml.snakeyaml.Yaml;
@@ -13,7 +13,15 @@ import java.util.function.Supplier;
 import java.util.prefs.Preferences;
 
 @SuppressWarnings("unused")
+@ApiStatus.AvailableSince(Factory.VERSION_8)
 public interface Factory {
+
+    public static final String VERSION_1 = "1.0.0";
+
+    public static final String VERSION_8 = "8.0.0";
+
+    public static final String VERSION = VERSION_8;
+
     long LOCK_WAIT_MILLIS__DEFAULT = 300;
     AtomicBoolean UNSAFE_YAML = new AtomicBoolean(true);
 
@@ -25,6 +33,12 @@ public interface Factory {
     @Contract(pure = true)
     @NotNull String getVersion();
 
+    // =========================================================================
+
+    @Contract("_ -> new")
+    @NotNull
+    KonfigurationBuilder builder(@NotNull final String name);
+
     /**
      * Create a new konfiguration object from given sources.
      *
@@ -32,6 +46,7 @@ public interface Factory {
      * @return kombined sources.
      */
     @Contract("_, _ -> new")
+    @NotNull
     Konfiguration kombine(@NotNull String name,
                           @NotNull Konfiguration k0);
 

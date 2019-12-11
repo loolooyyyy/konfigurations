@@ -6,6 +6,9 @@ import io.koosha.konfiguration.ext.KfgSnakeYamlError;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.experimental.Accessors;
+import net.jcip.annotations.Immutable;
+import net.jcip.annotations.ThreadSafe;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -23,7 +26,6 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static java.util.Arrays.asList;
 import static java.util.Objects.requireNonNull;
@@ -37,7 +39,10 @@ import static java.util.stream.Collectors.toList;
  *
  * <p>Thread safe and immutable.
  */
-final class ExtYamlSource extends AbstractKonfiguration {
+@ApiStatus.Internal
+@Immutable
+@ThreadSafe
+final class ExtYamlSource extends Source {
 
     private static final Pattern DOT = Pattern.compile(Pattern.quote("."));
     private final boolean unsafe;
@@ -300,7 +305,11 @@ final class ExtYamlSource extends AbstractKonfiguration {
 
     @Getter
     @Accessors(fluent = true)
-    private final Manager manager = new Manager() {
+    private final KonfigurationManager0 manager = new KonfigurationManager0() {
+
+        /**
+         * {@inheritDoc}
+         */
         @Override
         @Contract(pure = true)
         public boolean hasUpdate() {
@@ -308,11 +317,16 @@ final class ExtYamlSource extends AbstractKonfiguration {
             return newYaml != null && newYaml.hashCode() != lastHash;
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         @Contract(pure = true,
                 value = "-> new")
-        public @NotNull Map<String, Stream<Integer>> update() {
-            return new ExtYamlSource(name(), yaml, mapper, unsafe);
+        public @NotNull Konfiguration0 _update() {
+            return this.hasUpdate()
+                   ? new ExtYamlSource(name(), yaml, mapper, unsafe)
+                   : ExtYamlSource.this;
         }
     };
 
@@ -349,7 +363,7 @@ final class ExtYamlSource extends AbstractKonfiguration {
             Class.forName("org.yaml.snakeyaml.Yaml");
         }
         catch (final ClassNotFoundException e) {
-            throw new KfgSnakeYamlError(this,
+            throw new KfgSnakeYamlError(this.name(),
                     "org.yaml.snakeyaml library is required to be" +
                             " present in the class path, can not find the" +
                             "class: org.yaml.snakeyaml.Yaml", e);
@@ -507,10 +521,10 @@ final class ExtYamlSource extends AbstractKonfiguration {
             if (isLast)
                 return n;
             if (!(n instanceof Map))
-                throw new KfgSnakeYamlAssertionError(this, "assertion error");
+                throw new KfgSnakeYamlAssertionError(this.name(), "assertion error");
             node = (Map<?, ?>) n;
         }
-        throw new KfgSnakeYamlAssertionError(this, "assertion error");
+        throw new KfgSnakeYamlAssertionError(this.name(), "assertion error");
     }
 
     private void ensureSafe(@Nullable final Q<?> type) {

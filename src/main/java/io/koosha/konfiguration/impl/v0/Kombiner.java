@@ -5,170 +5,225 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.experimental.Accessors;
 import net.jcip.annotations.ThreadSafe;
-import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.concurrent.locks.Lock;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
-
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
 
 /**
  * Almost Thread-safe, <b>NOT</b> immutable.
  */
 @ThreadSafe
+@ApiStatus.Internal
 final class Kombiner implements Konfiguration {
 
-    @NonNull
     @NotNull
     @Getter
     @Accessors(fluent = true)
     private final String name;
 
-    private final long lockWaitTime;
+    @NotNull
+    final Kombiner_Sources sources;
 
-    final List<Konfiguration> sources;
-    final Map<String, K<?>> storage = new HashMap<>();
-    final Map<String, Q<?>> typeMap = new HashMap<>();
-    final Kombiner_Lock lock;
+    @NotNull
+    final Kombiner_Lock _lock;
+
+    @NotNull
     final Kombiner_Observers observers;
+
+    @NotNull
+    final Kombiner_Values values;
+
+    @Nullable
+    private volatile KonfigurationManager man;
 
     Kombiner(@NotNull @NonNull final String name,
              @NotNull @NonNull final Collection<Konfiguration> sources,
-             final long lockWaitTime) {
+             @Nullable final Long lockWaitTimeMillis,
+             final boolean fairLock) {
         this.name = name;
 
-        this.lockWaitTime = lockWaitTime;
-        if (lockWaitTime < 0)
-            throw new KfgIllegalStateException(this.name(), null, Q.LONG, lockWaitTime, "wait time must be gte 0");
+        final Map<Handle, Konfiguration> s = new HashMap<>();
+        sources.stream()
+               .peek(k -> {
+                   if (k == null)
+                       throw new KfgIllegalArgumentException(name, "null in config sources");
+                   if (k instanceof JSubsetView)
+                       throw new KfgIllegalArgumentException(name, "Can not kombine a " + k.getClass().getName() + " konfiguration.");
+               })
+               .flatMap(k ->// Unwrap.
+                       k instanceof Kombiner
+                       ? ((Kombiner) k).sources.vs()
+                       : Stream.of(k))
+               .forEach(x -> s.put(new HandleImpl(), x));
+        if (s.isEmpty())
+            throw new KfgIllegalArgumentException(name, "no source given");
 
-        this.lock = new Kombiner_Lock(name, lockWaitTime);
-        this.observers = new Kombiner_Observers(this.name, lockWaitTime);
+        this._lock = new Kombiner_Lock(name, lockWaitTimeMillis, fairLock);
+        this.observers = new Kombiner_Observers(this.name);
+        this.man = new Kombiner_Manager(this);
+        this.values = new Kombiner_Values(this);
+        this.sources = new Kombiner_Sources(this);
 
-        final List<Konfiguration> copy = sources
-                .stream()
-                .peek(k -> {
-                    if (k == null)
-                        throw new KfgIllegalArgumentException(this, "null in config sources");
-                })
-                .flatMap(k -> {
-                    // Unwrap.
-                    return k instanceof Kombiner
-                           ? ((Kombiner) k).sources.stream()
-                           : Stream.of(k);
-                })
-                .collect(toList());
-        if (copy.isEmpty())
-            throw new KfgIllegalArgumentException(this, "no source given");
-        this.sources = new ArrayList<>(copy);
+        this.sources.replace(s);
     }
 
-    private final AtomicReference<Konfiguration.Manager> man = new AtomicReference<>(new Konfiguration.Manager() {
-
-
-    });
-
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    @NotNull
-    @NonNull
-    public final Handle registerSoft(@NonNull @NotNull final KeyObserver observer) {
-        return this.lock().doWriteLocked(() -> {
-            try {
-                return this.observers.registerSoft(observer, KeyObserver.LISTEN_TO_ALL);
-            }
-            catch (final InterruptedException e) {
-                throw new KfgConcurrencyException(this.name(), e);
-            }
-        });
+    Kombiner_Lock lock() {
+        if (this.man != null)
+            throw new KfgIllegalStateException(this.name(), "konfiguration manager is not taken out yet");
+        return this._lock;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public @NonNull @NotNull Handle register(@NotNull @NonNull final KeyObserver observer,
-                                             @NotNull @NonNull final String key) {
-        return this.lock().doWriteLocked(() -> {
-            try {
-                return this.observers.registerHard(observer, KeyObserver.LISTEN_TO_ALL);
-            }
-            catch (final InterruptedException e) {
-                throw new KfgConcurrencyException(this.name(), e);
-            }
-        });
+    <T> T r(@NonNull @NotNull final Supplier<T> func) {
+        return lock().doReadLocked(func);
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public @NonNull @NotNull Konfiguration deregister(@NotNull @NonNull final Handle observer,
-                                                      @NotNull @NonNull final String key) {
-        return this.lock().doWriteLocked(() -> {
-            try {
-                this.observers.deregister(observer, key);
-            }
-            catch (final InterruptedException e) {
-                throw new KfgConcurrencyException(this.name(), e);
-            }
-            return this;
-        });
+    <T> T w(@NonNull @NotNull final Supplier<T> func) {
+        return lock().doWriteLocked(func);
     }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    @NotNull
-    @NonNull
-    public final Konfiguration deregister(@NotNull @NonNull final Handle observer) {
-        return this.lock().doWriteLocked(() -> {
-            try {
-                this.observers.deregister(observer);
-            }
-            catch (final InterruptedException e) {
-                throw new KfgConcurrencyException(this.name(), e);
-            }
-            return this;
-        });
-    }
-
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    @NotNull
-    @NonNull
-    public final Konfiguration subset(@NonNull @NotNull final String key) {
-        this.lock();
-        return new SubsetView(this.name() + "::" + key, this, key);
-    }
-
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    @NotNull
-    public Manager manager() {
-        final Manager man = this.man.getAndSet(null);
-        if (man == null)
-            throw new KfgIllegalStateException(this.name(), null, null, null, "manager is already taken out");
-        return man;
-    }
-
 
     // =========================================================================
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @NotNull
+    public KonfigurationManager manager() {
+        return w(() -> {
+            final KonfigurationManager m = this.man;
+            this.man = null;
+            if (m == null)
+                throw new KfgIllegalStateException(this.name(), null, null, null, "manager is already taken out");
+            return m;
+        });
+    }
+
+    // =========================================================================
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @NotNull
+    public K<Boolean> bool(@NotNull @NonNull final String key) {
+        return this.values.k(key, Q.BOOL);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @NotNull
+    public K<Byte> byte_(@NotNull @NonNull final String key) {
+        return this.values.k(key, Q.BYTE);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @NotNull
+    public K<Character> char_(@NotNull @NonNull final String key) {
+        return this.values.k(key, Q.CHAR);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @NotNull
+    public K<Short> short_(@NotNull @NonNull final String key) {
+        return this.values.k(key, Q.SHORT);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @NotNull
+    public K<Integer> int_(@NotNull @NonNull final String key) {
+        return this.values.k(key, Q.INT);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @NotNull
+    public K<Long> long_(@NotNull @NonNull final String key) {
+        return this.values.k(key, Q.LONG);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @NotNull
+    public K<Float> float_(@NotNull @NonNull final String key) {
+        return this.values.k(key, Q.FLOAT);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @NotNull
+    public K<Double> double_(@NotNull @NonNull final String key) {
+        return this.values.k(key, Q.DOUBLE);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @NotNull
+    public K<String> string(@NotNull @NonNull final String key) {
+        return this.values.k(key, Q.STRING);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @NotNull
+    public <U> K<List<U>> list(@NotNull @NonNull final String key,
+                               @Nullable final Q<List<U>> type) {
+        return this.values.k(key, type);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @NotNull
+    public <U, V> K<Map<U, V>> map(@NotNull @NonNull final String key,
+                                   @Nullable final Q<Map<U, V>> type) {
+        return this.values.k(key, type);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @NotNull
+    public <U> K<Set<U>> set(@NotNull @NonNull final String key,
+                             @Nullable final Q<Set<U>> type) {
+        return this.values.k(key, type);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @NotNull
+    public <U> K<U> custom(@NonNull final String key,
+                           @Nullable final Q<U> type) {
+        return this.values.k(key, type);
+    }
 
     /**
      * {@inheritDoc}
@@ -176,200 +231,56 @@ final class Kombiner implements Konfiguration {
     @Override
     public boolean has(@NotNull @NonNull final String key,
                        @Nullable final Q<?> type) {
-        return this.lock().doReadLocked(() ->
-                this.storage.containsKey(key(key, type))
-                        || this.sources
-                        .stream()
-                        .filter(x -> x != this)
-                        .anyMatch(k -> k.has(key, type))
-        );
-    }
-
-
-    private Object putValue(@NotNull @NonNull final Konfiguration source,
-                            @NotNull @NonNull final String name,
-                            @Nullable final Q<?> dataType) {
-        this.lock();
-        final Object result;
-
-        if (dataType == Boolean.class)
-            result = source.bool(name);
-        else if (dataType == Integer.class)
-            result = source.int_(name);
-        else if (dataType == Long.class)
-            result = source.long_(name);
-        else if (dataType == Double.class)
-            result = source.double_(name);
-        else if (dataType == String.class)
-            result = source.string(name);
-        else if (dataType == List.class)
-            result = source.list(name, elementType);
-        else if (dataType == Map.class)
-            result = source.map(name, elementType);
-        else if (dataType == Set.class)
-            result = source.set(name, elementType);
-        else
-            result = source.custom(name, elementType);
-
-        valueCache.put(name, result);
-        return result;
-    }
-
-    <U> U getValue(@NonNull @NotNull String name,
-                   U def,
-                   boolean mustExist) {
-        this.init();
-        Lock lock = null;
-        try {
-            lock = VALUES_LOCK.readLock();
-            lock.lock();
-
-            if (valueCache.containsKey(name)) {
-                @SuppressWarnings("unchecked")
-                final U get = (U) valueCache.get(name);
-                return get;
-            }
-
-            if (mustExist)
-                throw new KfgMissingKeyException(name);
-
-            return def;
-        }
-        finally {
-            if (lock != null)
-                lock.unlock();
-        }
-    }
-
-    private <U> K<U> getWrappedValue(@NonNull @NotNull final String key0,
-                                     @Nullable final Q<U> type) {
-        this.init();
-    }
-
-    private <U> K<U> getWrappedValue0(@NotNull @NonNull final String key0,
-                                      final Class<?> dataType,
-                                      final Class<?> elementType) {
-        this.init();
-        final Kombiner_KonfigVImpl<?> r = this.kvalCache.get(key0);
-
-        if (r.isSameAs(dataType, elementType)) {
-            @SuppressWarnings("unchecked")
-            final K<U> cast = (K<U>) r;
-            return cast;
-        }
-        else {
-            throw new KfgTypeException(this.name(), key0, null, dataType, null, r);
-        }
-    }
-
-    @NonNull
-    @NotNull
-    public Konfiguration deregisterSoft(@NonNull @NotNull final KeyObserver observer,
-                                        @Nullable final String key) {
-        this.init();
-        Lock lock = null;
-        try {
-            lock = this.OBSERVERS_LOCK.writeLock();
-            lock.lock();
-
-            final Collection<String> keys = this.keyObservers.get(observer);
-            if (keys == null)
-                return null;
-            keys.remove(key);
-            if (keys.isEmpty())
-                this.keyObservers.remove(observer);
-        }
-        finally {
-            if (lock != null)
-                lock.unlock();
-        }
-        return this;
-    }
-
-    @NonNull
-    @NotNull
-    public Konfiguration registerSoft(@NonNull @NotNull final KeyObserver observer,
-                                      @Nullable final String key) {
-        this.init();
-        Lock lock = null;
-        try {
-            lock = this.OBSERVERS_LOCK.writeLock();
-            lock.lock();
-
-            if (!this.keyObservers.containsKey(observer)) {
-                final HashSet<String> put = new HashSet<>(1);
-                put.add(key);
-                this.keyObservers.put(observer, put);
-            }
-            else {
-                this.keyObservers.get(observer).add(key);
-            }
-        }
-        finally {
-            if (lock != null)
-                lock.unlock();
-        }
-        return this;
-    }
-
-
-    @NotNull
-    protected <U> K<U> k(@NonNull final String key,
-                         @Nullable final Q<U> type,
-                         @Nullable final Object value) {
-        this.init();
-        Lock readLock = null;
-        try {
-            readLock = VALUES_LOCK.readLock();
-            readLock.lock();
-            if (this.kvalCache.containsKey(key0))
-                return this.getWrappedValue0(key0, type);
-        }
-        finally {
-            if (readLock != null)
-                readLock.unlock();
-        }
-
-        Lock writeLock = null;
-        try {
-            writeLock = VALUES_LOCK.writeLock();
-            writeLock.lock();
-
-            // Cache was already populated between two locks.
-            if (this.kvalCache.containsKey(key0))
-                return this.getWrappedValue0(key0, type);
-
-            for (final Konfiguration source : sources)
-                if (source.contains(key0)) {
-                    this.putValue(source, key0, type);
-                    break;
-                }
-
-            final Kombiner_KonfigVImpl<U> rr = new Kombiner_KonfigVImpl<>(this, key0, type);
-            this.kvalCache.put(key0, rr);
-            return rr;
-        }
-        finally {
-            if (writeLock != null)
-                writeLock.unlock();
-        }
-
+        final Q<?> t = Q.withKey0(type, key);
+        return r(() -> this.values.has(t) || this.sources.has(key, type));
     }
 
     // =========================================================================
 
-    Kombiner_Lock lock() {
-        if (this.man.get() != null)
-            throw new KfgIllegalStateException(this.name(), "konfiguration manager is not taken out yet");
-        return this.lock;
+    /**
+     * {@inheritDoc}
+     */
+    @NotNull
+    @Override
+    public Handle registerSoft(@NonNull @NotNull final KeyObserver observer,
+                               @Nullable final String key) {
+        return w(() -> observers.registerSoft(observer, key));
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     @NotNull
-    @NonNull
-    @Contract(pure = true)
-    private static String key(@NotNull @NonNull final String key,
-                              @Nullable final Q<?> type) {
-        return (type == null ? "?" : type.toString()) + "::";
+    public Handle register(@NotNull @NonNull final KeyObserver observer,
+                           @NotNull @NonNull final String key) {
+        return w(() -> observers.registerHard(observer, key));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @NotNull
+    public Konfiguration deregister(@NotNull @NonNull final Handle observer,
+                                    @NotNull @NonNull final String key) {
+        return w(() -> {
+            if (Objects.equals(KeyObserver.LISTEN_TO_ALL, key))
+                this.observers.remove(observer);
+            else
+                this.observers.deregister(observer, key);
+            return this;
+        });
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @NotNull
+    public final Konfiguration subset(@NonNull @NotNull final String key) {
+        this.lock();
+        return new JSubsetView(this.name() + "::" + key, this, key);
     }
 
 }

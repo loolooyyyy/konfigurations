@@ -10,7 +10,7 @@ import java.util.Objects;
 import static java.lang.String.format;
 
 @Accessors(fluent = true)
-@Getter(onMethod_ = {@Nullable})
+@Getter
 @SuppressWarnings("unused")
 @ThreadSafe
 public class KfgException extends RuntimeException {

@@ -1,38 +1,53 @@
 package io.koosha.konfiguration.impl.v0;
 
-import io.koosha.konfiguration.K;
-import io.koosha.konfiguration.KeyObserver;
+import io.koosha.konfiguration.Handle;
 import io.koosha.konfiguration.Konfiguration;
-import io.koosha.konfiguration.Konfiguration.Manager;
+import io.koosha.konfiguration.KonfigurationManager;
+import io.koosha.konfiguration.Q;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import net.jcip.annotations.NotThreadSafe;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
-import java.util.stream.Stream;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Predicate;
 
+import static java.util.Collections.emptyMap;
+import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
 
 @NotThreadSafe
-@RequiredArgsConstructor
-final class Kombiner_Manager implements Manager {
+@ApiStatus.Internal
+final class Kombiner_Manager implements KonfigurationManager {
 
     @NotNull
     @NonNull
-    private final Kombiner kombiner;
+    private final Kombiner origin;
+
+    private final AtomicReference<Kombiner> kombiner;
+
+    public Kombiner_Manager(@NotNull @NonNull Kombiner kombiner) {
+        this.origin = kombiner;
+        this.kombiner = new AtomicReference<>(kombiner);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Konfiguration getAndSetToNull() {
+        return this.kombiner.getAndSet(null);
+    }
 
     /**
      * {@inheritDoc}
      */
     @Override
     public boolean hasUpdate() {
-        return kombiner.lock().doReadLocked(() -> kombiner.sources
-                .stream()
-                .filter(x -> x != this.kombiner)
-                .map(Konfiguration::manager)
-                .anyMatch(Manager::hasUpdate));
+        if (this.kombiner.get() != null)
+            throw new IllegalStateException("getAndSetToNull() not called yet");
+        return origin.r(this::hasUpdate0);
     }
 
     /**
@@ -40,120 +55,107 @@ final class Kombiner_Manager implements Manager {
      *
      * @return
      */
-    @Override
     @NotNull
-    public Map<String, Stream<Runnable>> update() {
-        kombiner.lock().doReadLocked(() -> {
-            update0();
-            return null;
-        });
-
-        if (updatedKeys.isEmpty()) {
-            observers = Collections.emptyMap();
-        }
-        else {
-            valueCache.clear();
-            valueCache.putAll(newCache);
-
-            Kombiner.this.sources.clear();
-            Kombiner.this.sources.addAll(updatedSources);
-
-            observers = new HashMap<>(Kombiner.this.keyObservers);
-        }
-
-        observers.entrySet()
-                 .stream()
-                 .filter(e -> e.getKey() != null)
-                 .forEach(e -> {
-                     final Collection<String> keys = e.getValue();
-                     final KeyObserver observer = e.getKey();
-                     updatedKeys.stream()
-                                .filter(keys.contains(KeyObserver.LISTEN_TO_ALL)
-                                        ? x -> true
-                                        : keys::contains)
-                                .forEach(observer);
-                 });
+    @Override
+    public Map<String, Collection<Runnable>> update() {
+        if (this.kombiner.get() != null)
+            throw new IllegalStateException("getAndSetToNull() not called yet");
+        return origin.r(this::update0);
     }
 
-    private void update0() {
-        if (kombiner.sources.stream().noneMatch(k -> k != kombiner && k.manager().hasUpdate()))
-            return;
-
-        final List<Konfiguration> up = kombiner
+    private boolean hasUpdate0() {
+        return origin
                 .sources
-                .stream()
-                .filter(x -> x != kombiner)
+                .vs()
                 .map(Konfiguration::manager)
-                .map(Manager::update)
-                .collect(toList());
+                .anyMatch(KonfigurationManager::hasUpdate);
+    }
 
-        final Map<String, K<?>> newStorage = new HashMap<>();
-        for (final Map.Entry<String, K<?>> e : storage.entrySet()) {
-            up.stream()
-              .filter(k -> k.has(p.a, p.b))
-              .map(k -> k.custom(p.a, p.b))
-              .findFirst()
-              .map(found -> k(p.a, p.b, found.v()))
-              .orElse(null);
-        }
+    private Map<String, Collection<Runnable>> update0() {
+        if (!this.hasUpdate0())
+            return emptyMap();
 
-        final Map<String, ? extends K<?>> newStorage = storage
-                .entrySet()
-                .stream()
-                .map(e -> {
-                            final
-                        }
-                ));
+        final Map<Handle, Konfiguration> newSources = origin.sources.copy();
+        newSources.entrySet().forEach(x -> x.setValue(
+                x.getValue() instanceof Konfiguration0
+                ? ((Konfiguration0) x.getValue()).manager()._update()
+                : x.getValue()
+        ));
 
-        final Map<KeyObserver, Collection<String>> newObservers = Kombiner.this.keyObservers
-                .entrySet()
-                .stream()
-                .filter(e -> e.getKey() != null)
-                .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
+        final Set<Q<?>> updated = new HashSet<>();
+        final Map<Q<?>, Object> newCache = origin.values.copy();
+        origin.values.origForEach(q -> {
+            final String key = requireNonNull(q.key(), "ket passed through kombiner is null");
 
-        final List<String> updatedKeys = storage
-                .entrySet()
-                .stream()
-                .filter(e -> !compare(e.getKey(), e.getValue(), newStorage.get(e.getKey())))
-                .map(Map.Entry::getKey)
-                .collect(toList());
+            final Optional<Konfiguration> first = newSources
+                    .values()
+                    .stream()
+                    .filter(x -> x.has(key, q))
+                    .findFirst();
 
-        //            final Set<String> updated = storage
-        //                    .entrySet()
-        //                    .stream()
-        //                    .filter(e -> updatedSources.stream().anyMatch(k ->
-        //                            k.contains(key(e.getKey(), e.getValue().getType()))))
-        //                    .map(Map.Entry::getKey)
-        //                    .collect(toSet());
+            final Object newV = first.map(konfiguration ->
+                    konfiguration.custom(q.key(), q)).orElse(null);
 
-        doWriteLocked(() -> {
-            for (final Map.Entry<String, Object> each : Kombiner.this.valueCache.entrySet()) {
-                final String name1 = each.getKey();
-                final Object value = each.getValue();
-                boolean found = false;
-                boolean changed = false;
-                for (final Konfiguration source : up) {
-                    if (source.contains(name1)) {
-                        found = true;
-                        final K<?> kVal = kvalCache.get(name1);
-                        final Object newVal = Kombiner.this.putValue(
-                                source,
-                                name1,
-                                kVal.type);
-                        newCache.put(name1, newVal);
-                        changed = !newVal.equals(value);
-                        break;
-                    }
-                }
+            final Object oldV =
+                    origin.has(q.key(), q)
+                    ? origin.values.v_(q, null, true)
+                    : null;
 
-                if (!found || changed)
-                    updatedKeys.add(name1);
-            }
+            // Went missing or came into existence.
+            if (origin.values.has(q) != first.isPresent()
+                    || !Objects.equals(newV, oldV))
+                updated.add(q);
 
-            return null;
+            if (first.isPresent())
+                newCache.put(q, newV);
         });
 
+        return origin.w(() -> {
+            final Map<String, Collection<Runnable>> result = origin
+                    .sources
+                    .vs()
+                    // External non-optimizable konfig sources.
+                    .filter(not(Konfiguration0.class::isInstance))
+                    .map(Konfiguration::manager)
+                    .map(KonfigurationManager::update)
+                    .peek(x -> x.entrySet().forEach(e -> e.setValue(
+                            // just to wrap!
+                            e.getValue().stream().map(Kombiner_Manager::wrap)
+                             .collect(toList())
+                    )))
+                    .reduce(new HashMap<>(), (m0, m1) -> {
+                        m1.forEach((m1k, m1c) -> m0.computeIfAbsent(
+                                m1k, m1k_ -> new ArrayList<>()).addAll(m1c));
+                        return m0;
+                    });
 
+            for (final Q<?> q : updated)
+                //noinspection ConstantConditions
+                result.computeIfAbsent(q.key(), (q_) -> new ArrayList<>())
+                      .addAll(this.origin.observers.get(q.key()));
+
+            origin.sources.replace(newSources);
+            origin.values.replace(newCache);
+
+            return result;
+        });
+    }
+
+    private static <T> Predicate<T> not(@NotNull @NonNull final Predicate<? super T> target) {
+        //noinspection unchecked
+        return (Predicate<T>) target.negate();
+    }
+
+    @SuppressWarnings({"Convert2Lambda", "Anonymous2MethodRef"})
+    private static Runnable wrap(@NonNull @NotNull final Runnable r) {
+        // We can not be sure if given runnable is safe to be put in a map
+        // So we create a plain object wrapping it.
+        return new Runnable() {
+            @Override
+            public void run() {
+                r.run();
+            }
+        };
     }
 
 }
