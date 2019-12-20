@@ -1,6 +1,7 @@
-package io.koosha.konfiguration.impl.v0;
+package io.koosha.konfiguration.impl.v8;
 
 import io.koosha.konfiguration.*;
+import io.koosha.konfiguration.impl.base.KonfigurationManagerBase;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.experimental.Accessors;
@@ -10,6 +11,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -37,34 +39,32 @@ final class Kombiner implements Konfiguration {
     @NotNull
     final Kombiner_Values values;
 
-    @Nullable
-    private volatile KonfigurationManager man;
+    private final AtomicReference<Kombiner_Manager> _man = new AtomicReference<>();
+
+    public KonfigurationManager<Kombiner> man() {
+        return this._man.getAndSet(null);
+    }
 
     Kombiner(@NotNull @NonNull final String name,
-             @NotNull @NonNull final Collection<Konfiguration> sources,
+             @NotNull @NonNull final Collection<KonfigurationManager<?>> sources,
              @Nullable final Long lockWaitTimeMillis,
              final boolean fairLock) {
         this.name = name;
 
-        final Map<Handle, Konfiguration> s = new HashMap<>();
+        final Map<Handle, KonfigurationManagerBase<?>> s = new HashMap<>();
         sources.stream()
-               .peek(k -> {
-                   if (k == null)
-                       throw new KfgIllegalArgumentException(name, "null in config sources");
-                   if (k instanceof JSubsetView)
-                       throw new KfgIllegalArgumentException(name, "Can not kombine a " + k.getClass().getName() + " konfiguration.");
-               })
-               .flatMap(k ->// Unwrap.
-                       k instanceof Kombiner
-                       ? ((Kombiner) k).sources.vs()
-                       : Stream.of(k))
+               .map(KonfigurationManagerBase::new)
+               .flatMap(x ->// Unwrap.
+                       x.origin0() instanceof Kombiner
+                       ? ((Kombiner) x.origin0()).sources.vs()
+                       : Stream.of(x))
                .forEach(x -> s.put(new HandleImpl(), x));
         if (s.isEmpty())
             throw new KfgIllegalArgumentException(name, "no source given");
 
         this._lock = new Kombiner_Lock(name, lockWaitTimeMillis, fairLock);
         this.observers = new Kombiner_Observers(this.name);
-        this.man = new Kombiner_Manager(this);
+        this._man.set(new Kombiner_Manager(this));
         this.values = new Kombiner_Values(this);
         this.sources = new Kombiner_Sources(this);
 
@@ -72,7 +72,7 @@ final class Kombiner implements Konfiguration {
     }
 
     Kombiner_Lock lock() {
-        if (this.man != null)
+        if (this._man.get() != null)
             throw new KfgIllegalStateException(this.name(), "konfiguration manager is not taken out yet");
         return this._lock;
     }
@@ -83,23 +83,6 @@ final class Kombiner implements Konfiguration {
 
     <T> T w(@NonNull @NotNull final Supplier<T> func) {
         return lock().doWriteLocked(func);
-    }
-
-    // =========================================================================
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    @NotNull
-    public KonfigurationManager manager() {
-        return w(() -> {
-            final KonfigurationManager m = this.man;
-            this.man = null;
-            if (m == null)
-                throw new KfgIllegalStateException(this.name(), null, null, null, "manager is already taken out");
-            return m;
-        });
     }
 
     // =========================================================================
@@ -271,16 +254,6 @@ final class Kombiner implements Konfiguration {
                 this.observers.deregister(observer, key);
             return this;
         });
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    @NotNull
-    public final Konfiguration subset(@NonNull @NotNull final String key) {
-        this.lock();
-        return new JSubsetView(this.name() + "::" + key, this, key);
     }
 
 }

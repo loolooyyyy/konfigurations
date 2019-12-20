@@ -11,7 +11,6 @@ import static java.lang.String.format;
 
 @Accessors(fluent = true)
 @Getter
-@SuppressWarnings("unused")
 @ThreadSafe
 public class KfgException extends RuntimeException {
 
@@ -26,34 +25,6 @@ public class KfgException extends RuntimeException {
 
     @Nullable
     private final String actualValue;
-
-    public KfgException(@Nullable final String source,
-                        @Nullable final Throwable cause) {
-        super(cause);
-        this.source = source;
-        this.key = null;
-        this.neededType = null;
-        this.actualValue = null;
-    }
-
-    public KfgException(@Nullable final String source,
-                        @Nullable final String message) {
-        super(message);
-        this.source = source;
-        this.key = null;
-        this.neededType = null;
-        this.actualValue = null;
-    }
-
-    public KfgException(@Nullable final String source,
-                        @Nullable final String message,
-                        @Nullable final Throwable cause) {
-        super(message, cause);
-        this.source = source;
-        this.key = null;
-        this.neededType = null;
-        this.actualValue = null;
-    }
 
     public KfgException(@Nullable final String source,
                         @Nullable final String key,
@@ -74,18 +45,6 @@ public class KfgException extends RuntimeException {
                         @Nullable final Object actualValue,
                         @Nullable String message) {
         super(message);
-        this.source = source;
-        this.key = key;
-        this.neededType = neededType;
-        this.actualValue = toStringOf(actualValue);
-    }
-
-    public KfgException(@Nullable final String source,
-                        @Nullable final String key,
-                        @Nullable final Q<?> neededType,
-                        @Nullable final Object actualValue,
-                        @Nullable final Throwable cause) {
-        super(cause);
         this.source = source;
         this.key = key;
         this.neededType = neededType;
@@ -116,18 +75,22 @@ public class KfgException extends RuntimeException {
     }
 
 
+    @SuppressWarnings("unused")
     public boolean hasSource() {
         return this.source() != null;
     }
 
+    @SuppressWarnings("unused")
     public boolean hasKey() {
         return this.key() != null;
     }
 
+    @SuppressWarnings("unused")
     public boolean hasNeededType() {
         return this.neededType() != null;
     }
 
+    @SuppressWarnings("unused")
     public boolean hasActualValue() {
         return this.actualValue() != null;
     }

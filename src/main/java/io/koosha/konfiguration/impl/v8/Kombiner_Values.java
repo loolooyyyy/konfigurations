@@ -1,14 +1,14 @@
-package io.koosha.konfiguration.impl.v0;
+package io.koosha.konfiguration.impl.v8;
 
 import io.koosha.konfiguration.K;
 import io.koosha.konfiguration.KfgMissingKeyException;
 import io.koosha.konfiguration.Konfiguration;
 import io.koosha.konfiguration.Q;
+import io.koosha.konfiguration.impl.base.KonfigurationManagerBase;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.experimental.Accessors;
 import net.jcip.annotations.NotThreadSafe;
-import net.jcip.annotations.ThreadSafe;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -65,6 +65,7 @@ final class Kombiner_Values {
                 .origin
                 .sources
                 .vs()
+                .map(KonfigurationManagerBase::origin0)
                 .filter(source -> source.has(keyStr, key))
                 .findFirst();
         if (!first.isPresent() && mustExist)

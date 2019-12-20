@@ -22,7 +22,7 @@ import java.util.*;
 @Immutable
 @Accessors(fluent = true)
 @EqualsAndHashCode
-@ApiStatus.AvailableSince(Factory.VERSION_8)
+@ApiStatus.AvailableSince(Faktory.VERSION_8)
 public abstract class Q<TYPE> {
 
     @Nullable
@@ -235,7 +235,7 @@ public abstract class Q<TYPE> {
     // =========================================================================
 
     /**
-     * Factory method.
+     * Faktory method.
      *
      * @param klass the type to create a Q for.
      * @param <U>   Generic type of requested class.

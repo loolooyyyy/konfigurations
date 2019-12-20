@@ -5,6 +5,7 @@ import java.util.Map;
 
 @SuppressWarnings("WeakerAccess")
 class DummyCustom2 {
+
     final String str;
     final Map<String, String> olf;
     final int i;
@@ -22,4 +23,5 @@ class DummyCustom2 {
     DummyCustom2(final String again, final Map<String, String> olf, final int i, final String str) {
         this(str, again, olf, i);
     }
+
 }

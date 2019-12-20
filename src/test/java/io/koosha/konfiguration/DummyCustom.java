@@ -1,7 +1,7 @@
 package io.koosha.konfiguration;
 
 
-@SuppressWarnings({"FieldCanBeLocal", "WeakerAccess"})
+@SuppressWarnings({"FieldCanBeLocal", "WeakerAccess", "unused"})
 class DummyCustom {
 
     String str = "";

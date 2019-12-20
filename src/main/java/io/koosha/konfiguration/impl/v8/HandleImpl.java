@@ -1,8 +1,7 @@
-package io.koosha.konfiguration.impl.v0;
+package io.koosha.konfiguration.impl.v8;
 
 import io.koosha.konfiguration.Handle;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import lombok.experimental.Accessors;
 import net.jcip.annotations.Immutable;
 import net.jcip.annotations.ThreadSafe;
@@ -19,7 +18,13 @@ final class HandleImpl implements Handle {
 
     private static final AtomicLong id_pool = new AtomicLong(Long.MAX_VALUE);
 
-    @Getter
-    private final long id = id_pool.incrementAndGet();
+    private final long id;
+
+    HandleImpl() {
+        final long id = id_pool.incrementAndGet();
+        if (id == Long.MAX_VALUE)
+            throw new RuntimeException("id pool overflow");
+        this.id = id;
+    }
 
 }

@@ -19,6 +19,8 @@ import static java.util.Arrays.asList;
 @SuppressWarnings("WeakerAccess")
 public class KonfigurationKombinerConcurrencyTest {
 
+    final Faktory fac = Faktory.def();
+
     KonfigurationKombinerConcurrencyTest() throws Exception{
 
         // URL url0 = getClass().getResource("sample0.json");
@@ -44,14 +46,13 @@ public class KonfigurationKombinerConcurrencyTest {
 
         this.reset();
 
-        Konfiguration IN_MEM_2_SOURCE = Konfiguration.inMemory(() -> KonfigurationKombinerConcurrencyTest.this.MAP2);
+        Konfiguration IN_MEM_2_SOURCE = fac.map(() -> this.MAP2);
 
-        Konfiguration inMemSource = Konfiguration.inMemory(() -> KonfigurationKombinerConcurrencyTest.this.map);
+        Konfiguration inMemSource = fac.map(() -> this.map);
 
-        Konfiguration jsonSource = Konfiguration.jacksonJson(() -> KonfigurationKombinerConcurrencyTest.this.json);
+        Konfiguration jsonSource = fac.jacksonJson_(() -> this.json);
 
-        this.k = Konfiguration.kombine(inMemSource, IN_MEM_2_SOURCE, jsonSource);
-
+        final Konfiguration kombine = fac.kombine(inMemSource, IN_MEM_2_SOURCE, jsonSource);
     }
 
     private final Map<String, Object> MAP0;
@@ -66,16 +67,15 @@ public class KonfigurationKombinerConcurrencyTest {
     private Map<String, Object> map;
     private String json;
     private Konfiguration k;
+    private KonfigurationManager km;
 
     @BeforeMethod
     void reset() {
-
         this.map = this.MAP0;
         this.json = this.JSON0;
     }
 
     private void toggle() {
-
         this.json = Objects.equals(this.json, JSON0) ? JSON1 : JSON0;
         this.map = Objects.equals(this.map, MAP0) ? MAP1 : MAP0;
     }
@@ -87,7 +87,7 @@ public class KonfigurationKombinerConcurrencyTest {
             e = Executors.newSingleThreadExecutor();
             e.submit(() -> {
                 while (run) {
-                    KonfigurationKombinerConcurrencyTest.this.toggle();
+                    toggle();
                     k.update();
                     c++;
                 }
@@ -117,7 +117,6 @@ public class KonfigurationKombinerConcurrencyTest {
 
     @Test(enabled = false)
     public void testMissedUpdates() {
-
         ExecutorService e = null;
         try {
             e = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2);
@@ -125,7 +124,7 @@ public class KonfigurationKombinerConcurrencyTest {
             for (int i = 0; i < Runtime.getRuntime().availableProcessors(); i++) {
                 e.submit(() -> {
                     while (run) {
-                        KonfigurationKombinerConcurrencyTest.this.toggle();
+                        toggle();
                         k.update();
                     }
                 });

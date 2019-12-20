@@ -1,8 +1,8 @@
-package io.koosha.konfiguration.impl.v0;
+package io.koosha.konfiguration.impl.v8;
 
 import io.koosha.konfiguration.Handle;
-import io.koosha.konfiguration.Konfiguration;
 import io.koosha.konfiguration.Q;
+import io.koosha.konfiguration.impl.base.KonfigurationManagerBase;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import net.jcip.annotations.NotThreadSafe;
@@ -24,7 +24,7 @@ final class Kombiner_Sources {
     @NonNull
     private final Kombiner origin;
 
-    private final Map<Handle, Konfiguration> sources
+    private final Map<Handle, KonfigurationManagerBase<?>> sources
             = new HashMap<>();
 
     boolean has(@NotNull @NonNull final String key,
@@ -32,25 +32,19 @@ final class Kombiner_Sources {
         return this.sources
                 .values()
                 .stream()
-                .filter(x -> x != this.origin)
-                .anyMatch(k -> k.has(key, type));
+                .filter(x -> x.origin0() != this.origin)
+                .anyMatch(x -> x.origin0().has(key, type));
     }
 
     @Contract(pure = true)
     @NotNull
-    Stream<Konfiguration> vs() {
+    Stream<KonfigurationManagerBase<?>> vs() {
         return sources.values().stream();
-    }
-
-    @Contract(pure = true)
-    @NotNull
-    Stream<Map.Entry<Handle, Konfiguration>> es() {
-        return sources.entrySet().stream();
     }
 
     @Contract(mutates = "this")
     @NotNull
-    Kombiner_Sources replace(@NotNull @NonNull final Map<Handle, Konfiguration> s) {
+    Kombiner_Sources replace(@NotNull @NonNull final Map<Handle, KonfigurationManagerBase<?>> s) {
         this.sources.clear();
         this.sources.putAll(s);
         return this;
@@ -58,7 +52,7 @@ final class Kombiner_Sources {
 
     @Contract(pure = true)
     @NotNull
-    Map<Handle, Konfiguration> copy() {
+    Map<Handle, KonfigurationManagerBase<?>> copy() {
         return new HashMap<>(this.sources);
     }
 

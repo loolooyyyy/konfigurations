@@ -1,12 +1,15 @@
-package io.koosha.konfiguration.impl.v0;
+package io.koosha.konfiguration.impl.v8;
 
 import io.koosha.konfiguration.Handle;
 import io.koosha.konfiguration.Konfiguration;
 import io.koosha.konfiguration.KonfigurationManager;
 import io.koosha.konfiguration.Q;
+import io.koosha.konfiguration.impl.base.KonfigurationManagerBase;
+import io.koosha.konfiguration.impl.base.SourceBase;
 import lombok.NonNull;
 import net.jcip.annotations.NotThreadSafe;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -19,7 +22,30 @@ import static java.util.stream.Collectors.toList;
 
 @NotThreadSafe
 @ApiStatus.Internal
-final class Kombiner_Manager implements KonfigurationManager {
+final class Kombiner_Manager implements KonfigurationManager<Kombiner> {
+
+    @NotNull
+    @Contract(pure = true)
+    private static <T> Predicate<T> not(@NotNull @NonNull final Predicate<? super T> target) {
+        //noinspection unchecked
+        return (Predicate<T>) target.negate();
+    }
+
+    @NotNull
+    @Contract(value = "_ -> new",
+            pure = true)
+    @SuppressWarnings({"Convert2Lambda", "Anonymous2MethodRef"})
+    private static Runnable wrap(@NonNull @NotNull final Runnable r) {
+        // We can not be sure if given runnable is safe to be put in a map
+        // So we create a plain object wrapping it.
+        return new Runnable() {
+            @Override
+            public void run() {
+                r.run();
+            }
+        };
+    }
+
 
     @NotNull
     @NonNull
@@ -36,8 +62,17 @@ final class Kombiner_Manager implements KonfigurationManager {
      * {@inheritDoc}
      */
     @Override
-    public Konfiguration getAndSetToNull() {
+    public Kombiner getAndSetToNull() {
         return this.kombiner.getAndSet(null);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @NotNull
+    public String name() {
+        return this.origin.name();
     }
 
     /**
@@ -67,7 +102,6 @@ final class Kombiner_Manager implements KonfigurationManager {
         return origin
                 .sources
                 .vs()
-                .map(Konfiguration::manager)
                 .anyMatch(KonfigurationManager::hasUpdate);
     }
 
@@ -75,12 +109,25 @@ final class Kombiner_Manager implements KonfigurationManager {
         if (!this.hasUpdate0())
             return emptyMap();
 
-        final Map<Handle, Konfiguration> newSources = origin.sources.copy();
-        newSources.entrySet().forEach(x -> x.setValue(
-                x.getValue() instanceof Konfiguration0
-                ? ((Konfiguration0) x.getValue()).manager()._update()
-                : x.getValue()
-        ));
+        final Map<Handle, KonfigurationManagerBase<?>> newSources =
+                origin.sources.copy();
+
+        newSources.entrySet().forEach(x -> {
+            final KonfigurationManagerBase<?> bundle = x.getValue();
+
+            final Map<String, Collection<Runnable>> update =
+                    bundle.origin0() instanceof SourceBase
+                    ? null
+                    : bundle.update();
+
+            final SourceBase source = bundle.origin0() instanceof SourceBase
+                                  ? ((SourceBase) bundle.origin0()).updateSelf()
+                                  : null;
+
+            x.setValue(new KonfigurationManagerBase<Konfiguration>(
+                    source == null ? null : source
+            ));
+        });
 
         final Set<Q<?>> updated = new HashSet<>();
         final Map<Q<?>, Object> newCache = origin.values.copy();
@@ -115,7 +162,7 @@ final class Kombiner_Manager implements KonfigurationManager {
                     .sources
                     .vs()
                     // External non-optimizable konfig sources.
-                    .filter(not(Konfiguration0.class::isInstance))
+                    .filter(not(Konfiguration.class::isInstance))
                     .map(Konfiguration::manager)
                     .map(KonfigurationManager::update)
                     .peek(x -> x.entrySet().forEach(e -> e.setValue(
@@ -139,23 +186,6 @@ final class Kombiner_Manager implements KonfigurationManager {
 
             return result;
         });
-    }
-
-    private static <T> Predicate<T> not(@NotNull @NonNull final Predicate<? super T> target) {
-        //noinspection unchecked
-        return (Predicate<T>) target.negate();
-    }
-
-    @SuppressWarnings({"Convert2Lambda", "Anonymous2MethodRef"})
-    private static Runnable wrap(@NonNull @NotNull final Runnable r) {
-        // We can not be sure if given runnable is safe to be put in a map
-        // So we create a plain object wrapping it.
-        return new Runnable() {
-            @Override
-            public void run() {
-                r.run();
-            }
-        };
     }
 
 }

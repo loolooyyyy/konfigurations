@@ -1,6 +1,5 @@
-package io.koosha.konfiguration.impl.v0;
+package io.koosha.konfiguration;
 
-import io.koosha.konfiguration.*;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.experimental.Accessors;
@@ -18,7 +17,7 @@ import java.util.Set;
 /**
  * Read only subset view of a konfiguration. Prepends a pre-defined key
  * to all konfig values
- *
+ * <p>
  * Ignore the J prefix.
  *
  * <p>Immutable and thread safe by itself, although the underlying wrapped
@@ -26,7 +25,7 @@ import java.util.Set;
  */
 @ThreadSafe
 @ApiStatus.Internal
-final class JSubsetView implements Konfiguration {
+final class SubsetView implements Konfiguration {
 
     @Accessors(fluent = true)
     @Getter
@@ -34,9 +33,9 @@ final class JSubsetView implements Konfiguration {
     private final Konfiguration wrapped;
     private final String baseKey;
 
-    JSubsetView(@NonNull @NotNull final String name,
-                @NotNull @NonNull final Konfiguration wrapped,
-                @NotNull @NonNull final String baseKey) {
+    SubsetView(@NonNull @NotNull final String name,
+               @NotNull @NonNull final Konfiguration wrapped,
+               @NotNull @NonNull final String baseKey) {
         this.name = name;
         this.wrapped = wrapped;
 
@@ -212,11 +211,10 @@ final class JSubsetView implements Konfiguration {
      * {@inheritDoc}
      */
     @Contract(pure = true)
-    @NotNull
     @Override
-    public Konfiguration deregister(@NotNull @NonNull final Handle observer,
-                                    @NotNull @NonNull final String key) {
-        return this.wrapped.deregister(observer, key(key));
+    public void deregister(@NotNull @NonNull final Handle observer,
+                           @NotNull @NonNull final String key) {
+        this.wrapped.deregister(observer, key(key));
     }
 
     /**
@@ -239,27 +237,11 @@ final class JSubsetView implements Konfiguration {
     public Konfiguration subset(@NonNull @NotNull final String key) {
         return key.isEmpty()
                ? this
-               : new JSubsetView(
-                       this.name.split("::")[0] + "::" + key,
+               : new SubsetView(
+                       this.wrapped + "::" + this.key(key),
                        this.wrapped,
-                       this.baseKey + this.key(key)
+                       this.key(key)
                );
-    }
-
-    /**
-     * Manager object associated with this konfiguration.
-     *
-     * @return On first invocation, a manager instance. An second invocation
-     * and on, throws exception.
-     * @throws KfgIllegalStateException if manager is already called once
-     *                                  before.
-     */
-    @Contract(pure = true,
-            value = "-> fail")
-    @NotNull
-    @Override
-    public KonfigurationManager manager() {
-        return wrapped.manager();
     }
 
     @Contract(pure = true,

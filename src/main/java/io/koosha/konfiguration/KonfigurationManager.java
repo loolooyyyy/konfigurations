@@ -9,9 +9,14 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Collection;
 import java.util.Map;
 
+@SuppressWarnings("unused")
 @NotThreadSafe
-@ApiStatus.AvailableSince(Factory.VERSION_8)
-public interface KonfigurationManager {
+@ApiStatus.AvailableSince(Faktory.VERSION_8)
+public interface KonfigurationManager<F extends Konfiguration> {
+
+    @NotNull
+    @Contract(pure = true)
+    String name();
 
     /**
      * Indicates whether if anything is actually updated in the origin of
@@ -53,12 +58,14 @@ public interface KonfigurationManager {
     @Contract(mutates = "this")
     Map<String, Collection<Runnable>> update();
 
+    @Contract(mutates = "this")
     default void updateNow() {
         this.update().forEach((key, observers) ->
                 observers.forEach(Runnable::run));
     }
 
     @Nullable
-    Konfiguration getAndSetToNull();
+    @Contract(mutates = "this")
+    F getAndSetToNull();
 
 }

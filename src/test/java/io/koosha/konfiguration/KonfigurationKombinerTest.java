@@ -15,11 +15,13 @@ import static org.testng.Assert.*;
 @SuppressWarnings("RedundantThrows")
 public final class KonfigurationKombinerTest {
 
+    final Faktory fac = Faktory.def();
+
     private AtomicBoolean flag = new AtomicBoolean(true);
 
-    private final Supplier<Map<String, Object>> sup = () -> flag.get()
-                                                            ? singletonMap("xxx", (Object) 12)
-                                                            : singletonMap("xxx", (Object) 99);
+    private final Supplier<Map<String, ?>> sup = () -> flag.get()
+                                                       ? singletonMap("xxx", (Object) 12)
+                                                       : singletonMap("xxx", (Object) 99);
 
     private Konfiguration k;
 
@@ -27,7 +29,7 @@ public final class KonfigurationKombinerTest {
     public void setup() {
 
         this.flag.set(true);
-        this.k = Konfiguration.kombine(Konfiguration.inMemory(sup));
+        this.k = fac.kombine(fac.map("map-sup", sup));
     }
 
     @Test
@@ -36,7 +38,7 @@ public final class KonfigurationKombinerTest {
         assertEquals(k.int_("xxx").v(), (Integer) 12);
 
         flag.set(!flag.get());
-        k.update();
+        k.manager().updateNow();
 
         assertEquals(k.int_("xxx").v(), (Integer) 99);
     }

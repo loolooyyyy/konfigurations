@@ -1,4 +1,4 @@
-package io.koosha.konfiguration.impl.v0;
+package io.koosha.konfiguration.impl.v8;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
@@ -8,12 +8,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.CollectionType;
 import com.fasterxml.jackson.databind.type.MapType;
 import io.koosha.konfiguration.*;
-import io.koosha.konfiguration.ext.KfgJacksonError;
-import jdk.nashorn.internal.ir.annotations.Immutable;
+import io.koosha.konfiguration.extension.KfgJacksonError;
+import io.koosha.konfiguration.impl.base.SourceBase;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Synchronized;
 import lombok.experimental.Accessors;
+import net.jcip.annotations.Immutable;
 import net.jcip.annotations.ThreadSafe;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
@@ -39,12 +40,13 @@ import static java.util.Objects.requireNonNull;
 @Immutable
 @ThreadSafe
 @ApiStatus.Internal
-final class ExtJacksonJsonSource extends Source {
+final class ExtJacksonJsonSource extends SourceBase {
 
     @Contract(pure = true,
             value = "->new")
     @NotNull
     static ObjectMapper defaultJacksonObjectMapper() {
+        ensureDep(null);
         final ObjectMapper mapper = new ObjectMapper();
         mapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
         return mapper;
@@ -61,37 +63,33 @@ final class ExtJacksonJsonSource extends Source {
     @Accessors(fluent = true)
     private final String name;
 
-    @Accessors(fluent = true)
-    @Getter
-    private final KonfigurationManager0 manager = new KonfigurationManager0() {
 
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        @Contract(pure = true)
-        public boolean hasUpdate() {
-            final String newJson = json.get();
-            return newJson != null && newJson.hashCode() != lastHash;
-        }
+    /**
+     * {@inheritDoc}
+     */
+    @Contract(pure = true)
+    public boolean hasUpdate() {
+        final String newJson = json.get();
+        return newJson != null && newJson.hashCode() != lastHash;
+    }
 
-        /**
-         * {@inheritDoc}
-         */
-        @Contract(pure = true,
-                value = "-> new")
-        @Override
-        public @NotNull Konfiguration0 _update() {
-            return this.hasUpdate()
-                   ? new ExtJacksonJsonSource(name(), json, mapperSupplier)
-                   : ExtJacksonJsonSource.this;
-        }
+    /**
+     * {@inheritDoc}
+     */
+    @Contract(pure = true,
+            value = "-> new")
+    @Override
+    @NotNull
+    public SourceBase updateSelf() {
+        return this.hasUpdate()
+               ? new ExtJacksonJsonSource(name(), json, mapperSupplier)
+               : ExtJacksonJsonSource.this;
+    }
 
-    };
 
     private JsonNode node_(@NonNull @NotNull final String key) {
         if (key.isEmpty())
-            throw new KfgMissingKeyException(this.name(), key, "empty konfig key");
+            throw new KfgIllegalArgumentException(this.name(), "empty konfig key");
 
         final String k = "/" + key.replace('.', '/');
         return this.root.findPath(k);
@@ -100,7 +98,7 @@ final class ExtJacksonJsonSource extends Source {
     @Synchronized
     private JsonNode node(@NotNull @NonNull final String key) {
         if (key.isEmpty())
-            throw new KfgMissingKeyException(this.name(), key, "empty konfig key");
+            throw new KfgIllegalArgumentException(this.name(), "empty konfig key");
 
         final JsonNode node = node_(key);
         if (node.isMissingNode())
@@ -117,6 +115,17 @@ final class ExtJacksonJsonSource extends Source {
         if (node.isNull())
             throw new KfgTypeNullException(this.name(), key, required);
         return node;
+    }
+
+    private static void ensureDep(@Nullable final String source) {
+        try {
+            Class.forName("com.fasterxml.jackson.databind.JsonNode");
+        }
+        catch (final ClassNotFoundException e) {
+            throw new KfgUnsupportedOperationException(source,
+                    "jackson library missing: com.fasterxml.jackson.databind.JsonNode",
+                    e);
+        }
     }
 
     /**
@@ -142,16 +151,7 @@ final class ExtJacksonJsonSource extends Source {
                          @NonNull @NotNull final Supplier<ObjectMapper> objectMapper) {
         this.name = name;
         // Check early, so we're not fooled with a dummy object reader.
-        try {
-            Class.forName("com.fasterxml.jackson.databind.JsonNode");
-        }
-        catch (final ClassNotFoundException e) {
-            // XXX
-            throw new KfgJacksonError(this.name(),
-                    "jackson library is required to be present in " +
-                            "the class path, can not find the class: " +
-                            "com.fasterxml.jackson.databind.JsonNode", e);
-        }
+        ensureDep(name);
 
         this.json = json;
         this.mapperSupplier = objectMapper;
@@ -180,7 +180,7 @@ final class ExtJacksonJsonSource extends Source {
     @Override
     @NotNull
     @Synchronized
-    Boolean bool0(@NotNull @NonNull final String key) {
+    protected Boolean bool0(@NotNull @NonNull final String key) {
         final JsonNode at = node(key);
         return checkJsonType(at.isBoolean(), Q.BOOL, at, key).asBoolean();
     }
@@ -191,7 +191,7 @@ final class ExtJacksonJsonSource extends Source {
     @Override
     @NotNull
     @Synchronized
-    Character char0(@NotNull @NonNull final String key) {
+    protected Character char0(@NotNull @NonNull final String key) {
         final JsonNode at = node(key);
         return checkJsonType(at.isTextual() && at.textValue().length() == 1, Q.STRING, at, key)
                 .textValue()
@@ -204,7 +204,7 @@ final class ExtJacksonJsonSource extends Source {
     @Override
     @NotNull
     @Synchronized
-    String string0(@NotNull @NonNull final String key) {
+    protected String string0(@NotNull @NonNull final String key) {
         final JsonNode at = node(key);
         return checkJsonType(at.isTextual(), Q.STRING, at, key).asText();
     }
@@ -215,7 +215,7 @@ final class ExtJacksonJsonSource extends Source {
     @NotNull
     @Override
     @Synchronized
-    Number number0(@NotNull @NonNull final String key) {
+    protected Number number0(@NotNull @NonNull final String key) {
         final JsonNode at = node(key);
         return checkJsonType(
                 at.isShort() || at.isInt() || at.isLong(),
@@ -228,7 +228,7 @@ final class ExtJacksonJsonSource extends Source {
     @NotNull
     @Override
     @Synchronized
-    Number numberDouble0(@NotNull @NonNull final String key) {
+    protected Number numberDouble0(@NotNull @NonNull final String key) {
         final JsonNode at = node(key);
         return checkJsonType(
                 at.isFloat()
@@ -245,8 +245,8 @@ final class ExtJacksonJsonSource extends Source {
     @NotNull
     @Override
     @Synchronized
-    List<?> list0(@NotNull @NonNull final String key,
-                  @NotNull Q<? extends List<?>> type) {
+    protected List<?> list0(@NotNull @NonNull final String key,
+                            @NotNull Q<? extends List<?>> type) {
         final JsonNode at = node(key);
         checkJsonType(at.isArray(), Q.UNKNOWN_LIST, at, key);
         final ObjectMapper reader = this.mapperSupplier.get();
@@ -268,8 +268,8 @@ final class ExtJacksonJsonSource extends Source {
     @NotNull
     @Override
     @Synchronized
-    Set<?> set0(@NotNull @NonNull final String key,
-                @NotNull Q<? extends Set<?>> type) {
+    protected Set<?> set0(@NotNull @NonNull final String key,
+                          @NotNull Q<? extends Set<?>> type) {
         final JsonNode at = node(key);
 
         checkJsonType(at.isArray(), Q.UNKNOWN_SET, at, key);
@@ -300,8 +300,8 @@ final class ExtJacksonJsonSource extends Source {
     @Override
     @NotNull
     @Synchronized
-    Map<?, ?> map0(@NotNull @NonNull final String key,
-                   @NotNull Q<? extends Map<?, ?>> type) {
+    protected Map<?, ?> map0(@NotNull @NonNull final String key,
+                             @NotNull Q<? extends Map<?, ?>> type) {
         final JsonNode at = node(key);
         checkJsonType(at.isObject(), Q.UNKNOWN_MAP, at, key);
         final ObjectMapper reader = this.mapperSupplier.get();
@@ -323,8 +323,8 @@ final class ExtJacksonJsonSource extends Source {
     @Override
     @NotNull
     @Synchronized
-    Object custom0(@NotNull @NonNull final String key,
-                   @NotNull @NonNull final Q<?> type) {
+    protected Object custom0(@NotNull @NonNull final String key,
+                             @NotNull @NonNull final Q<?> type) {
         final ObjectMapper reader = this.mapperSupplier.get();
         final JsonParser traverse = this.node(key).traverse();
 
@@ -341,7 +341,7 @@ final class ExtJacksonJsonSource extends Source {
      */
     @Override
     @Synchronized
-    boolean isNull(@NonNull @NotNull String key) {
+    protected boolean isNull(@NonNull @NotNull String key) {
         return node(key).isNull();
     }
 

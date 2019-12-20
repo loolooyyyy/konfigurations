@@ -15,7 +15,7 @@ import java.util.function.Consumer;
  * change in multiple sources and differentiate between them, you need to use
  * intermediate objects, one listener for each source, yourself.
  */
-@ApiStatus.AvailableSince(Factory.VERSION_1)
+@ApiStatus.AvailableSince(Faktory.VERSION_1)
 public interface KeyObserver extends Consumer<String> {
 
     /**

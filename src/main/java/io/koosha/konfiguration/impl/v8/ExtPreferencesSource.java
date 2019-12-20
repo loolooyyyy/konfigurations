@@ -1,7 +1,8 @@
-package io.koosha.konfiguration.impl.v0;
+package io.koosha.konfiguration.impl.v8;
 
 import io.koosha.konfiguration.*;
 import io.koosha.konfiguration.ext.KfgPreferencesError;
+import io.koosha.konfiguration.impl.base.SourceBase;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.SneakyThrows;
@@ -38,7 +39,7 @@ import java.util.prefs.Preferences;
  */
 @ApiStatus.Internal
 @ThreadSafe
-final class ExtPreferencesSource extends Source {
+final class ExtPreferencesSource extends SourceBase {
 
     private final Deserializer deser;
     private final Preferences source;
@@ -50,30 +51,25 @@ final class ExtPreferencesSource extends Source {
     @Accessors(fluent = true)
     private final String name;
 
-    @Accessors(fluent = true)
-    @Getter
-    private final KonfigurationManager0 manager = new KonfigurationManager0() {
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @Contract(pure = true)
+    public boolean hasUpdate() {
+        return lastHash != hashOf();
+    }
 
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        @Contract(pure = true)
-        public boolean hasUpdate() {
-            return lastHash != hashOf();
-        }
+    /**
+     * {@inheritDoc}
+     */
+    @NotNull
+    @Contract(mutates = "this")
+    @Override
+    public SourceBase updateSelf() {
+        return ExtPreferencesSource.this;
+    }
 
-        /**
-         * {@inheritDoc}
-         */
-        @NotNull
-        @Contract(mutates = "this")
-        @Override
-        public Konfiguration0 _update() {
-            return ExtPreferencesSource.this;
-        }
-
-    };
 
     ExtPreferencesSource(@NotNull @NonNull final String name,
                          @NonNull @NotNull final Preferences preferences,
@@ -89,7 +85,7 @@ final class ExtPreferencesSource extends Source {
      */
     @Override
     @NotNull
-    Object bool0(@NotNull @NonNull final String key) {
+    protected Object bool0(@NotNull @NonNull final String key) {
         return this.source.getBoolean(sane(key), false);
     }
 
@@ -98,7 +94,7 @@ final class ExtPreferencesSource extends Source {
      */
     @Override
     @NotNull
-    Object char0(@NotNull @NonNull final String key) {
+    protected Object char0(@NotNull @NonNull final String key) {
         final String s = ((String) this.string0(sane(key)));
         if (s.length() != 1)
             throw new KfgTypeException(this.name(), key, Q.CHAR, s);
@@ -110,7 +106,7 @@ final class ExtPreferencesSource extends Source {
      */
     @Override
     @NotNull
-    Object string0(@NotNull @NonNull final String key) {
+    protected Object string0(@NotNull @NonNull final String key) {
         return this.source.get(sane(key), null);
     }
 
@@ -119,7 +115,7 @@ final class ExtPreferencesSource extends Source {
      */
     @Override
     @NotNull
-    Number number0(@NotNull @NonNull final String key) {
+    protected Number number0(@NotNull @NonNull final String key) {
         return this.source.getLong(sane(key), 0);
     }
 
@@ -128,7 +124,7 @@ final class ExtPreferencesSource extends Source {
      */
     @Override
     @NotNull
-    Number numberDouble0(@NotNull @NonNull final String key) {
+    protected Number numberDouble0(@NotNull @NonNull final String key) {
         return this.source.getDouble(sane(key), 0);
     }
 
@@ -137,11 +133,11 @@ final class ExtPreferencesSource extends Source {
      */
     @Override
     @NotNull
-    List<?> list0(@NotNull @NonNull final String key,
-                  @NotNull @NonNull final Q<? extends List<?>> type) {
+    protected List<?> list0(@NotNull @NonNull final String key,
+                            @NotNull @NonNull final Q<? extends List<?>> type) {
         if (this.deser == null)
             throw new KfgPreferencesError(this.name(), "deserializer not set");
-        return this.deser.deserialize(this.source.getByteArray(sane(key), new byte[0]), type);
+        return this.deser.apply(this.source.getByteArray(sane(key), new byte[0]), type);
     }
 
     /**
@@ -149,11 +145,11 @@ final class ExtPreferencesSource extends Source {
      */
     @Override
     @NotNull
-    Set<?> set0(@NotNull @NonNull final String key,
-                @NotNull @NonNull final Q<? extends Set<?>> type) {
+    protected Set<?> set0(@NotNull @NonNull final String key,
+                          @NotNull @NonNull final Q<? extends Set<?>> type) {
         if (this.deser == null)
             throw new KfgPreferencesError(this.name(), "deserializer not set");
-        return this.deser.deserialize(this.source.getByteArray(sane(key), new byte[0]), type);
+        return this.deser.apply(this.source.getByteArray(sane(key), new byte[0]), type);
     }
 
     /**
@@ -161,11 +157,11 @@ final class ExtPreferencesSource extends Source {
      */
     @Override
     @NotNull
-    Map<?, ?> map0(@NotNull @NonNull final String key,
-                   @NotNull @NonNull final Q<? extends Map<?, ?>> type) {
+    protected Map<?, ?> map0(@NotNull @NonNull final String key,
+                             @NotNull @NonNull final Q<? extends Map<?, ?>> type) {
         if (this.deser == null)
             throw new KfgPreferencesError(this.name(), "deserializer not set");
-        return this.deser.deserialize(this.source.getByteArray(sane(key), new byte[0]), type);
+        return this.deser.apply(this.source.getByteArray(sane(key), new byte[0]), type);
     }
 
     /**
@@ -173,18 +169,18 @@ final class ExtPreferencesSource extends Source {
      */
     @Override
     @NotNull
-    Object custom0(@NotNull @NonNull final String key,
-                   @NotNull @NonNull final Q<?> type) {
+    protected Object custom0(@NotNull @NonNull final String key,
+                             @NotNull @NonNull final Q<?> type) {
         if (this.deser == null)
             throw new KfgPreferencesError(this.name(), "deserializer not set");
-        return this.deser.deserialize(this.source.getByteArray(sane(key), new byte[0]), type);
+        return this.deser.apply(this.source.getByteArray(sane(key), new byte[0]), type);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    boolean isNull(@NonNull @NotNull final String key) {
+    protected boolean isNull(@NonNull @NotNull final String key) {
         return this.source.get(sane(key), null) == null;
     }
 
@@ -198,7 +194,7 @@ final class ExtPreferencesSource extends Source {
             return source.nodeExists(sane(key));
         }
         catch (Throwable e) {
-            throw new KfgSourceException(this.name(), key, null, null, "error checking existence of key", e);
+            throw new KfgSourceException(this.name(), "error checking existence of key", e);
         }
     }
 
