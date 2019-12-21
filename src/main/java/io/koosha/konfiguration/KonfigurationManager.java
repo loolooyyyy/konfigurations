@@ -12,7 +12,7 @@ import java.util.Map;
 @SuppressWarnings("unused")
 @NotThreadSafe
 @ApiStatus.AvailableSince(Faktory.VERSION_8)
-public interface KonfigurationManager<F extends Konfiguration> {
+public interface KonfigurationManager {
 
     @NotNull
     @Contract(pure = true)
@@ -66,6 +66,6 @@ public interface KonfigurationManager<F extends Konfiguration> {
 
     @Nullable
     @Contract(mutates = "this")
-    F getAndSetToNull();
+    Konfiguration getAndSetToNull();
 
 }

@@ -1,6 +1,6 @@
 package io.koosha.konfiguration;
 
-
+import io.koosha.konfiguration.error.KfgMissingKeyException;
 import lombok.NonNull;
 import net.jcip.annotations.Immutable;
 import net.jcip.annotations.ThreadSafe;
@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static java.util.Objects.requireNonNull;
 
 /**
  * Konfig value wrapper.
@@ -77,13 +78,11 @@ public interface K<U> {
      * reference to the observer yourself.
      *
      * @param observer listener being registered for key {@link #key()}
-     * @return this
      * @see #register(KeyObserver)
      */
-    @NotNull
     @Contract(mutates = "this")
     @ApiStatus.AvailableSince(Faktory.VERSION_1)
-    K<U> deregister(@NonNull @NotNull Handle observer);
+    void deregister(@NonNull @NotNull Handle observer);
 
 
     /**
@@ -120,6 +119,16 @@ public interface K<U> {
     @ApiStatus.AvailableSince(Faktory.VERSION_1)
     boolean exists();
 
+    /**
+     * If the key exists and actual value of the konfiguration is null.
+     *
+     * @return if the key exists and actual value of the konfiguration is null.
+     */
+    @Contract(pure = true)
+    @ApiStatus.AvailableSince(Faktory.VERSION_8)
+    default boolean isNull() {
+        return this.exists() && this.v() == null;
+    }
 
     /**
      * Actual value of this konfiguration.
@@ -198,8 +207,8 @@ public interface K<U> {
             value = " _, _ -> new")
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     static <U> K<U> of(@Nullable final U u,
-                       @Nullable final Q<U> type) {
-        return of(u, type, "");
+                       @NotNull @NonNull final Q<U> type) {
+        return of(u, type, requireNonNull(type.key()));
     }
 
     @NotNull
@@ -236,7 +245,7 @@ public interface K<U> {
             value = " _ -> new")
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     static K<Boolean> false_(@NonNull @NotNull final String key) {
-        return of(false, Q.BOOL, key);
+        return of(false, Q.BOOL.withKey(key), key);
     }
 
     @NotNull
@@ -244,7 +253,7 @@ public interface K<U> {
             value = " _ -> new")
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     static K<Boolean> true_(@NonNull @NotNull final String key) {
-        return of(true, Q.BOOL, key);
+        return of(true, Q.BOOL.withKey(key), key);
     }
 
     @NotNull
@@ -328,7 +337,7 @@ public interface K<U> {
     static K<Boolean> bool(@Nullable final Boolean v,
                            @NonNull @NotNull final String key) {
         if (v == null)
-            return null_(Q.BOOL);
+            return null_(Q.BOOL.withKey(key));
         return v ? true_(key) : false_(key);
     }
 
@@ -345,7 +354,7 @@ public interface K<U> {
             value = "_ -> new")
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     static K<Boolean> bool(@NonNull @NotNull final String key) {
-        return missing(Q.BOOL, key);
+        return missing(Q.BOOL.withKey(key), key);
     }
 
 
@@ -363,7 +372,7 @@ public interface K<U> {
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     static K<Character> char_(final Character v,
                               @NonNull @NotNull final String key) {
-        return of(v, Q.CHAR, key);
+        return of(v, Q.CHAR.withKey(key), key);
     }
 
     @NotNull
@@ -379,7 +388,7 @@ public interface K<U> {
             value = "_ -> new")
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     static K<Character> char_(@NonNull @NotNull final String key) {
-        return missing(Q.CHAR, key);
+        return missing(Q.CHAR.withKey(key), key);
     }
 
 
@@ -389,7 +398,7 @@ public interface K<U> {
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     static K<String> stringOf(@Nullable final Object v,
                               @NonNull @NotNull final String key) {
-        return of(String.valueOf(v), Q.STRING, key);
+        return of(String.valueOf(v), Q.STRING.withKey(key), key);
     }
 
     @NotNull
@@ -628,7 +637,7 @@ public interface K<U> {
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     static <U> K<List<U>> list(@Nullable final List<U> v,
                                @NonNull @NotNull final String key) {
-        return list(v, key, (Q) Q.UNKNOWN_LIST);
+        return list(v, key, (Q) Q.UNKNOWN_LIST.withKey(key));
     }
 
     @NotNull
@@ -665,7 +674,7 @@ public interface K<U> {
     @SuppressWarnings({"unchecked", "rawtypes"})
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     static <U> K<List<U>> list(@NonNull @NotNull final String key) {
-        return list(key, (Q) Q.UNKNOWN_LIST);
+        return list(key, (Q) Q.UNKNOWN_LIST.withKey(key));
     }
 
     @NotNull
@@ -702,7 +711,7 @@ public interface K<U> {
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     static <U> K<Set<U>> set(@Nullable final Set<U> v,
                              @NonNull @NotNull final String key) {
-        return set(v, key, (Q) Q.UNKNOWN_SET);
+        return set(v, key, (Q) Q.UNKNOWN_SET.withKey(key));
     }
 
     @NotNull
@@ -739,7 +748,7 @@ public interface K<U> {
     @SuppressWarnings({"unchecked", "rawtypes"})
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     static <U> K<Set<U>> set(@NonNull @NotNull final String key) {
-        return set(key, (Q) Q.UNKNOWN_SET);
+        return set(key, (Q) Q.UNKNOWN_SET.withKey(key));
     }
 
     @NotNull
@@ -851,7 +860,7 @@ public interface K<U> {
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     static <U, V> K<Map<U, V>> map(@Nullable final Map<U, V> v,
                                    @NonNull @NotNull final String key) {
-        return map(v, key, (Q) Q.UNKNOWN_MAP);
+        return map(v, key, (Q) Q.UNKNOWN_MAP.withKey(key));
     }
 
     @NotNull
@@ -887,7 +896,7 @@ public interface K<U> {
     @SuppressWarnings({"unchecked", "rawtypes"})
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     static <U, V> K<Map<U, V>> map(@NonNull @NotNull final String key) {
-        return map(key, (Q) Q.UNKNOWN_LIST);
+        return map(key, (Q) Q.UNKNOWN_LIST.withKey(key));
     }
 
     @NotNull

@@ -1,6 +1,6 @@
 package io.koosha.konfiguration;
 
-
+import io.koosha.konfiguration.error.KfgMissingKeyException;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -14,7 +14,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import static java.lang.String.format;
-
 
 /**
  * Dummy konfig value, holding a constant konfig value with no source.
@@ -52,41 +51,27 @@ final class DummyV<U> implements K<U> {
     /**
      * {@inheritDoc}
      */
+    @Contract(mutates = "this")
     @Override
-    @Contract(pure = true,
-            value = "_-> this")
-    @NotNull
-    public K<U> deregister(@NonNull @NotNull final Handle observer) {
-        return this;
+    public void deregister(@NonNull @NotNull final Handle observer) {
     }
 
     /**
      * {@inheritDoc}
      */
-    @Override
+    @Contract(mutates = "this")
     @NotNull
-    public Handle registerSoft(@NonNull @NotNull KeyObserver observer) {
+    @Override
+    public Handle registerSoft(@NonNull @NotNull final KeyObserver observer) {
         return M_1;
     }
 
-    private final static Handle M_1 = new Handle() {
-        @Override
-        public int hashCode() {
-            return 1;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            return obj == this;
-        }
-    };
-
     /**
      * {@inheritDoc}
      */
-    @Override
+    @Contract(mutates = "this")
     @NotNull
-    @Contract(pure = true)
+    @Override
     public Handle register(@NonNull @NotNull final KeyObserver observer) {
         return M_1;
     }
@@ -144,6 +129,24 @@ final class DummyV<U> implements K<U> {
         return format("K[exists=%b,%s=%s]", this.exists, keyStr, vStr);
     }
 
-    // ________________________________________________ PREDEFINED CONST VALUES
+    // ________________________________________________________________________
+
+    private final static Handle M_1 = new Handle() {
+        @Override
+        public String id() {
+            return this.getClass().getName();
+        }
+
+        @Override
+        public int hashCode() {
+            return id().hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            return obj == this;
+        }
+    };
+
 }
 

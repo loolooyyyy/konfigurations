@@ -1,0 +1,42 @@
+package io.koosha.konfiguration.error;
+
+import io.koosha.konfiguration.Q;
+import lombok.Getter;
+import net.jcip.annotations.ThreadSafe;
+import org.jetbrains.annotations.Nullable;
+
+import static io.koosha.konfiguration.error.KfgException.toStringOf;
+
+@Getter
+@ThreadSafe
+public class KfgIllegalStateException extends IllegalStateException {
+
+    @Nullable
+    private final String source;
+
+    @Nullable
+    private final String key;
+
+    @Nullable
+    private final Q<?> neededType;
+
+    @Nullable
+    private final String actualValue;
+
+    public KfgIllegalStateException(@Nullable final String source,
+                                    final String message) {
+        this(source, null, null, null, message);
+    }
+
+    public KfgIllegalStateException(@Nullable final String source,
+                                    @Nullable final String key,
+                                    @Nullable final Q<?> neededType,
+                                    @Nullable final Object actualValue,
+                                    final String message) {
+        super(message);
+        this.source = source;
+        this.key = key;
+        this.neededType = neededType;
+        this.actualValue = toStringOf(actualValue);
+    }
+}

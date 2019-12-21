@@ -1,16 +1,28 @@
 package io.koosha.konfiguration;
 
 import lombok.NonNull;
+import net.jcip.annotations.NotThreadSafe;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * The most basic form of konfiguration source.
+ * <p>
+ * It will:
+ * 1. Provides a konfiguration value, given a key and type
+ * 2. Checks if it contains value for a given key and type.
+ * <p>
+ * <p>
+ * Methods need not to cache their result, as
+ * io.koosha.konfiguration.v8.Kombiner will take care of that.
+ */
 @SuppressWarnings("unused")
+@NotThreadSafe
 @ApiStatus.AvailableSince(Faktory.VERSION_8)
 public interface Source {
 
@@ -127,38 +139,20 @@ public interface Source {
     @NotNull
     @Contract(mutates = "this")
     default K<List<?>> list(@NotNull @NonNull final String key) {
-        return (K) list(key, (Q) Q.UNKNOWN_LIST);
+        return (K) list((Q) Q.UNKNOWN_LIST.withKey(key));
     }
 
     /**
      * Get a list of U konfiguration value.
      *
-     * @param type type object of values in the list.
-     * @param <U>  generic type of elements in the list.
+     * @param key type object of values in the list.
+     * @param <U> generic type of elements in the list.
      * @return konfiguration value wrapper for the requested key.
      */
     @NotNull
     @Contract(mutates = "this")
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
-    default <U> K<List<U>> list(@NotNull @NonNull final Q<List<U>> type) {
-        if (type.key() == null)
-            throw new KfgIllegalArgumentException(this.name(), "provided type has no key");
-        return this.list(type.key(), type);
-    }
-
-    /**
-     * Get a list of U konfiguration value.
-     *
-     * @param key  unique key of the konfiguration being requested.
-     * @param type type object of values in the list.
-     * @param <U>  generic type of elements in the list.
-     * @return konfiguration value wrapper for the requested key.
-     */
-    @NotNull
-    @Contract(mutates = "this")
-    @ApiStatus.AvailableSince(Faktory.VERSION_8)
-    <U> K<List<U>> list(@NotNull String key,
-                        @Nullable Q<List<U>> type);
+    <U> K<List<U>> list(@NotNull Q<List<U>> key);
 
 
     /**
@@ -171,40 +165,21 @@ public interface Source {
     @NotNull
     @Contract(mutates = "this")
     default K<Map<?, ?>> map(@NotNull @NonNull final String key) {
-        return (K) map(key, (Q) Q.UNKNOWN_MAP);
+        return (K) map((Q) Q.UNKNOWN_MAP.withKey(key));
     }
 
     /**
      * Get a map of U to V konfiguration value.
      *
-     * @param type generic type of map
-     * @param <U>  generic type of map, the key type.
-     * @param <V>  generic type of map, the value type.
+     * @param key generic type of map
+     * @param <U> generic type of map, the key type.
+     * @param <V> generic type of map, the value type.
      * @return konfiguration value wrapper for the requested key.
      */
     @NotNull
     @Contract(mutates = "this")
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
-    default <U, V> K<Map<U, V>> map(@NotNull @NonNull final Q<Map<U, V>> type) {
-        if (type.key() == null)
-            throw new KfgIllegalArgumentException(this.name(), "provided type has no key");
-        return this.map(type.key(), type);
-    }
-
-    /**
-     * Get a map of U to V konfiguration value.
-     *
-     * @param key  unique key of the konfiguration being requested.
-     * @param type generic type of map
-     * @param <U>  generic type of map, the key type.
-     * @param <V>  generic type of map, the value type.
-     * @return konfiguration value wrapper for the requested key.
-     */
-    @NotNull
-    @Contract(mutates = "this")
-    @ApiStatus.AvailableSince(Faktory.VERSION_8)
-    <U, V> K<Map<U, V>> map(@NotNull String key,
-                            @Nullable Q<Map<U, V>> type);
+    <U, V> K<Map<U, V>> map(@NotNull Q<Map<U, V>> key);
 
 
     /**
@@ -217,38 +192,20 @@ public interface Source {
     @NotNull
     @Contract(mutates = "this")
     default K<Set<?>> set(@NotNull @NonNull final String key) {
-        return (K) set(key, (Q) Q.UNKNOWN_SET);
+        return (K) set((Q) Q.UNKNOWN_SET.withKey(key));
     }
 
     /**
      * Get a set of konfiguration value.
      *
-     * @param type type object of values in the set.
-     * @param <U>  generic type of elements in the set.
+     * @param key type object of values in the set.
+     * @param <U> generic type of elements in the set.
      * @return konfiguration value wrapper for the requested key.
      */
     @NotNull
     @Contract(mutates = "this")
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
-    default <U> K<Set<U>> set(@NotNull @NonNull final Q<Set<U>> type) {
-        if (type.key() == null)
-            throw new KfgIllegalArgumentException(this.name(), "provided type has no key");
-        return this.set(type.key(), type);
-    }
-
-    /**
-     * Get a set of konfiguration value.
-     *
-     * @param key  unique key of the konfiguration being requested.
-     * @param type type object of values in the set.
-     * @param <U>  generic type of elements in the set.
-     * @return konfiguration value wrapper for the requested key.
-     */
-    @NotNull
-    @Contract(mutates = "this")
-    @ApiStatus.AvailableSince(Faktory.VERSION_8)
-    <U> K<Set<U>> set(@NotNull String key,
-                      @Nullable Q<Set<U>> type);
+    <U> K<Set<U>> set(@NotNull Q<Set<U>> key);
 
     // ========================================================================
 
@@ -259,9 +216,8 @@ public interface Source {
      * this!
      *
      * <p><b>Important:</b> this method must <em>NOT</em> be used to obtain
-     * maps, lists or sets. Use the corresponding methods
-     * {@link #map(String, Q)}, {@link #list(String, Q)} and
-     * {@link #set(String, Q)}.
+     * maps, lists or sets. Use the corresponding methods {@link #map(String)},
+     * {@link #list(String)} and {@link #set(String)}.
      *
      * @param key unique key of the konfiguration being requested.
      * @return konfiguration value wrapper for the requested key.
@@ -280,44 +236,18 @@ public interface Source {
      * this!
      *
      * <p><b>Important:</b> this method must <em>NOT</em> be used to obtain
-     * maps, lists or sets. Use the corresponding methods
-     * {@link #map(String, Q)}, {@link #list(String, Q)} and
-     * {@link #set(String, Q)}.
+     * maps, lists or sets. Use the corresponding methods {@link #map(Q)},
+     * {@link #list(Q)} and {@link #set(Q)}.
      *
-     * @param type type object of the requested value.
-     * @param <U>  generic type of requested value.
+     * @param key type object of the requested value.
+     * @param <U> generic type of requested value.
      * @return konfiguration value wrapper for the requested key.
      */
     @NotNull
     @Contract(mutates = "this")
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
-    default <U> K<U> custom(@NotNull @NonNull final Q<U> type) {
-        if (type.key() == null)
-            throw new KfgIllegalArgumentException(this.name(), "provided type has no key");
-        return this.custom(type.key(), type);
-    }
+    <U> K<U> custom(@NotNull final Q<U> key);
 
-    /**
-     * Get a custom object of type Q konfiguration value.
-     *
-     * <p><b>Important:</b> the underlying konfiguration source must support
-     * this!
-     *
-     * <p><b>Important:</b> this method must <em>NOT</em> be used to obtain
-     * maps, lists or sets. Use the corresponding methods
-     * {@link #map(String, Q)}, {@link #list(String, Q)} and
-     * {@link #set(String, Q)}.
-     *
-     * @param key  unique key of the konfiguration being requested.
-     * @param type type object of the requested value.
-     * @param <U>  generic type of requested value.
-     * @return konfiguration value wrapper for the requested key.
-     */
-    @NotNull
-    @Contract(mutates = "this")
-    @ApiStatus.AvailableSince(Faktory.VERSION_8)
-    <U> K<U> custom(@NotNull String key,
-                    @Nullable Q<U> type);
 
     // ========================================================================
 
@@ -328,22 +258,43 @@ public interface Source {
      */
     @Contract(pure = true)
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
-    default boolean has(@NotNull @NonNull final Q<?> type) {
-        if (type.key() == null)
-            throw new KfgIllegalArgumentException(this.name(), "provided type has no key");
-        return this.has(type.key(), type);
-    }
+    boolean has(@NotNull Q<?> key);
 
     /**
-     * Check if {@code key} exists in the configuration.
+     * Check if map {@code key} exists in the configuration.
      *
      * @param key the config key to check it's existence
      * @return true if the key exists, false otherwise.
      */
     @Contract(pure = true)
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
-    boolean has(@NotNull String key, @Nullable Q<?> type);
+    default boolean hasMap(@NotNull @NonNull final Q<Map<?, ?>> key) {
+        return this.has(key);
+    }
 
+    /**
+     * Check if set {@code key} exists in the configuration.
+     *
+     * @param key the config key to check it's existence
+     * @return true if the key exists, false otherwise.
+     */
+    @Contract(pure = true)
+    @ApiStatus.AvailableSince(Faktory.VERSION_8)
+    default boolean hasSet(@NotNull @NonNull final Q<Set<?>> key) {
+        return this.has(key);
+    }
+
+    /**
+     * Check if list {@code key} exists in the configuration.
+     *
+     * @param key the config key to check it's existence
+     * @return true if the key exists, false otherwise.
+     */
+    @Contract(pure = true)
+    @ApiStatus.AvailableSince(Faktory.VERSION_8)
+    default boolean hasList(@NotNull @NonNull final Q<List<?>> key) {
+        return this.has(key);
+    }
 
     /**
      * Check if boolean {@code key} exists in the configuration.
@@ -354,7 +305,7 @@ public interface Source {
     @Contract(pure = true)
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     default boolean hasBool(@NotNull @NonNull final String key) {
-        return this.has(key, Q.BOOL);
+        return this.has(Q.BOOL.withKey(key));
     }
 
     /**
@@ -366,7 +317,7 @@ public interface Source {
     @Contract(pure = true)
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     default boolean hasChar(@NotNull @NonNull final String key) {
-        return this.has(key, Q.CHAR);
+        return this.has(Q.CHAR.withKey(key));
     }
 
     /**
@@ -378,7 +329,7 @@ public interface Source {
     @Contract(pure = true)
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     default boolean hasString(@NotNull @NonNull final String key) {
-        return this.has(key, Q.STRING);
+        return this.has(Q.STRING.withKey(key));
     }
 
     /**
@@ -390,7 +341,7 @@ public interface Source {
     @Contract(pure = true)
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     default boolean hasByte(@NotNull @NonNull final String key) {
-        return this.has(key, Q.BYTE);
+        return this.has(Q.BYTE.withKey(key));
     }
 
     /**
@@ -402,7 +353,7 @@ public interface Source {
     @Contract(pure = true)
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     default boolean hasShort(@NotNull @NonNull final String key) {
-        return this.has(key, Q.SHORT);
+        return this.has(Q.SHORT.withKey(key));
     }
 
     /**
@@ -414,7 +365,7 @@ public interface Source {
     @Contract(pure = true)
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     default boolean hasInt(@NotNull @NonNull final String key) {
-        return this.has(key, Q.INT);
+        return this.has(Q.INT.withKey(key));
     }
 
     /**
@@ -426,7 +377,7 @@ public interface Source {
     @Contract(pure = true)
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     default boolean hasLong(@NotNull @NonNull final String key) {
-        return this.has(key, Q.LONG);
+        return this.has(Q.LONG.withKey(key));
     }
 
     /**
@@ -438,7 +389,7 @@ public interface Source {
     @Contract(pure = true)
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     default boolean hasFloat(@NotNull @NonNull final String key) {
-        return this.has(key, Q.DOUBLE);
+        return this.has(Q.FLOAT.withKey(key));
     }
 
     /**
@@ -450,7 +401,7 @@ public interface Source {
     @Contract(pure = true)
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     default boolean hasDouble(@NotNull @NonNull final String key) {
-        return this.has(key, Q.DOUBLE);
+        return this.has(Q.DOUBLE.withKey(key));
     }
 
 }

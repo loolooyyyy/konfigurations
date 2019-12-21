@@ -1,6 +1,8 @@
 package io.koosha.konfiguration;
 
 
+import io.koosha.konfiguration.error.KfgMissingKeyException;
+import io.koosha.konfiguration.error.KfgTypeException;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 

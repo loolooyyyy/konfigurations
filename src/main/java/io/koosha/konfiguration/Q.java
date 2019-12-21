@@ -1,8 +1,8 @@
 package io.koosha.konfiguration;
 
-
+import io.koosha.konfiguration.error.KfgIllegalArgumentException;
+import io.koosha.konfiguration.error.KfgIllegalStateException;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.experimental.Accessors;
 import net.jcip.annotations.Immutable;
@@ -16,7 +16,6 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
 
-
 @SuppressWarnings("unused")
 @ThreadSafe
 @Immutable
@@ -26,15 +25,12 @@ import java.util.*;
 public abstract class Q<TYPE> {
 
     @Nullable
-    @Getter
     private final String key;
 
     @Nullable
-    @Getter
     private final ParameterizedType pt;
 
     @NotNull
-    @Getter
     private final Class<TYPE> klass;
 
     private Q(@NotNull @NonNull final Class<TYPE> type) {
@@ -75,12 +71,16 @@ public abstract class Q<TYPE> {
      */
     @Override
     public final String toString() {
-        return String.format("Q<>::%s",
-                this.klass().getTypeName()
+        return String.format("Q[%s/%s]",
+                this.klass().getTypeName(),
+                this.key == null ? "" : this.key
         );
     }
 
-    public Q<TYPE> withKey(final String key) {
+    public Q<TYPE> withKey(@NotNull @NonNull final String key) {
+        if (key.isEmpty())
+            throw new KfgIllegalArgumentException(null, "empty key");
+
         return Objects.equals(this.key, key)
                ? new Q<TYPE>(key, this.pt, this.klass) {}
                : this;
@@ -103,8 +103,11 @@ public abstract class Q<TYPE> {
     final boolean matchesValue(final Object v) {
         if (v == null)
             return true;
+        if (Objects.equals(this.klass, Object.class))
+            return true;
         // TODO
-        return v.getClass().isAssignableFrom(this.klass());
+        //        return v.getClass().isAssignableFrom(this.klass());
+        throw new UnsupportedOperationException("todo");
     }
 
 
@@ -122,6 +125,7 @@ public abstract class Q<TYPE> {
         return q0.matchesValue(value);
     }
 
+    // =========================================================================
 
     /**
      * If Q represents a collection, get type argument of the collection.
@@ -130,10 +134,15 @@ public abstract class Q<TYPE> {
      * @throws KfgIllegalStateException if Q does not represent a collection.
      */
     @Nullable
-    public final Type getCollectionContainedType() {
+    public final Class<?> getCollectionContainedClass() {
         if (!this.isSet() && !this.isList())
             throw new KfgIllegalStateException(null, "type is not a set or list");
-        return this.pt == null ? null : this.pt.getActualTypeArguments()[0];
+        final Type type = this.pt == null ? null : this.pt.getActualTypeArguments()[0];
+        if (type == null)
+            return null;
+        if (!(type instanceof Class))
+            throw new KfgIllegalStateException(null, this.key, Q.UNKNOWN_MAP, null, "collection type is not concrete");
+        return (Class<?>) type;
     }
 
     /**
@@ -143,10 +152,15 @@ public abstract class Q<TYPE> {
      * @throws KfgIllegalStateException if Q does not represent a map.
      */
     @Nullable
-    public final Type getMapKeyType() {
+    public final Class<?> getMapKeyClass() {
         if (!this.isMap())
-            throw new KfgIllegalStateException(null, null, Q.UNKNOWN_MAP, null, "type is not a map");
-        return this.pt == null ? null : this.pt.getActualTypeArguments()[0];
+            throw new KfgIllegalStateException(null, this.key, Q.UNKNOWN_MAP, null, "type is not a map");
+        final Type type = this.pt == null ? null : this.pt.getActualTypeArguments()[0];
+        if (type == null)
+            return null;
+        if (!(type instanceof Class))
+            throw new KfgIllegalStateException(null, this.key, Q.UNKNOWN_MAP, null, "key type is not concrete");
+        return (Class<?>) type;
     }
 
     /**
@@ -156,12 +170,18 @@ public abstract class Q<TYPE> {
      * @throws KfgIllegalStateException if Q does not represent a map.
      */
     @Nullable
-    public final Type getMapValueType() {
+    public final Class<?> getMapValueClass() {
         if (!this.isMap())
-            throw new KfgIllegalStateException(null, null, Q.UNKNOWN_MAP, null, "type is not a map");
-        return this.pt == null ? null : this.pt.getActualTypeArguments()[1];
+            throw new KfgIllegalStateException(null, this.key, Q.UNKNOWN_MAP, null, "type is not a map");
+        final Type type = this.pt == null ? null : this.pt.getActualTypeArguments()[1];
+        if (type == null)
+            return null;
+        if (!(type instanceof Class))
+            throw new KfgIllegalStateException(null, this.key, Q.UNKNOWN_MAP, null, "value type is not concrete");
+        return (Class<?>) type;
     }
 
+    // =========================================================================
 
     @Contract(pure = true)
     public final boolean isBool() {
@@ -230,6 +250,11 @@ public abstract class Q<TYPE> {
 
     public final boolean isVoid() {
         return Void.class.isAssignableFrom(this.klass);
+    }
+
+    public final boolean hasKey() {
+        //noinspection ConstantConditions
+        return this.key() != null && !this.key().isEmpty();
     }
 
     // =========================================================================
@@ -306,7 +331,28 @@ public abstract class Q<TYPE> {
     @Contract(pure = true)
     public static Q<?> withKey0(@Nullable final Q<?> type,
                                 @NotNull @NonNull final String key) {
-        return type == null ? Q._VOID.withKey(key) : type.withKey(key);
+        return type == null ? Q.UNKNOWN.withKey(key) : type.withKey(key);
+    }
+
+    @Nullable
+    @Contract(pure = true,
+            value = "->_")
+    public String key() {
+        return this.key;
+    }
+
+    @Nullable
+    @Contract(pure = true,
+            value = "->_")
+    public ParameterizedType pt() {
+        return this.pt;
+    }
+
+    @NotNull
+    @Contract(pure = true,
+            value = "->_")
+    public Class<TYPE> klass() {
+        return this.klass;
     }
 
 }

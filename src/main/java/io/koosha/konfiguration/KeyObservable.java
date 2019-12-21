@@ -1,12 +1,18 @@
 package io.koosha.konfiguration;
 
-import lombok.NonNull;
+import net.jcip.annotations.ThreadSafe;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * A source which allows observers observe changes to keys in that source.
+ * <p>
+ * All methods are thread-safe (and should be implemented as such).
+ */
 @SuppressWarnings("unused")
 @ApiStatus.AvailableSince(Faktory.VERSION_8)
+@ThreadSafe
 public interface KeyObservable {
 
     /**
@@ -24,9 +30,7 @@ public interface KeyObservable {
      */
     @NotNull
     @Contract(mutates = "this")
-    default Handle register(@NotNull @NonNull final KeyObserver observer) {
-        return this.register(observer, KeyObserver.LISTEN_TO_ALL);
-    }
+    Handle register(@NotNull KeyObserver observer);
 
     /**
      * Register a listener to be notified of updates to a key.
@@ -47,6 +51,26 @@ public interface KeyObservable {
     Handle register(@NotNull KeyObserver observer,
                     @NotNull String key);
 
+    /**
+     * Register a listener to be notified of updates to a key.
+     *
+     * <em>DOES</em> hold an strong reference to the observer.
+     * <p>
+     * {@link #registerSoft(KeyObserver, Q)} on the other hand, does
+     * <em>NOT</em> holds an strong reference to the observer until it is
+     * deregistered.
+     *
+     * @param observer the listener to register.
+     * @param key      the key to listen too.
+     * @return handle usable for deregister().
+     * @see #registerSoft(KeyObserver, Q)
+     */
+    @NotNull
+    @Contract(mutates = "this")
+    Handle register(@NotNull KeyObserver observer,
+                    @NotNull Q<?> key);
+
+    // =========================================================================
 
     /**
      * Register a listener to be notified of any updates to the konfigurations.
@@ -63,9 +87,7 @@ public interface KeyObservable {
      */
     @NotNull
     @Contract(mutates = "this")
-    default Handle registerSoft(@NotNull @NonNull final KeyObserver observer) {
-        return this.registerSoft(observer, KeyObserver.LISTEN_TO_ALL);
-    }
+    Handle registerSoft(@NotNull KeyObserver observer);
 
     /**
      * Register a listener to be notified of updates to a key.
@@ -86,18 +108,26 @@ public interface KeyObservable {
     Handle registerSoft(@NotNull KeyObserver observer,
                         @NotNull String key);
 
-
     /**
-     * Deregister a previously registered listener of a key, form that key.
+     * Register a listener to be notified of updates to a key.
+     * <p>
+     * Does <em>NOT</em> hold an strong reference to the observer, uses weak
+     * references.
+     * <p>
+     * {@link #register(KeyObserver, String)} on the other hand, holds an string
+     * reference to the observer until it is deregistered.
      *
-     * If {@link KeyObserver#LISTEN_TO_ALL} is given, the observer is
-     * de-registered from all keys.
-     *
-     * @param observer handle returned by one of register methods.
+     * @param observer the listener to register.
+     * @param key      the key to listen too.
+     * @return handle usable for deregister().
+     * @see #register(KeyObserver, String)
      */
+    @NotNull
     @Contract(mutates = "this")
-    void deregister(@NotNull Handle observer,
-                    @NotNull String key);
+    Handle registerSoft(@NotNull KeyObserver observer,
+                        @NotNull Q<?> key);
+
+    // =========================================================================
 
     /**
      * Deregister a previously registered listener from <em>ALL</em> keys.
@@ -105,8 +135,6 @@ public interface KeyObservable {
      * @param observer handle returned by one of register methods.
      */
     @Contract(mutates = "this")
-    default void deregister(@NotNull Handle observer) {
-        this.deregister(observer, KeyObserver.LISTEN_TO_ALL);
-    }
+    void deregister(@NotNull Handle observer);
 
 }

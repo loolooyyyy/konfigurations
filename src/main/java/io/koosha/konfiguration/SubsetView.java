@@ -1,5 +1,6 @@
 package io.koosha.konfiguration;
 
+import io.koosha.konfiguration.error.KfgIllegalArgumentException;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.experimental.Accessors;
@@ -11,8 +12,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
+
+import static java.util.Objects.requireNonNull;
 
 /**
  * Read only subset view of a konfiguration. Prepends a pre-defined key
@@ -78,7 +80,7 @@ final class SubsetView implements Konfiguration {
     @Contract(pure = true)
     @NotNull
     @Override
-    public K<Character> char_(@NotNull @NonNull String key) {
+    public K<Character> char_(@NotNull @NonNull final String key) {
         return wrapped.char_(key(key));
     }
 
@@ -88,7 +90,7 @@ final class SubsetView implements Konfiguration {
     @Contract(pure = true)
     @NotNull
     @Override
-    public K<Short> short_(@NotNull @NonNull String key) {
+    public K<Short> short_(@NotNull @NonNull final String key) {
         return wrapped.short_(key(key));
     }
 
@@ -145,55 +147,168 @@ final class SubsetView implements Konfiguration {
     /**
      * {@inheritDoc}
      */
-    @Contract(pure = true)
     @NotNull
     @Override
-    public <U> K<List<U>> list(@NonNull @NotNull final String key,
-                               @Nullable final Q<List<U>> type) {
-        return wrapped.list(key(key), type);
+    public K<List<?>> list(@NotNull @NonNull final String key) {
+        return wrapped.list(key(key));
     }
 
     /**
      * {@inheritDoc}
      */
-    @Contract(pure = true)
+    @Override
+    @NotNull
+    public <U> K<List<U>> list(@NotNull @NonNull Q<List<U>> key) {
+        return wrapped.list(key(key));
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
     @NotNull
     @Override
-    public <U, V> K<Map<U, V>> map(@NonNull @NotNull final String key,
-                                   @Nullable final Q<Map<U, V>> type) {
-        return wrapped.map(key(key), type);
+    public K<Set<?>> set(@NotNull @NonNull final String key) {
+        return wrapped.set(key(key));
     }
 
     /**
      * {@inheritDoc}
      */
-    @Contract(pure = true)
     @NotNull
     @Override
-    public <U> K<Set<U>> set(@NotNull @NonNull final String key,
-                             @Nullable final Q<Set<U>> type) {
-        return wrapped.set(key(key), type);
+    public <U> K<Set<U>> set(@NotNull @NonNull final Q<Set<U>> key) {
+        return wrapped.set(key(key));
     }
 
     /**
      * {@inheritDoc}
      */
-    @Contract(pure = true)
     @NotNull
     @Override
-    public <U> K<U> custom(@NotNull @NonNull final String key,
-                           @Nullable final Q<U> type) {
-        return wrapped.custom(key(key), type);
+    public <U> K<U> custom(@NotNull @NonNull final String key) {
+        return wrapped.custom(key(key));
     }
 
     /**
      * {@inheritDoc}
      */
-    @Contract(pure = true)
+    @NotNull
     @Override
-    public boolean has(@NonNull @NotNull final String key,
-                       @Nullable final Q<?> type) {
-        return wrapped.has(key(key), type);
+    public <U> K<U> custom(@NotNull @NonNull final Q<U> key) {
+        return wrapped.custom(key(key));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @NotNull
+    @Override
+    public K<Map<?, ?>> map(@NotNull @NonNull final String key) {
+        return this.wrapped.map(key);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @NotNull
+    @Override
+    public <U, V> K<Map<U, V>> map(@NotNull @NonNull final Q<Map<U, V>> key) {
+        return this.wrapped.map(key);
+    }
+
+    // =========================================================================
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean has(@NotNull @NonNull final Q<?> key) {
+        return this.wrapped.has(key(key));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean hasBool(@NotNull @NonNull final String key) {
+        return this.wrapped.hasBool(key(key));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean hasChar(@NotNull @NonNull final String key) {
+        return this.wrapped.hasChar(key(key));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean hasString(@NotNull @NonNull final String key) {
+        return this.wrapped.hasString(key(key));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean hasByte(@NotNull @NonNull final String key) {
+        return this.wrapped.hasBool(key(key));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean hasShort(@NotNull @NonNull final String key) {
+        return this.wrapped.hasShort(key(key));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean hasInt(@NotNull @NonNull final String key) {
+        return this.wrapped.hasInt(key(key));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean hasLong(@NotNull @NonNull final String key) {
+        return this.wrapped.hasLong(key(key));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean hasFloat(@NotNull @NonNull final String key) {
+        return this.wrapped.hasFloat(key(key));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean hasDouble(@NotNull @NonNull final String key) {
+        return this.wrapped.hasDouble(key(key));
+    }
+
+
+    // =========================================================================
+
+    /**
+     * {@inheritDoc}
+     */
+    @NotNull
+    @Override
+    public Handle registerSoft(@NotNull @NonNull final KeyObserver observer) {
+        return this.wrapped.registerSoft(observer);
     }
 
     /**
@@ -210,11 +325,33 @@ final class SubsetView implements Konfiguration {
     /**
      * {@inheritDoc}
      */
-    @Contract(pure = true)
+    @NotNull
     @Override
-    public void deregister(@NotNull @NonNull final Handle observer,
-                           @NotNull @NonNull final String key) {
-        this.wrapped.deregister(observer, key(key));
+    public Handle registerSoft(@NotNull @NonNull final KeyObserver observer,
+                               @NotNull @NonNull final Q<?> key) {
+        return this.wrapped.registerSoft(observer, key(key));
+    }
+
+    // =================================
+
+    /**
+     * {@inheritDoc}
+     */
+    @NotNull
+    @Override
+    public Handle register(@NotNull @NonNull final KeyObserver observer) {
+        return this.wrapped.register(observer);
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    @NotNull
+    @Override
+    public Handle register(@NotNull final KeyObserver observer,
+                           @NotNull final Q<?> key) {
+        return this.wrapped.register(observer, key(key));
     }
 
     /**
@@ -222,10 +359,21 @@ final class SubsetView implements Konfiguration {
      */
     @Contract(pure = true)
     @Override
-    public @NonNull @NotNull Handle register(@NotNull @NonNull final KeyObserver observer,
-                                             @NotNull @NonNull final String key) {
+    @NotNull
+    public Handle register(@NotNull @NonNull final KeyObserver observer,
+                           @NotNull @NonNull final String key) {
         return this.wrapped.register(observer, key(key));
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void deregister(@NotNull @NonNull final Handle observer) {
+        this.wrapped.deregister(observer);
+    }
+
+    // =================================
 
     /**
      * {@inheritDoc}
@@ -248,13 +396,18 @@ final class SubsetView implements Konfiguration {
             value = "_ -> _")
     @NotNull
     private String key(@NonNull @NotNull final String key) {
-        if (Objects.equals(key, KeyObserver.LISTEN_TO_ALL))
-            return key;
-
         if (key.startsWith("."))
             throw new KfgIllegalArgumentException(this.name(), "key must not start with a dot: " + key);
 
         return this.baseKey + key;
+    }
+
+    @Contract(pure = true,
+            value = "null -> null;_ -> _")
+    private <T> Q<T> key(@Nullable final Q<T> key) {
+        if (key == null)
+            return null;
+        return key.withKey(key(requireNonNull(key.key())));
     }
 
 }

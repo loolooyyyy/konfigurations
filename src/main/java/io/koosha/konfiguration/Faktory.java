@@ -1,7 +1,10 @@
 package io.koosha.konfiguration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.koosha.konfiguration.impl.v8.FaktoryV8;
+import io.koosha.konfiguration.base.Deserializer;
+import io.koosha.konfiguration.error.KfgIllegalStateException;
+import io.koosha.konfiguration.error.KfgSourceException;
+import io.koosha.konfiguration.v8.FaktoryV8;
 import lombok.NonNull;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
@@ -74,17 +77,17 @@ public interface Faktory {
      */
     @Contract("_, _ -> new")
     @NotNull
-    default KonfigurationManager<?> kombine(@NotNull String name,
-                                            @NotNull KonfigurationManager<?> k0) {
+    default KonfigurationManager kombine(@NotNull String name,
+                                         @NotNull KonfigurationManager k0) {
         return this.kombine(name, singleton(k0));
     }
 
     @NotNull
     @Contract("_, _, _ -> new")
-    default KonfigurationManager<?> kombine(@NonNull @NotNull String name,
-                                            @NonNull @NotNull KonfigurationManager<?> k0,
-                                            @NonNull @NotNull KonfigurationManager<?>... sources) {
-        final List<KonfigurationManager<?>> l = new ArrayList<>();
+    default KonfigurationManager kombine(@NonNull @NotNull String name,
+                                         @NonNull @NotNull KonfigurationManager k0,
+                                         @NonNull @NotNull KonfigurationManager... sources) {
+        final List<KonfigurationManager> l = new ArrayList<>();
         l.add(k0);
         l.addAll(asList(sources));
         return this.kombine(name, l);
@@ -100,8 +103,8 @@ public interface Faktory {
      */
     @NotNull
     @Contract("_, _ -> new")
-    KonfigurationManager<?> kombine(@NotNull String name,
-                                    @NotNull Collection<KonfigurationManager<?>> sources);
+    KonfigurationManager kombine(@NotNull String name,
+                                 @NotNull Collection<KonfigurationManager> sources);
 
     /**
      * Create a new konfiguration object from given sources.
@@ -110,7 +113,7 @@ public interface Faktory {
      * @return kombined sources.
      */
     @Contract("_ -> new")
-    default KonfigurationManager<?> kombine(@NotNull KonfigurationManager<?> k0) {
+    default KonfigurationManager kombine(@NotNull KonfigurationManager k0) {
         return this.kombine(DEFAULT_KONFIG_NAME, k0);
     }
 
@@ -122,8 +125,8 @@ public interface Faktory {
      * @return kombined sources.
      */
     @Contract("_, _ -> new")
-    default KonfigurationManager<?> kombine(@NotNull KonfigurationManager<?> k0,
-                                            @NotNull KonfigurationManager<?>... sources) {
+    default KonfigurationManager kombine(@NotNull KonfigurationManager k0,
+                                         @NotNull KonfigurationManager... sources) {
         return this.kombine(DEFAULT_KONFIG_NAME, k0, sources);
     }
 
@@ -136,7 +139,7 @@ public interface Faktory {
      * @throws KfgIllegalStateException is sources is empty.
      */
     @Contract("_ -> new")
-    default KonfigurationManager<?> kombine(@NotNull Collection<KonfigurationManager<?>> sources) {
+    default KonfigurationManager kombine(@NotNull Collection<KonfigurationManager> sources) {
         return this.kombine(DEFAULT_KONFIG_NAME, sources);
     }
 
@@ -158,8 +161,8 @@ public interface Faktory {
     @NotNull
     @Contract(pure = true,
             value = "_, _ -> new")
-    KonfigurationManager<?> map(@NotNull String name,
-                                @NotNull Supplier<Map<String, ?>> storage);
+    KonfigurationManager map(@NotNull String name,
+                             @NotNull Supplier<Map<String, ?>> storage);
 
     /**
      * Creates a {@link KonfigurationManager} with the given backing store.
@@ -174,8 +177,8 @@ public interface Faktory {
     @NotNull
     @Contract(pure = true,
             value = "_, _ -> new")
-    default KonfigurationManager<?> map(@NotNull String name,
-                                        @NotNull Map<String, ?> storage) {
+    default KonfigurationManager map(@NotNull String name,
+                                     @NotNull Map<String, ?> storage) {
         final Map<String, ?> copy = unmodifiableMap(new HashMap<>(storage));
         return map(name, () -> copy);
     }
@@ -192,7 +195,7 @@ public interface Faktory {
     @NotNull
     @Contract(pure = true,
             value = "_ -> new")
-    default KonfigurationManager<?> map(@NotNull Map<String, ?> storage) {
+    default KonfigurationManager map(@NotNull Map<String, ?> storage) {
         return this.map(DEFAULT_KONFIG_NAME, storage);
     }
 
@@ -211,7 +214,7 @@ public interface Faktory {
     @NotNull
     @Contract(pure = true,
             value = "_ -> new")
-    default KonfigurationManager<?> map(@NotNull Supplier<Map<String, ?>> storage) {
+    default KonfigurationManager map(@NotNull Supplier<Map<String, ?>> storage) {
         return this.map(DEFAULT_KONFIG_NAME, storage);
     }
 
@@ -231,8 +234,8 @@ public interface Faktory {
     @NotNull
     @Contract(value = "_, _ -> new",
             pure = true)
-    KonfigurationManager<?> mapWithNested(@NotNull String name,
-                                          @NotNull Supplier<Map<String, ?>> storage);
+    KonfigurationManager mapWithNested(@NotNull String name,
+                                       @NotNull Supplier<Map<String, ?>> storage);
 
     /**
      * Creates a {@link KonfigurationManager} with the given backing store.
@@ -247,8 +250,8 @@ public interface Faktory {
     @NotNull
     @Contract(value = "_, _ -> new",
             pure = true)
-    default KonfigurationManager<?> mapWithNested(@NotNull String name,
-                                                  @NotNull Map<String, ?> storage) {
+    default KonfigurationManager mapWithNested(@NotNull String name,
+                                               @NotNull Map<String, ?> storage) {
         final Map<String, ?> copy = unmodifiableMap(new HashMap<>(storage));
         return mapWithNested(name, () -> copy);
     }
@@ -265,7 +268,7 @@ public interface Faktory {
     @NotNull
     @Contract(value = "_ -> new",
             pure = true)
-    default KonfigurationManager<?> mapWithNested(@NotNull Map<String, ?> storage) {
+    default KonfigurationManager mapWithNested(@NotNull Map<String, ?> storage) {
         return this.mapWithNested(DEFAULT_KONFIG_NAME, storage);
     }
 
@@ -284,7 +287,7 @@ public interface Faktory {
     @NotNull
     @Contract(value = "_ -> new",
             pure = true)
-    default KonfigurationManager<?> mapWithNested(@NotNull Supplier<Map<String, ?>> storage) {
+    default KonfigurationManager mapWithNested(@NotNull Supplier<Map<String, ?>> storage) {
         return this.mapWithNested(DEFAULT_KONFIG_NAME, storage);
     }
 
@@ -300,14 +303,14 @@ public interface Faktory {
      */
     @NotNull
     @Contract("_ -> new")
-    default KonfigurationManager<?> preferences(@NotNull Preferences storage) {
+    default KonfigurationManager preferences(@NotNull Preferences storage) {
         return this.preferences(DEFAULT_KONFIG_NAME, storage);
     }
 
     @NotNull
     @Contract("_, _ -> new")
-    KonfigurationManager<?> preferences(@NotNull String name,
-                                        @NotNull Preferences storage);
+    KonfigurationManager preferences(@NotNull String name,
+                                     @NotNull Preferences storage);
 
     /**
      * Creates a {@link KonfigurationManager} with the given backing store.
@@ -319,16 +322,16 @@ public interface Faktory {
      */
     @NotNull
     @Contract("_, _ -> new")
-    default KonfigurationManager<?> preferences(@NotNull Preferences storage,
-                                                @NotNull Deserializer deser) {
+    default KonfigurationManager preferences(@NotNull Preferences storage,
+                                             @NotNull Deserializer deser) {
         return this.preferences(DEFAULT_KONFIG_NAME, storage, deser);
     }
 
     @NotNull
     @Contract("_, _, _ -> new")
-    KonfigurationManager<?> preferences(@NotNull String name,
-                                        @NotNull Preferences storage,
-                                        @NotNull Deserializer deser);
+    KonfigurationManager preferences(@NotNull String name,
+                                     @NotNull Preferences storage,
+                                     @NotNull Deserializer deser);
 
     // =========================================================================
 
@@ -352,8 +355,8 @@ public interface Faktory {
      */
     @NotNull
     @Contract("_, _ -> new")
-    KonfigurationManager<?> jacksonJson(@NotNull String name,
-                                        @NotNull Supplier<String> json);
+    KonfigurationManager jacksonJson(@NotNull String name,
+                                     @NotNull Supplier<String> json);
 
     /**
      * Creates a {@link KonfigurationManager} with the given json string as source.
@@ -375,7 +378,7 @@ public interface Faktory {
      */
     @NotNull
     @Contract("_ -> new")
-    default KonfigurationManager<?> jacksonJson_(@NotNull String json) {
+    default KonfigurationManager jacksonJson_(@NotNull String json) {
         return this.jacksonJson(DEFAULT_KONFIG_NAME, json);
     }
 
@@ -393,7 +396,7 @@ public interface Faktory {
      * @param objectMapper A {@link ObjectMapper} provider. Must always return
      *                     a valid non-null ObjectMapper, and if required, it
      *                     ust be able to deserialize custom types, so that
-     *                     {@link Konfiguration#custom(String, Q)} works as well.
+     *                     {@link Konfiguration#custom(Q)} works as well.
      * @return a konfig source.
      * @throws NullPointerException if any of its arguments are null.
      * @throws KfgSourceException   if jackson library is not in the classpath. it specifically looks
@@ -404,8 +407,8 @@ public interface Faktory {
      */
     @NotNull
     @Contract("_, _ -> new")
-    default KonfigurationManager<?> jacksonJson_(@NotNull String json,
-                                                 @NotNull Supplier<ObjectMapper> objectMapper) {
+    default KonfigurationManager jacksonJson_(@NotNull String json,
+                                              @NotNull Supplier<ObjectMapper> objectMapper) {
         return this.jacksonJson(DEFAULT_KONFIG_NAME, json, objectMapper);
     }
 
@@ -428,7 +431,7 @@ public interface Faktory {
      * @throws KfgSourceException   if the the root element returned by jackson is null.
      */
     @Contract("_ -> new")
-    default KonfigurationManager<?> jacksonJson_(@NotNull Supplier<String> json) {
+    default KonfigurationManager jacksonJson_(@NotNull Supplier<String> json) {
         return this.jacksonJson(DEFAULT_KONFIG_NAME, json);
     }
 
@@ -445,7 +448,7 @@ public interface Faktory {
      * @param objectMapper A {@link ObjectMapper} provider. Must always return
      *                     a valid non-null ObjectMapper, and if required, it
      *                     ust be able to deserialize custom types, so that
-     *                     {@link Konfiguration#custom(String, Q)} works as well.
+     *                     {@link Konfiguration#custom(Q)} works as well.
      * @return a konfig source.
      * @throws NullPointerException if any of its arguments are null.
      * @throws KfgSourceException   if jackson library is not in the classpath. it specifically looks
@@ -456,8 +459,8 @@ public interface Faktory {
      */
     @NotNull
     @Contract("_, _ -> new")
-    default KonfigurationManager<?> jacksonJson_(@NotNull Supplier<String> json,
-                                                 @NotNull Supplier<ObjectMapper> objectMapper) {
+    default KonfigurationManager jacksonJson_(@NotNull Supplier<String> json,
+                                              @NotNull Supplier<ObjectMapper> objectMapper) {
         return this.jacksonJson(DEFAULT_KONFIG_NAME, json, objectMapper);
     }
 
@@ -481,8 +484,8 @@ public interface Faktory {
      */
     @NotNull
     @Contract("_, _ -> new")
-    default KonfigurationManager<?> jacksonJson(@NotNull String name,
-                                                @NotNull String json) {
+    default KonfigurationManager jacksonJson(@NotNull String name,
+                                             @NotNull String json) {
         return jacksonJson(name, () -> json);
     }
 
@@ -500,7 +503,7 @@ public interface Faktory {
      * @param objectMapper A {@link ObjectMapper} provider. Must always return
      *                     a valid non-null ObjectMapper, and if required, it
      *                     ust be able to deserialize custom types, so that
-     *                     {@link Konfiguration#custom(String, Q)} works as well.
+     *                     {@link Konfiguration#custom(Q)} works as well.
      * @return a konfig source.
      * @throws NullPointerException if any of its arguments are null.
      * @throws KfgSourceException   if jackson library is not in the classpath. it specifically looks
@@ -511,9 +514,9 @@ public interface Faktory {
      */
     @NotNull
     @Contract("_, _, _ -> new")
-    default KonfigurationManager<?> jacksonJson(@NotNull String name,
-                                                @NotNull String json,
-                                                @NotNull Supplier<ObjectMapper> objectMapper) {
+    default KonfigurationManager jacksonJson(@NotNull String name,
+                                             @NotNull String json,
+                                             @NotNull Supplier<ObjectMapper> objectMapper) {
         return jacksonJson(name, () -> json, objectMapper);
     }
 
@@ -530,7 +533,7 @@ public interface Faktory {
      * @param objectMapper A {@link ObjectMapper} provider. Must always return
      *                     a valid non-null ObjectMapper, and if required, it
      *                     ust be able to deserialize custom types, so that
-     *                     {@link Konfiguration#custom(String, Q)} works as well.
+     *                     {@link Konfiguration#custom(Q)} works as well.
      * @return a konfig source.
      * @throws NullPointerException if any of its arguments are null.
      * @throws KfgSourceException   if jackson library is not in the classpath. it specifically looks
@@ -541,9 +544,9 @@ public interface Faktory {
      */
     @NotNull
     @Contract("_, _, _ -> new")
-    KonfigurationManager<?> jacksonJson(@NotNull String name,
-                                        @NotNull Supplier<String> json,
-                                        @NotNull Supplier<ObjectMapper> objectMapper);
+    KonfigurationManager jacksonJson(@NotNull String name,
+                                     @NotNull Supplier<String> json,
+                                     @NotNull Supplier<ObjectMapper> objectMapper);
 
     // =========================================================================
 
@@ -567,7 +570,7 @@ public interface Faktory {
      */
     @NotNull
     @Contract("_ -> new")
-    default KonfigurationManager<?> snakeYaml_(@NotNull String yaml) {
+    default KonfigurationManager snakeYaml_(@NotNull String yaml) {
         return this.snakeYaml(DEFAULT_KONFIG_NAME, yaml);
     }
 
@@ -585,7 +588,7 @@ public interface Faktory {
      * @param objectMapper A {@link Yaml} provider. Must always return
      *                     a valid non-null ObjectMapper, and if required, it
      *                     ust be able to deserialize custom types, so that
-     *                     {@link Konfiguration#custom(String, Q)} works as well.
+     *                     {@link Konfiguration#custom(Q)} works as well.
      * @return a konfig source.
      * @throws NullPointerException if any of its arguments are null.
      * @throws KfgSourceException   if jackson library is not in the classpath. it specifically looks
@@ -596,8 +599,8 @@ public interface Faktory {
      */
     @NotNull
     @Contract("_, _ -> new")
-    default KonfigurationManager<?> snakeYaml_(@NotNull String yaml,
-                                               @NotNull Supplier<Yaml> objectMapper) {
+    default KonfigurationManager snakeYaml_(@NotNull String yaml,
+                                            @NotNull Supplier<Yaml> objectMapper) {
         return this.snakeYaml(DEFAULT_KONFIG_NAME, yaml, objectMapper);
     }
 
@@ -623,7 +626,7 @@ public interface Faktory {
      */
     @NotNull
     @Contract("_ -> new")
-    default KonfigurationManager<?> snakeYaml_(@NotNull Supplier<String> yaml) {
+    default KonfigurationManager snakeYaml_(@NotNull Supplier<String> yaml) {
         return this.snakeYaml(DEFAULT_KONFIG_NAME, yaml);
     }
 
@@ -642,7 +645,7 @@ public interface Faktory {
      * @param objectMapper A {@link Yaml} provider. Must always return
      *                     a valid non-null ObjectMapper, and if required, it
      *                     ust be able to deserialize custom types, so that
-     *                     {@link Konfiguration#custom(String, Q)} works as well.
+     *                     {@link Konfiguration#custom(Q)} works as well.
      * @return a konfig source.
      * @throws NullPointerException if any of its arguments are null.
      * @throws KfgSourceException   if jackson library is not in the classpath. it specifically looks
@@ -653,8 +656,8 @@ public interface Faktory {
      */
     @NotNull
     @Contract("_, _ -> new")
-    default KonfigurationManager<?> snakeYaml_(@NotNull Supplier<String> yaml,
-                                               @NotNull Supplier<Yaml> objectMapper) {
+    default KonfigurationManager snakeYaml_(@NotNull Supplier<String> yaml,
+                                            @NotNull Supplier<Yaml> objectMapper) {
         return this.snakeYaml(DEFAULT_KONFIG_NAME, yaml, objectMapper);
     }
 
@@ -678,8 +681,8 @@ public interface Faktory {
      */
     @NotNull
     @Contract("_, _ -> new")
-    default KonfigurationManager<?> snakeYaml(@NotNull String name,
-                                              @NotNull String yaml) {
+    default KonfigurationManager snakeYaml(@NotNull String name,
+                                           @NotNull String yaml) {
         return snakeYaml(name, () -> yaml);
     }
 
@@ -697,7 +700,7 @@ public interface Faktory {
      * @param objectMapper A {@link Yaml} provider. Must always return
      *                     a valid non-null ObjectMapper, and if required, it
      *                     ust be able to deserialize custom types, so that
-     *                     {@link Konfiguration#custom(String, Q)} works as well.
+     *                     {@link Konfiguration#custom(Q)} works as well.
      * @return a konfig source.
      * @throws NullPointerException if any of its arguments are null.
      * @throws KfgSourceException   if jackson library is not in the classpath. it specifically looks
@@ -708,9 +711,9 @@ public interface Faktory {
      */
     @NotNull
     @Contract("_, _, _ -> new")
-    default KonfigurationManager<?> snakeYaml(@NotNull String name,
-                                              @NotNull String yaml,
-                                              @NotNull Supplier<Yaml> objectMapper) {
+    default KonfigurationManager snakeYaml(@NotNull String name,
+                                           @NotNull String yaml,
+                                           @NotNull Supplier<Yaml> objectMapper) {
         return snakeYaml(name, () -> yaml, objectMapper);
     }
 
@@ -736,8 +739,8 @@ public interface Faktory {
      */
     @NotNull
     @Contract("_, _ -> new")
-    KonfigurationManager<?> snakeYaml(@NotNull String name,
-                                      @NotNull Supplier<String> yaml);
+    KonfigurationManager snakeYaml(@NotNull String name,
+                                   @NotNull Supplier<String> yaml);
 
     /**
      * Creates a {@link KonfigurationManager} with the given yaml provider and object
@@ -754,7 +757,7 @@ public interface Faktory {
      * @param objectMapper A {@link Yaml} provider. Must always return
      *                     a valid non-null ObjectMapper, and if required, it
      *                     ust be able to deserialize custom types, so that
-     *                     {@link Konfiguration#custom(String, Q)} works as well.
+     *                     {@link Konfiguration#custom(Q)} works as well.
      * @return a konfig source.
      * @throws NullPointerException if any of its arguments are null.
      * @throws KfgSourceException   if jackson library is not in the classpath. it specifically looks
@@ -765,9 +768,9 @@ public interface Faktory {
      */
     @NotNull
     @Contract("_, _, _ -> new")
-    KonfigurationManager<?> snakeYaml(@NotNull String name,
-                                      @NotNull Supplier<String> yaml,
-                                      @NotNull Supplier<Yaml> objectMapper);
+    KonfigurationManager snakeYaml(@NotNull String name,
+                                   @NotNull Supplier<String> yaml,
+                                   @NotNull Supplier<Yaml> objectMapper);
 
     /**
      * Same as {@link #snakeYaml(String, String, Supplier)} but explicitly rejects
@@ -775,8 +778,8 @@ public interface Faktory {
      */
     @NotNull
     @Contract("_, _, _ -> new")
-    KonfigurationManager<?> snakeYaml_safe(@NotNull String name,
-                                           @NotNull Supplier<String> yaml,
-                                           @NotNull Supplier<Yaml> objectMapper);
+    KonfigurationManager snakeYaml_safe(@NotNull String name,
+                                        @NotNull Supplier<String> yaml,
+                                        @NotNull Supplier<Yaml> objectMapper);
 
 }

@@ -1,12 +1,10 @@
 package io.koosha.konfiguration;
 
-
 import lombok.NonNull;
 import net.jcip.annotations.ThreadSafe;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-
 
 /**
  * All methods are thread-safe (and should be implemented as such).

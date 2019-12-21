@@ -1,6 +1,7 @@
 package io.koosha.konfiguration;
 
 
+import io.koosha.konfiguration.error.KfgTypeException;
 import org.testng.annotations.Test;
 
 import java.util.HashMap;
