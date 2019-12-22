@@ -1,9 +1,8 @@
 package io.koosha.konfiguration.v8;
 
-import io.koosha.konfiguration.Handle;
-import io.koosha.konfiguration.Konfiguration;
 import io.koosha.konfiguration.KonfigurationManager;
 import io.koosha.konfiguration.Q;
+import io.koosha.konfiguration.Source;
 import lombok.NonNull;
 import net.jcip.annotations.NotThreadSafe;
 import org.jetbrains.annotations.ApiStatus;
@@ -12,22 +11,14 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Predicate;
 
-import static java.util.Collections.emptyMap;
+import static java.util.Collections.emptyList;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 
 @NotThreadSafe
 @ApiStatus.Internal
 final class Kombiner_Manager implements KonfigurationManager {
-
-    @NotNull
-    @Contract(pure = true)
-    private static <T> Predicate<T> not(@NotNull @NonNull final Predicate<? super T> target) {
-        //noinspection unchecked
-        return (Predicate<T>) target.negate();
-    }
 
     @NotNull
     @Contract(value = "_ -> new",
@@ -47,7 +38,7 @@ final class Kombiner_Manager implements KonfigurationManager {
 
     @NotNull
     @NonNull
-    private final Kombiner origin;
+    final Kombiner origin;
 
     private final AtomicBoolean consumed = new AtomicBoolean(false);
 
@@ -91,7 +82,7 @@ final class Kombiner_Manager implements KonfigurationManager {
      */
     @NotNull
     @Override
-    public Map<String, Collection<Runnable>> update() {
+    public Collection<Runnable> update() {
         if (!this.consumed.get())
             throw new IllegalStateException("getAndSetToNull() not called yet");
         return origin.r(this::update0);
@@ -104,16 +95,18 @@ final class Kombiner_Manager implements KonfigurationManager {
                 .anyMatch(KonfigurationManager::hasUpdate);
     }
 
-    private Map<String, Collection<Runnable>> update0() {
+    private Collection<Runnable> update0() {
         if (!this.hasUpdate0())
-            return emptyMap();
+            return emptyList();
 
-        final Map<Handle, CheatingKonfigurationManager> newSources =
-                origin.sources.copy();
+        final Map<String, CheatingMan> newSources = origin.sources.copy();
+        final Collection<Runnable> updateTasks = new ArrayList<>();
 
         newSources.entrySet().forEach(x -> {
-            final CheatingKonfigurationManager cheat = x.getValue();
-            final Map<String, Collection<Runnable>> update = cheat.update();
+            final CheatingMan cheat = x.getValue();
+            updateTasks.addAll(
+                    cheat.update().stream()
+                         .map(Kombiner_Manager::wrap).collect(toList()));
             x.setValue(cheat.updated());
         });
 
@@ -122,21 +115,18 @@ final class Kombiner_Manager implements KonfigurationManager {
         origin.values.origForEach(q -> {
             final String key = requireNonNull(q.key(), "key passed through kombiner is null");
 
-            final Optional<Konfiguration> first = newSources
+            final Optional<Source> first = newSources
                     .values()
                     .stream()
-                    .filter(x -> x.has(key, q))
+                    .filter(x -> x.source().has(q))
+                    .map(CheatingMan::source)
                     .findFirst();
 
-            final Object newV = first.map(konfiguration ->
-                    konfiguration.custom(q.key(), q)).orElse(null);
+            final Object newV = first.map(k -> k.custom(q)).orElse(null);
+            final Object oldV = origin.has(q)
+                                ? origin.values.v_(q, null, true)
+                                : null;
 
-            final Object oldV =
-                    origin.has(q.key(), q)
-                    ? origin.values.v_(q, null, true)
-                    : null;
-
-            // Went missing or came into existence.
             if (origin.values.has(q) != first.isPresent()
                     || !Objects.equals(newV, oldV))
                 updated.add(q);
@@ -146,33 +136,13 @@ final class Kombiner_Manager implements KonfigurationManager {
         });
 
         return origin.w(() -> {
-            final Map<String, Collection<Runnable>> result = origin
-                    .sources
-                    .vs()
-                    // External non-optimizable konfig sources.
-                    .filter(not(Konfiguration.class::isInstance))
-                    .map(Konfiguration::manager)
-                    .map(KonfigurationManager::update)
-                    .peek(x -> x.entrySet().forEach(e -> e.setValue(
-                            // just to wrap!
-                            e.getValue().stream().map(Kombiner_Manager::wrap)
-                             .collect(toList())
-                    )))
-                    .reduce(new HashMap<>(), (m0, m1) -> {
-                        m1.forEach((m1k, m1c) -> m0.computeIfAbsent(
-                                m1k, m1k_ -> new ArrayList<>()).addAll(m1c));
-                        return m0;
-                    });
-
             for (final Q<?> q : updated)
-                //noinspection ConstantConditions
-                result.computeIfAbsent(q.key(), (q_) -> new ArrayList<>())
-                      .addAll(this.origin.observers.get(q.key()));
+                updateTasks.addAll(this.origin.observers.get(q));
 
             origin.sources.replace(newSources);
             origin.values.replace(newCache);
 
-            return result;
+            return updateTasks;
         });
     }
 

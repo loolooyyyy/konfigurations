@@ -71,7 +71,7 @@ final class ExtPreferencesSource extends UpdatableSourceBase {
     @Override
     @NotNull
     public UpdatableSource updatedSelf() {
-        return ExtPreferencesSource.this;
+        return this;
     }
 
 

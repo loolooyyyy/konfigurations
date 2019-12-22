@@ -344,7 +344,7 @@ final class ExtYamlSource extends UpdatableSourceBase {
     public UpdatableSource updatedSelf() {
         return this.hasUpdate()
                ? new ExtYamlSource(name(), yaml, mapper, safe)
-               : ExtYamlSource.this;
+               : this;
     }
 
 

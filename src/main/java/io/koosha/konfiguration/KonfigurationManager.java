@@ -1,5 +1,6 @@
 package io.koosha.konfiguration;
 
+import lombok.NonNull;
 import net.jcip.annotations.NotThreadSafe;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
@@ -7,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
-import java.util.Map;
+import java.util.concurrent.Executor;
 
 @SuppressWarnings("unused")
 @NotThreadSafe
@@ -56,12 +57,16 @@ public interface KonfigurationManager {
      */
     @NotNull
     @Contract(mutates = "this")
-    Map<String, Collection<Runnable>> update();
+    Collection<Runnable> update();
 
     @Contract(mutates = "this")
     default void updateNow() {
-        this.update().forEach((key, observers) ->
-                observers.forEach(Runnable::run));
+        this.update().forEach(Runnable::run);
+    }
+
+    @Contract(mutates = "this")
+    default void updateNow(@NotNull @NonNull final Executor e) {
+        this.update().forEach(e::execute);
     }
 
     @Nullable

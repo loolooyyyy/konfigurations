@@ -1,6 +1,5 @@
 package io.koosha.konfiguration.v8;
 
-import io.koosha.konfiguration.Handle;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import net.jcip.annotations.NotThreadSafe;
@@ -22,17 +21,17 @@ final class Kombiner_Sources {
     @NonNull
     private final Kombiner origin;
 
-    private final Map<Handle, CheatingKonfigurationManager> sources = new HashMap<>();
+    private final Map<String, CheatingMan> sources = new HashMap<>();
 
     @Contract(pure = true)
     @NotNull
-    Stream<CheatingKonfigurationManager> vs() {
+    Stream<CheatingMan> vs() {
         return sources.values().stream();
     }
 
     @Contract(mutates = "this")
     @NotNull
-    Kombiner_Sources replace(@NotNull @NonNull final Map<Handle, CheatingKonfigurationManager> s) {
+    Kombiner_Sources replace(@NotNull @NonNull final Map<String, CheatingMan> s) {
         this.sources.clear();
         this.sources.putAll(s);
         return this;
@@ -40,7 +39,7 @@ final class Kombiner_Sources {
 
     @Contract(pure = true)
     @NotNull
-    Map<Handle, CheatingKonfigurationManager> copy() {
+    Map<String, CheatingMan> copy() {
         return new HashMap<>(this.sources);
     }
 

@@ -19,6 +19,10 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+import static java.lang.String.join;
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.*;
+
 /**
  * Almost Thread-safe, <b>NOT</b> immutable.
  */
@@ -55,15 +59,33 @@ final class Kombiner implements Konfiguration {
              final boolean fairLock) {
         this.name = name;
 
-        final Map<Handle, CheatingKonfigurationManager> s = new HashMap<>();
+        // Find duplicate names.
+        final List<@NotNull String> duplicates = sources
+                .stream()
+                .flatMap(x ->// Unwrap.
+                        x instanceof Kombiner_Manager
+                        ? ((Kombiner_Manager) x).origin.sources.vs()
+                        : Stream.of(x))
+                .map(KonfigurationManager::name)
+                .collect(groupingBy(identity(), counting()))
+                .entrySet()
+                .stream()
+                .filter(p -> p.getValue() > 1)
+                .map(Map.Entry::getKey)
+                .collect(toList());
+        if (!duplicates.isEmpty())
+            throw new KfgIllegalArgumentException(name, "duplicate names: " +
+                    join(", ", duplicates));
+
+        // Wrap in CheatingMan.
+        final Map<String, CheatingMan> s = new LinkedHashMap<>();
         sources.stream()
-               .map(CheatingKonfigurationManager::cheat)
                .flatMap(x ->// Unwrap.
-                       x.origin() instanceof Kombiner
-                       ? ((Kombiner) x.origin()).sources.vs()
+                       x instanceof Kombiner_Manager
+                       ? ((Kombiner_Manager) x).origin.sources.vs()
                        : Stream.of(x))
-               .map(CheatingKonfigurationManager::cheat)
-               .forEach(x -> s.put(newHandle(), x));
+               .map(CheatingMan::cheat)
+               .forEach(x -> s.put(x.name(), x));
         if (s.isEmpty())
             throw new KfgIllegalArgumentException(name, "no source given");
 

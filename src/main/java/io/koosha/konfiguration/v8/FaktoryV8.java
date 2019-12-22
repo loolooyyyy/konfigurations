@@ -75,7 +75,7 @@ public final class FaktoryV8 implements Faktory {
                                          @NotNull @NonNull final UpdatableSource source) {
         return new Kombiner(
                 name,
-                singleton(CheatingKonfigurationManager.cheat(source)),
+                singleton(CheatingMan.cheat(source)),
                 LOCK_WAIT_MILLIS__DEFAULT,
                 true).man();
     }

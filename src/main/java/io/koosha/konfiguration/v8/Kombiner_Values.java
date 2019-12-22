@@ -59,7 +59,7 @@ final class Kombiner_Values {
                 .origin
                 .sources
                 .vs()
-                .map(CheatingKonfigurationManager::source)
+                .map(CheatingMan::source)
                 .filter(source -> source.has(key))
                 .findFirst();
         if (!first.isPresent() && mustExist)

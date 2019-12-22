@@ -88,7 +88,7 @@ final class ExtJacksonJsonSource extends UpdatableSourceBase {
     public UpdatableSource updatedSelf() {
         return this.hasUpdate()
                ? new ExtJacksonJsonSource(name(), json, mapperSupplier)
-               : ExtJacksonJsonSource.this;
+               : this;
     }
 
 

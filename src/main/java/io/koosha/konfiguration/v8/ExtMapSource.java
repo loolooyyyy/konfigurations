@@ -64,7 +64,7 @@ final class ExtMapSource extends UpdatableSourceBase {
     public UpdatableSource updatedSelf() {
         return this.hasUpdate()
                ? new ExtMapSource(name(), map, enableNestedMap)
-               : ExtMapSource.this;
+               : this;
     }
 
 
