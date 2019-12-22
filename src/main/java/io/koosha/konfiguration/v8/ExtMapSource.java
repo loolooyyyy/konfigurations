@@ -95,7 +95,7 @@ final class ExtMapSource extends UpdatableSourceBase {
 
     private <T> T checkMapType(@NotNull @NonNull final Q<?> required) {
         final Object value = node(required.key());
-        if (!Q.matchesValue(required, value))
+        if (!required.matchesValue(value))
             throw new KfgTypeException(this.name(), null, required, value);
         @SuppressWarnings("unchecked")
         final T t = (T) value;

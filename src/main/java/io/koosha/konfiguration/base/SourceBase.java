@@ -498,7 +498,7 @@ public abstract class SourceBase implements Source {
 
     private void checkType0(@NonNull @NotNull final Q<?> neededType,
                             @NonNull @NotNull final Object value) {
-        if (!Q.matchesValue(neededType, value))
+        if (!neededType.matchesValue(value))
             throw new KfgTypeException(this.name(), neededType.key(), neededType, value);
     }
 

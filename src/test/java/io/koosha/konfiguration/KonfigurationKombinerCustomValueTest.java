@@ -6,6 +6,8 @@ import org.testng.annotations.Test;
 
 import java.util.Collections;
 
+import static java.util.Collections.emptyList;
+
 
 @SuppressWarnings("WeakerAccess")
 public class KonfigurationKombinerCustomValueTest {
@@ -22,7 +24,7 @@ public class KonfigurationKombinerCustomValueTest {
 
     @Test
     public void testCustomValue() {
-        K<DummyCustom> custom = k.custom(key, Q.of(DummyCustom.class));
+        K<DummyCustom> custom = k.custom(key, new Q<U>((String) DummyCustom.class, (Class<U>) null, emptyList()) {});
         Assert.assertSame(custom.v(), value);
     }
 

@@ -434,7 +434,7 @@ final class ExtYamlSource extends UpdatableSourceBase {
     @Override
     public boolean has(@NotNull @NonNull final Q<?> type) {
         try {
-            return Q.matchesValue(type, get(type.key()));
+            return type.matchesValue(get(type.key()));
         }
         catch (final KfgSnakeYamlAssertionError e) {
             return false;
