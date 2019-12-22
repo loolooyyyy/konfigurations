@@ -15,28 +15,28 @@ public class DummyVTest {
 
     @Test
     public void testRegister() throws Exception {
-        K<?> dummyV = K.null_(Q.STRING);
+        K<?> dummyV = K.null_(Q.string(""));
         assertSame(dummyV.register(k -> {
         }), dummyV);
     }
 
     @Test
     public void testGetKey() throws Exception {
-        K<?> dummyV = K.null_(Q.STRING);
+        K<?> dummyV = K.null_(Q.string(""));
         assertSame(dummyV.key(), key);
     }
 
     @Test
     public void testV() throws Exception {
         long value = 99L;
-        K<?> dummyV = K.of(value, Q.LONG);
+        K<?> dummyV = K.of(value, Q.long_(""));
         assertSame(dummyV.v(), value);
     }
 
     @Test
     public void testVWithDefaultValue() throws Exception {
         long value = 99L;
-        K<Long> dummyV = K.null_(Q.LONG);
+        K<Long> dummyV = K.null_(Q.long_(""));
         assertSame(dummyV.v(value), value);
     }
 
@@ -111,8 +111,7 @@ public class DummyVTest {
 
     @Test
     public void testNull_() throws Exception {
-        assertNull(K.null_(Q.STRING).v());
-        assertNull(K.null_(Q.OBJECT).v(new Object()));
+        assertNull(K.null_(Q.string("")).v());
     }
 
 }

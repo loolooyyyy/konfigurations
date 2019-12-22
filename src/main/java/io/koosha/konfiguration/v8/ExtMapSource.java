@@ -94,7 +94,7 @@ final class ExtMapSource extends UpdatableSourceBase {
     }
 
     private <T> T checkMapType(@NotNull @NonNull final Q<?> required) {
-        final Object value = node(requireNonNull(required.key()));
+        final Object value = node(required.key());
         if (!Q.matchesValue(required, value))
             throw new KfgTypeException(this.name(), null, required, value);
         @SuppressWarnings("unchecked")
@@ -137,7 +137,7 @@ final class ExtMapSource extends UpdatableSourceBase {
     @Override
     @NotNull
     protected Boolean bool0(@NotNull @NonNull final String key) {
-        return checkMapType(Q.BOOL.withKey(key));
+        return checkMapType(Q.bool(key));
     }
 
     /**
@@ -146,7 +146,7 @@ final class ExtMapSource extends UpdatableSourceBase {
     @Override
     @NotNull
     protected Character char0(@NotNull @NonNull final String key) {
-        return checkMapType(Q.CHAR.withKey(key));
+        return checkMapType(Q.char_(key));
     }
 
     /**
@@ -156,11 +156,11 @@ final class ExtMapSource extends UpdatableSourceBase {
     @NotNull
     protected String string0(@NotNull @NonNull final String key) {
         try {
-            return checkMapType(Q.STRING.withKey(key));
+            return checkMapType(Q.string(key));
         }
         catch (KfgTypeException k0) {
             try {
-                return this.checkMapType(Q.CHAR.withKey(key)).toString();
+                return this.checkMapType(Q.char_(key)).toString();
             }
             catch (KfgTypeException k1) {
                 throw k0;
@@ -178,7 +178,7 @@ final class ExtMapSource extends UpdatableSourceBase {
         if (n instanceof Long || n instanceof Integer ||
                 n instanceof Short || n instanceof Byte)
             return ((Number) n).longValue();
-        return checkMapType(Q.LONG.withKey(key));
+        return checkMapType(Q.long_(key));
     }
 
     /**
@@ -192,7 +192,7 @@ final class ExtMapSource extends UpdatableSourceBase {
                 n instanceof Short || n instanceof Byte ||
                 n instanceof Double || n instanceof Float)
             return ((Number) n).doubleValue();
-        return checkMapType(Q.LONG.withKey(key));
+        return checkMapType(Q.long_(key));
     }
 
 

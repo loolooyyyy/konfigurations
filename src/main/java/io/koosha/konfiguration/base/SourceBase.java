@@ -21,8 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static java.util.Objects.requireNonNull;
-
 /**
  * {@inheritDoc}
  */
@@ -79,7 +77,7 @@ public abstract class SourceBase implements Source {
      */
     @Override
     public final boolean hasBool(@NotNull @NonNull String key) {
-        return this.has(Q.BOOL.withKey(key));
+        return this.has(Q.bool(key));
     }
 
     /**
@@ -87,7 +85,7 @@ public abstract class SourceBase implements Source {
      */
     @Override
     public final boolean hasChar(@NotNull @NonNull String key) {
-        return this.has(Q.CHAR.withKey(key));
+        return this.has(Q.char_(key));
     }
 
     /**
@@ -95,7 +93,7 @@ public abstract class SourceBase implements Source {
      */
     @Override
     public final boolean hasString(@NotNull @NonNull String key) {
-        return this.has(Q.STRING.withKey(key));
+        return this.has(Q.string(key));
     }
 
     /**
@@ -103,7 +101,7 @@ public abstract class SourceBase implements Source {
      */
     @Override
     public final boolean hasByte(@NotNull @NonNull String key) {
-        return this.has(Q.BYTE.withKey(key));
+        return this.has(Q.byte_(key));
     }
 
     /**
@@ -111,7 +109,7 @@ public abstract class SourceBase implements Source {
      */
     @Override
     public final boolean hasShort(@NotNull @NonNull String key) {
-        return this.has(Q.SHORT.withKey(key));
+        return this.has(Q.short_(key));
     }
 
     /**
@@ -119,7 +117,7 @@ public abstract class SourceBase implements Source {
      */
     @Override
     public final boolean hasInt(@NotNull @NonNull String key) {
-        return this.has(Q.INT.withKey(key));
+        return this.has(Q.int_(key));
     }
 
     /**
@@ -127,7 +125,7 @@ public abstract class SourceBase implements Source {
      */
     @Override
     public final boolean hasLong(@NotNull @NonNull String key) {
-        return this.has(Q.LONG.withKey(key));
+        return this.has(Q.long_(key));
     }
 
     /**
@@ -135,7 +133,7 @@ public abstract class SourceBase implements Source {
      */
     @Override
     public final boolean hasFloat(@NotNull @NonNull String key) {
-        return this.has(Q.FLOAT.withKey(key));
+        return this.has(Q.float_(key));
     }
 
     /**
@@ -143,7 +141,7 @@ public abstract class SourceBase implements Source {
      */
     @Override
     public final boolean hasDouble(@NotNull @NonNull String key) {
-        return this.has(Q.DOUBLE.withKey(key));
+        return this.has(Q.double_(key));
     }
 
 
@@ -155,7 +153,7 @@ public abstract class SourceBase implements Source {
     @Override
     @NotNull
     public final K<Boolean> bool(@NonNull @NotNull final String key) {
-        final Q<Boolean> type = Q.BOOL.withKey(key);
+        final Q<Boolean> type = Q.bool(key);
 
         if (this.has(type))
             throw new KfgAssertionException(this.name(), null, type, "missing key");
@@ -176,7 +174,7 @@ public abstract class SourceBase implements Source {
     @Override
     @NotNull
     public final K<Character> char_(@NonNull @NotNull final String key) {
-        final Q<Character> type = Q.CHAR.withKey(key);
+        final Q<Character> type = Q.char_(key);
 
         if (this.has(type))
             throw new KfgAssertionException(this.name(), null, type, "missing key");
@@ -210,7 +208,7 @@ public abstract class SourceBase implements Source {
     @Override
     @NotNull
     public final K<String> string(@NonNull @NotNull final String key) {
-        final Q<String> type = Q.STRING.withKey(key);
+        final Q<String> type = Q.string(key);
 
         if (this.has(type))
             throw new KfgAssertionException(this.name(), null, type, "missing key");
@@ -237,7 +235,7 @@ public abstract class SourceBase implements Source {
     @Override
     @NotNull
     public final K<Byte> byte_(@NonNull @NotNull final String key) {
-        final Q<Byte> type = Q.BYTE.withKey(key);
+        final Q<Byte> type = Q.byte_(key);
 
         if (this.has(type))
             throw new KfgAssertionException(this.name(), null, type, "missing key");
@@ -260,7 +258,7 @@ public abstract class SourceBase implements Source {
     @Override
     @NotNull
     public final K<Short> short_(@NonNull @NotNull final String key) {
-        final Q<Short> type = Q.SHORT.withKey(key);
+        final Q<Short> type = Q.short_(key);
 
         if (this.has(type))
             throw new KfgAssertionException(this.name(), null, type, "missing key");
@@ -283,7 +281,7 @@ public abstract class SourceBase implements Source {
     @Override
     @NotNull
     public final K<Integer> int_(@NonNull @NotNull final String key) {
-        final Q<Integer> type = Q.INT.withKey(key);
+        final Q<Integer> type = Q.int_(key);
 
         if (this.has(type))
             throw new KfgAssertionException(this.name(), null, type, "missing key");
@@ -306,7 +304,7 @@ public abstract class SourceBase implements Source {
     @Override
     @NotNull
     public final K<Long> long_(@NonNull @NotNull final String key) {
-        final Q<Long> type = Q.LONG.withKey(key);
+        final Q<Long> type = Q.long_(key);
 
         if (this.has(type))
             throw new KfgAssertionException(this.name(), null, type, "missing key");
@@ -329,7 +327,7 @@ public abstract class SourceBase implements Source {
     @Override
     @NotNull
     public final K<Float> float_(@NonNull @NotNull final String key) {
-        final Q<Float> type = Q.FLOAT.withKey(key);
+        final Q<Float> type = Q.float_(key);
 
         if (this.has(type))
             throw new KfgAssertionException(this.name(), null, type, "missing key");
@@ -352,7 +350,7 @@ public abstract class SourceBase implements Source {
     @Override
     @NotNull
     public final K<Double> double_(@NonNull @NotNull final String key) {
-        final Q<Double> type = Q.DOUBLE.withKey(key);
+        final Q<Double> type = Q.double_(key);
 
         if (this.has(type))
             throw new KfgAssertionException(this.name(), null, type, "missing key");
@@ -375,8 +373,6 @@ public abstract class SourceBase implements Source {
     @Override
     @NotNull
     public final <U> K<List<U>> list(@NotNull @NonNull final Q<List<U>> type) {
-        final String key = type.key();
-
         if (!this.has(type))
             throw new KfgAssertionException(this.name(), null, type, "missing key");
 
@@ -404,8 +400,6 @@ public abstract class SourceBase implements Source {
     @Override
     @NotNull
     public final <U> K<Set<U>> set(@NotNull @NonNull Q<Set<U>> type) {
-        final String key = type.key();
-
         if (this.has(type))
             throw new KfgAssertionException(this.name(), null, type, "missing key");
 
@@ -459,8 +453,6 @@ public abstract class SourceBase implements Source {
     @SuppressWarnings("unchecked")
     @NotNull
     public final <U> K<U> custom(@NotNull @NonNull final Q<U> type) {
-        final String key = requireNonNull(type.key());
-
         if (this.has(type))
             throw new KfgAssertionException(this.name(), null, type, "missing key");
 
@@ -468,24 +460,24 @@ public abstract class SourceBase implements Source {
             return null_(type);
 
         if (type.isBool())
-            return (K<U>) bool(key);
+            return (K<U>) bool(type.key());
         if (type.isChar())
-            return (K<U>) char_(key);
+            return (K<U>) char_(type.key());
         if (type.isString())
-            return (K<U>) string(key);
+            return (K<U>) string(type.key());
 
         if (type.isByte())
-            return (K<U>) byte_(key);
+            return (K<U>) byte_(type.key());
         if (type.isShort())
-            return (K<U>) short_(key);
+            return (K<U>) short_(type.key());
         if (type.isInt())
-            return (K<U>) int_(key);
+            return (K<U>) int_(type.key());
         if (type.isLong())
-            return (K<U>) long_(key);
+            return (K<U>) long_(type.key());
         if (type.isDouble())
-            return (K<U>) float_(key);
+            return (K<U>) float_(type.key());
         if (type.isFloat())
-            return (K<U>) double_(key);
+            return (K<U>) double_(type.key());
 
         @SuppressWarnings("rawtypes")
         final Q raw = type;
@@ -501,38 +493,6 @@ public abstract class SourceBase implements Source {
 
         return this.k(type, v);
     }
-
-
-    /**
-     * {@inheritDoc}
-     */
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    @NotNull
-    @Override
-    public final K<List<?>> list(@NotNull @NonNull String key) {
-        return (K) list((Q) Q.UNKNOWN_LIST.withKey(key));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    @NotNull
-    @Override
-    public final K<Map<?, ?>> map(@NotNull @NonNull String key) {
-        return (K) map((Q) Q.UNKNOWN_MAP.withKey(key));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    @NotNull
-    @Override
-    public final K<Set<?>> set(@NotNull @NonNull String key) {
-        return (K) set((Q) Q.UNKNOWN_SET.withKey(key));
-    }
-
 
     // =========================================================================
 

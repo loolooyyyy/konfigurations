@@ -8,13 +8,10 @@ import net.jcip.annotations.ThreadSafe;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import static java.util.Objects.requireNonNull;
 
 /**
  * Read only subset view of a konfiguration. Prepends a pre-defined key
@@ -147,9 +144,9 @@ final class SubsetView implements Konfiguration {
     /**
      * {@inheritDoc}
      */
-    @NotNull
     @Override
-    public K<List<?>> list(@NotNull @NonNull final String key) {
+    @NotNull
+    public <U> K<List<U>> list(@NotNull @NonNull final Q<List<U>> key) {
         return wrapped.list(key(key));
     }
 
@@ -158,18 +155,9 @@ final class SubsetView implements Konfiguration {
      */
     @Override
     @NotNull
-    public <U> K<List<U>> list(@NotNull @NonNull Q<List<U>> key) {
-        return wrapped.list(key(key));
-    }
-
-
-    /**
-     * {@inheritDoc}
-     */
-    @NotNull
-    @Override
-    public K<Set<?>> set(@NotNull @NonNull final String key) {
-        return wrapped.set(key(key));
+    public <T> K<List<T>> list(@NotNull @NonNull final String key,
+                               @NotNull @NonNull final Class<T> type) {
+        return wrapped.list(key(key), type);
     }
 
     /**
@@ -179,6 +167,33 @@ final class SubsetView implements Konfiguration {
     @Override
     public <U> K<Set<U>> set(@NotNull @NonNull final Q<Set<U>> key) {
         return wrapped.set(key(key));
+    }
+
+    @NotNull
+    @Override
+    public <T> K<Set<T>> set(@NotNull @NonNull final String key,
+                             @NotNull @NonNull final Class<T> type) {
+        return wrapped.set(key(key), type);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @NotNull
+    @Override
+    public <U, V> K<Map<U, V>> map(@NotNull @NonNull final Q<Map<U, V>> key) {
+        return this.wrapped.map(key);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @NotNull
+    @Override
+    public <U, V> K<Map<U, V>> map(@NotNull @NonNull final String key,
+                                   @NotNull @NonNull final Class<U> keyKlass,
+                                   @NotNull @NonNull final Class<V> valueKlass) {
+        return this.wrapped.map(key(key), keyKlass, valueKlass);
     }
 
     /**
@@ -197,24 +212,6 @@ final class SubsetView implements Konfiguration {
     @Override
     public <U> K<U> custom(@NotNull @NonNull final Q<U> key) {
         return wrapped.custom(key(key));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @NotNull
-    @Override
-    public K<Map<?, ?>> map(@NotNull @NonNull final String key) {
-        return this.wrapped.map(key);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @NotNull
-    @Override
-    public <U, V> K<Map<U, V>> map(@NotNull @NonNull final Q<Map<U, V>> key) {
-        return this.wrapped.map(key);
     }
 
     // =========================================================================
@@ -297,6 +294,30 @@ final class SubsetView implements Konfiguration {
     @Override
     public boolean hasDouble(@NotNull @NonNull final String key) {
         return this.wrapped.hasDouble(key(key));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean hasMap(@NotNull @NonNull final Q<Map<?, ?>> key) {
+        return this.wrapped.hasMap(key(key));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean hasSet(@NotNull @NonNull final Q<Set<?>> key) {
+        return this.wrapped.hasSet(key(key));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean hasList(@NotNull @NonNull final Q<List<?>> key) {
+        return this.wrapped.hasList(key(key));
     }
 
 
@@ -403,11 +424,12 @@ final class SubsetView implements Konfiguration {
     }
 
     @Contract(pure = true,
-            value = "null -> null;_ -> _")
-    private <T> Q<T> key(@Nullable final Q<T> key) {
-        if (key == null)
-            return null;
-        return key.withKey(key(requireNonNull(key.key())));
+            value = "_ -> new")
+    private <T> Q<T> key(@NotNull @NonNull final Q<T> key) {
+        final String k = key.key();
+        final String kk = key(k);
+        return key.withKey(kk);
     }
+
 
 }

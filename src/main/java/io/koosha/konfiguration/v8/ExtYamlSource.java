@@ -365,8 +365,8 @@ final class ExtYamlSource extends UpdatableSourceBase {
             Class.forName(klass);
         }
         catch (final ClassNotFoundException e) {
-            throw new KfgUnsupportedOperationException(
-                    source, "snakeyaml library missing: " + klass, e);
+            throw new KfgUnsupportedOperationException(source,
+                    "snakeyaml library missing: " + klass, e);
         }
     }
 
@@ -420,9 +420,8 @@ final class ExtYamlSource extends UpdatableSourceBase {
      */
     @Override
     protected boolean isNull(@NonNull @NotNull final Q<?> type) {
-        final String key = requireNonNull(type.key());
         try {
-            return get(key) == null;
+            return get(type.key()) == null;
         }
         catch (final KfgSnakeYamlAssertionError e) {
             return false;
@@ -434,9 +433,8 @@ final class ExtYamlSource extends UpdatableSourceBase {
      */
     @Override
     public boolean has(@NotNull @NonNull final Q<?> type) {
-        final String key = requireNonNull(type.key());
         try {
-            return Q.matchesValue(type, get(key));
+            return Q.matchesValue(type, get(type.key()));
         }
         catch (final KfgSnakeYamlAssertionError e) {
             return false;
@@ -524,9 +522,7 @@ final class ExtYamlSource extends UpdatableSourceBase {
     protected List<?> list0(@NotNull @NonNull final Q<? extends List<?>> type) {
         this.ensureSafe(type);
 
-        final String key = requireNonNull(type.key());
-
-        final Object g = this.get(key);
+        final Object g = this.get(type.key());
         final Yaml mapper = this.mapper.get();
         final String yamlAgain = mapper.dump(g);
         return mapper.loadAs(yamlAgain, type.klass());
@@ -540,9 +536,7 @@ final class ExtYamlSource extends UpdatableSourceBase {
     protected Set<?> set0(@NotNull @NonNull final Q<? extends Set<?>> type) {
         this.ensureSafe(type);
 
-        final String key = requireNonNull(type.key());
-
-        final Object g = this.get(key);
+        final Object g = this.get(type.key());
         final Yaml mapper = this.mapper.get();
         final String yamlAgain = mapper.dump(g);
         return mapper.loadAs(yamlAgain, type.klass());
@@ -556,9 +550,7 @@ final class ExtYamlSource extends UpdatableSourceBase {
     protected Map<?, ?> map0(@NotNull @NonNull final Q<? extends Map<?, ?>> type) {
         this.ensureSafe(type);
 
-        final String key = requireNonNull(type.key());
-
-        final Object g = this.get(key);
+        final Object g = this.get(type.key());
         final Yaml mapper = this.mapper.get();
         final String yamlAgain = mapper.dump(g);
         return mapper.loadAs(yamlAgain, type.klass());
@@ -572,9 +564,7 @@ final class ExtYamlSource extends UpdatableSourceBase {
     protected Object custom0(@NotNull @NonNull final Q<?> type) {
         this.ensureSafe(type);
 
-        final String key = requireNonNull(type.key());
-
-        final Object g = this.get(key);
+        final Object g = this.get(type.key());
         final Yaml mapper = this.mapper.get();
         final String yamlAgain = mapper.dump(g);
         return mapper.loadAs(yamlAgain, type.klass());

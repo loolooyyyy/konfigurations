@@ -44,7 +44,7 @@ public interface Source {
      * @return konfiguration value wrapper for the requested key.
      */
     @NotNull
-    @Contract(mutates = "this")
+    @Contract(pure = true)
     K<Boolean> bool(@NotNull String key);
 
     /**
@@ -54,7 +54,7 @@ public interface Source {
      * @return konfiguration value wrapper for the requested key.
      */
     @NotNull
-    @Contract(mutates = "this")
+    @Contract(pure = true)
     K<Byte> byte_(@NotNull String key);
 
     /**
@@ -64,7 +64,7 @@ public interface Source {
      * @return konfiguration value wrapper for the requested key.
      */
     @NotNull
-    @Contract(mutates = "this")
+    @Contract(pure = true)
     K<Character> char_(String key);
 
     /**
@@ -74,7 +74,7 @@ public interface Source {
      * @return konfiguration value wrapper for the requested key.
      */
     @NotNull
-    @Contract(mutates = "this")
+    @Contract(pure = true)
     K<Short> short_(String key);
 
     /**
@@ -84,7 +84,7 @@ public interface Source {
      * @return konfiguration value wrapper for the requested key.
      */
     @NotNull
-    @Contract(mutates = "this")
+    @Contract(pure = true)
     K<Integer> int_(String key);
 
     /**
@@ -94,7 +94,7 @@ public interface Source {
      * @return konfiguration value wrapper for the requested key.
      */
     @NotNull
-    @Contract(mutates = "this")
+    @Contract(pure = true)
     K<Long> long_(String key);
 
     /**
@@ -104,7 +104,7 @@ public interface Source {
      * @return konfiguration value wrapper for the requested key.
      */
     @NotNull
-    @Contract(mutates = "this")
+    @Contract(pure = true)
     K<Float> float_(String key);
 
     /**
@@ -114,7 +114,7 @@ public interface Source {
      * @return konfiguration value wrapper for the requested key.
      */
     @NotNull
-    @Contract(mutates = "this")
+    @Contract(pure = true)
     K<Double> double_(String key);
 
     /**
@@ -124,7 +124,7 @@ public interface Source {
      * @return konfiguration value wrapper for the requested key.
      */
     @NotNull
-    @Contract(mutates = "this")
+    @Contract(pure = true)
     K<String> string(String key);
 
     // ========================================================================
@@ -135,11 +135,11 @@ public interface Source {
      * @param key unique key of the konfiguration being requested.
      * @return konfiguration value wrapper for the requested key.
      */
-    @SuppressWarnings({"unchecked", "rawtypes"})
     @NotNull
-    @Contract(mutates = "this")
-    default K<List<?>> list(@NotNull @NonNull final String key) {
-        return (K) list((Q) Q.UNKNOWN_LIST.withKey(key));
+    @Contract(pure = true)
+    default <T> K<List<T>> list(@NotNull @NonNull final String key,
+                                @NotNull @NonNull final Class<T> type) {
+        return list(Q.listOf(key, type));
     }
 
     /**
@@ -150,23 +150,9 @@ public interface Source {
      * @return konfiguration value wrapper for the requested key.
      */
     @NotNull
-    @Contract(mutates = "this")
+    @Contract(pure = true)
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     <U> K<List<U>> list(@NotNull Q<List<U>> key);
-
-
-    /**
-     * Get a map of U to V konfiguration value.
-     *
-     * @param key unique key of the konfiguration being requested.
-     * @return konfiguration value wrapper for the requested key.
-     */
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    @NotNull
-    @Contract(mutates = "this")
-    default K<Map<?, ?>> map(@NotNull @NonNull final String key) {
-        return (K) map((Q) Q.UNKNOWN_MAP.withKey(key));
-    }
 
     /**
      * Get a map of U to V konfiguration value.
@@ -177,23 +163,27 @@ public interface Source {
      * @return konfiguration value wrapper for the requested key.
      */
     @NotNull
-    @Contract(mutates = "this")
+    @Contract(pure = true)
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     <U, V> K<Map<U, V>> map(@NotNull Q<Map<U, V>> key);
 
-
     /**
-     * Get a set of konfiguration value.
+     * Get a map of U to V konfiguration value.
      *
-     * @param key unique key of the konfiguration being requested.
+     * @param key generic type of map
+     * @param <U> generic type of map, the key type.
+     * @param <V> generic type of map, the value type.
      * @return konfiguration value wrapper for the requested key.
      */
-    @SuppressWarnings({"unchecked", "rawtypes"})
     @NotNull
-    @Contract(mutates = "this")
-    default K<Set<?>> set(@NotNull @NonNull final String key) {
-        return (K) set((Q) Q.UNKNOWN_SET.withKey(key));
+    @Contract(pure = true)
+    @ApiStatus.AvailableSince(Faktory.VERSION_8)
+    default <U, V> K<Map<U, V>> map(@NotNull @NonNull final String key,
+                                    @NotNull @NonNull Class<U> keyKlass,
+                                    @NotNull @NonNull Class<V> valueKlass) {
+        return map(Q.mapOf(key, keyKlass, valueKlass));
     }
+
 
     /**
      * Get a set of konfiguration value.
@@ -203,9 +193,17 @@ public interface Source {
      * @return konfiguration value wrapper for the requested key.
      */
     @NotNull
-    @Contract(mutates = "this")
+    @Contract(pure = true)
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     <U> K<Set<U>> set(@NotNull Q<Set<U>> key);
+
+    @NotNull
+    @Contract(pure = true)
+    default <T> K<Set<T>> set(@NotNull @NonNull final String key,
+                              @NotNull @NonNull final Class<T> type) {
+        return set(Q.setOf(key, type));
+    }
+
 
     // ========================================================================
 
@@ -216,14 +214,13 @@ public interface Source {
      * this!
      *
      * <p><b>Important:</b> this method must <em>NOT</em> be used to obtain
-     * maps, lists or sets. Use the corresponding methods {@link #map(String)},
-     * {@link #list(String)} and {@link #set(String)}.
+     * maps, lists or sets.
      *
      * @param key unique key of the konfiguration being requested.
      * @return konfiguration value wrapper for the requested key.
      */
     @NotNull
-    @Contract(mutates = "this")
+    @Contract(pure = true)
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     default <U> K<U> custom(@NotNull @NonNull final String key) {
         throw new UnsupportedOperationException();
@@ -244,7 +241,7 @@ public interface Source {
      * @return konfiguration value wrapper for the requested key.
      */
     @NotNull
-    @Contract(mutates = "this")
+    @Contract(pure = true)
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     <U> K<U> custom(@NotNull final Q<U> key);
 
@@ -305,7 +302,7 @@ public interface Source {
     @Contract(pure = true)
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     default boolean hasBool(@NotNull @NonNull final String key) {
-        return this.has(Q.BOOL.withKey(key));
+        return this.has(Q.bool(key));
     }
 
     /**
@@ -317,7 +314,7 @@ public interface Source {
     @Contract(pure = true)
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     default boolean hasChar(@NotNull @NonNull final String key) {
-        return this.has(Q.CHAR.withKey(key));
+        return this.has(Q.char_(key));
     }
 
     /**
@@ -329,7 +326,7 @@ public interface Source {
     @Contract(pure = true)
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     default boolean hasString(@NotNull @NonNull final String key) {
-        return this.has(Q.STRING.withKey(key));
+        return this.has(Q.string(key));
     }
 
     /**
@@ -341,7 +338,7 @@ public interface Source {
     @Contract(pure = true)
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     default boolean hasByte(@NotNull @NonNull final String key) {
-        return this.has(Q.BYTE.withKey(key));
+        return this.has(Q.byte_(key));
     }
 
     /**
@@ -353,7 +350,7 @@ public interface Source {
     @Contract(pure = true)
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     default boolean hasShort(@NotNull @NonNull final String key) {
-        return this.has(Q.SHORT.withKey(key));
+        return this.has(Q.short_(key));
     }
 
     /**
@@ -365,7 +362,7 @@ public interface Source {
     @Contract(pure = true)
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     default boolean hasInt(@NotNull @NonNull final String key) {
-        return this.has(Q.INT.withKey(key));
+        return this.has(Q.int_(key));
     }
 
     /**
@@ -377,7 +374,7 @@ public interface Source {
     @Contract(pure = true)
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     default boolean hasLong(@NotNull @NonNull final String key) {
-        return this.has(Q.LONG.withKey(key));
+        return this.has(Q.long_(key));
     }
 
     /**
@@ -389,7 +386,7 @@ public interface Source {
     @Contract(pure = true)
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     default boolean hasFloat(@NotNull @NonNull final String key) {
-        return this.has(Q.FLOAT.withKey(key));
+        return this.has(Q.float_(key));
     }
 
     /**
@@ -401,7 +398,7 @@ public interface Source {
     @Contract(pure = true)
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     default boolean hasDouble(@NotNull @NonNull final String key) {
-        return this.has(Q.DOUBLE.withKey(key));
+        return this.has(Q.double_(key));
     }
 
 }

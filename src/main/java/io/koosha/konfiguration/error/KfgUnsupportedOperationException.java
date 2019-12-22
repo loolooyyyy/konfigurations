@@ -25,4 +25,9 @@ public class KfgUnsupportedOperationException extends UnsupportedOperationExcept
         super(message);
         this.source = source;
     }
+
+    public KfgUnsupportedOperationException(final String message) {
+        this(null, message);
+    }
+
 }

@@ -13,7 +13,6 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.Collections.emptyList;
-import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 
 @NotThreadSafe
@@ -113,8 +112,6 @@ final class Kombiner_Manager implements KonfigurationManager {
         final Set<Q<?>> updated = new HashSet<>();
         final Map<Q<?>, Object> newCache = origin.values.copy();
         origin.values.origForEach(q -> {
-            final String key = requireNonNull(q.key(), "key passed through kombiner is null");
-
             final Optional<Source> first = newSources
                     .values()
                     .stream()

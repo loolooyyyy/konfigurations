@@ -112,15 +112,14 @@ final class Kombiner_Observers implements KeyObservable {
     @NotNull
     @Synchronized
     Collection<Runnable> get(@NonNull @NotNull final Q<?> type) {
-        final String key = Objects.requireNonNull(type.key());
         return this.observers
                 .values()
                 .stream()
-                .filter(x -> Objects.equals(key, x.key())
+                .filter(x -> Objects.equals(type.key(), x.key())
                         || Objects.equals(type, x.type()))
                 .map(Kombiner_Observer::listener)
                 .filter(Objects::nonNull)
-                .map(x -> (Runnable) () -> x.accept(key))
+                .map(x -> (Runnable) () -> x.accept(type.key()))
                 .collect(toList());
     }
 

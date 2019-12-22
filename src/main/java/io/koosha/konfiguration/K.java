@@ -9,13 +9,6 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import static java.util.Objects.requireNonNull;
-
 /**
  * Konfig value wrapper.
  *
@@ -208,7 +201,7 @@ public interface K<U> {
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     static <U> K<U> of(@Nullable final U u,
                        @NotNull @NonNull final Q<U> type) {
-        return of(u, type, requireNonNull(type.key()));
+        return of(u, type, type.key());
     }
 
     @NotNull
@@ -245,7 +238,7 @@ public interface K<U> {
             value = " _ -> new")
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     static K<Boolean> false_(@NonNull @NotNull final String key) {
-        return of(false, Q.BOOL.withKey(key), key);
+        return of(false, Q.bool(key), key);
     }
 
     @NotNull
@@ -253,7 +246,7 @@ public interface K<U> {
             value = " _ -> new")
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     static K<Boolean> true_(@NonNull @NotNull final String key) {
-        return of(true, Q.BOOL.withKey(key), key);
+        return of(true, Q.bool(key), key);
     }
 
     @NotNull
@@ -302,7 +295,7 @@ public interface K<U> {
             value = "_ -> new")
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     static K<Integer> mOne(@NonNull @NotNull final String key) {
-        return of(-1, Q.INT, key);
+        return of(-1, Q.int_(key), key);
     }
 
     @NotNull
@@ -310,7 +303,7 @@ public interface K<U> {
             value = "_ -> new")
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     static K<Integer> zero(@NonNull @NotNull final String key) {
-        return of(0, Q.INT, key);
+        return of(0, Q.int_(key), key);
     }
 
     @NotNull
@@ -318,7 +311,7 @@ public interface K<U> {
             value = "_ -> new")
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     static K<Integer> one(@NonNull @NotNull final String key) {
-        return of(1, Q.INT, key);
+        return of(1, Q.int_(key), key);
     }
 
 
@@ -337,7 +330,7 @@ public interface K<U> {
     static K<Boolean> bool(@Nullable final Boolean v,
                            @NonNull @NotNull final String key) {
         if (v == null)
-            return null_(Q.BOOL.withKey(key));
+            return null_(Q.bool(key));
         return v ? true_(key) : false_(key);
     }
 
@@ -346,7 +339,7 @@ public interface K<U> {
             value = "-> new")
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     static K<Boolean> bool() {
-        return missing(Q.BOOL);
+        return missing(Q.bool(""));
     }
 
     @NotNull
@@ -354,7 +347,7 @@ public interface K<U> {
             value = "_ -> new")
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     static K<Boolean> bool(@NonNull @NotNull final String key) {
-        return missing(Q.BOOL.withKey(key), key);
+        return missing(Q.bool(key), key);
     }
 
 
@@ -363,7 +356,7 @@ public interface K<U> {
             value = "_ -> new")
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     static K<Character> char_(@NotNull final Character v) {
-        return of(v, Q.CHAR);
+        return of(v, Q.char_(""));
     }
 
     @NotNull
@@ -372,7 +365,7 @@ public interface K<U> {
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     static K<Character> char_(final Character v,
                               @NonNull @NotNull final String key) {
-        return of(v, Q.CHAR.withKey(key), key);
+        return of(v, Q.char_(key), key);
     }
 
     @NotNull
@@ -388,7 +381,7 @@ public interface K<U> {
             value = "_ -> new")
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     static K<Character> char_(@NonNull @NotNull final String key) {
-        return missing(Q.CHAR.withKey(key), key);
+        return missing(Q.char_(key), key);
     }
 
 
@@ -398,7 +391,7 @@ public interface K<U> {
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     static K<String> stringOf(@Nullable final Object v,
                               @NonNull @NotNull final String key) {
-        return of(String.valueOf(v), Q.STRING.withKey(key), key);
+        return of(String.valueOf(v), Q.string(key), key);
     }
 
     @NotNull
@@ -414,7 +407,7 @@ public interface K<U> {
             value = "_ -> new")
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     static K<String> stringMissing(@NonNull @NotNull final String key) {
-        return missing(Q.STRING, key);
+        return missing(Q.string(key), key);
     }
 
 
@@ -432,7 +425,7 @@ public interface K<U> {
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     static K<Byte> byte_(@Nullable final Byte v,
                          @NonNull @NotNull final String key) {
-        return of(v, Q.BYTE, key);
+        return of(v, Q.byte_(key), key);
     }
 
     @NotNull
@@ -448,7 +441,7 @@ public interface K<U> {
             value = "_ -> new")
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     static K<Byte> byte_(@NonNull @NotNull final String key) {
-        return missing(Q.BYTE, key);
+        return missing(Q.byte_(key), key);
     }
 
 
@@ -466,7 +459,7 @@ public interface K<U> {
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     static K<Short> short_(final Short v,
                            @NonNull @NotNull final String key) {
-        return of(v, Q.SHORT, key);
+        return of(v, Q.short_(key), key);
     }
 
     @NotNull
@@ -482,7 +475,7 @@ public interface K<U> {
             value = "_ -> new")
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     static K<Short> short_(@NonNull @NotNull final String key) {
-        return missing(Q.SHORT, key);
+        return missing(Q.short_(key), key);
     }
 
 
@@ -500,7 +493,7 @@ public interface K<U> {
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     static K<Integer> int_(final Integer v,
                            @NonNull @NotNull final String key) {
-        return of(v, Q.INT, key);
+        return of(v, Q.int_(key), key);
     }
 
     @NotNull
@@ -516,7 +509,7 @@ public interface K<U> {
             value = "_ -> new")
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     static K<Integer> int_(@NonNull @NotNull final String key) {
-        return missing(Q.INT, key);
+        return missing(Q.int_(key), key);
     }
 
 
@@ -534,7 +527,7 @@ public interface K<U> {
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     static K<Long> long_(@Nullable final Long v,
                          @NonNull @NotNull final String key) {
-        return of(v, Q.LONG, key);
+        return of(v, Q.long_(key), key);
     }
 
     @NotNull
@@ -550,7 +543,7 @@ public interface K<U> {
             value = "_ -> new")
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     static K<Long> long_(@NonNull @NotNull final String key) {
-        return missing(Q.LONG, key);
+        return missing(Q.long_(key), key);
     }
 
     @NotNull
@@ -567,7 +560,7 @@ public interface K<U> {
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     static K<Float> float_(@Nullable final Float v,
                            @NonNull @NotNull final String key) {
-        return of(v, Q.FLOAT, key);
+        return of(v, Q.float_(key), key);
     }
 
     @NotNull
@@ -583,7 +576,7 @@ public interface K<U> {
             value = "_ -> new")
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     static K<Float> float_(@NonNull @NotNull final String key) {
-        return missing(Q.FLOAT, key);
+        return missing(Q.float_(key), key);
     }
 
 
@@ -601,7 +594,7 @@ public interface K<U> {
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     static K<Double> double_(@Nullable final Double v,
                              @NonNull @NotNull final String key) {
-        return of(v, Q.DOUBLE, key);
+        return of(v, Q.double_(key), key);
     }
 
     @NotNull
@@ -617,10 +610,11 @@ public interface K<U> {
             value = "_ -> new")
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     static K<Double> double_(@NonNull @NotNull final String key) {
-        return missing(Q.DOUBLE, key);
+        return missing(Q.double_(key), key);
     }
 
     // =========================================================================
+/*
 
     @NotNull
     @Contract(pure = true,
@@ -694,7 +688,9 @@ public interface K<U> {
         return missing(type, key);
     }
 
+*/
     // =========================================================================
+/*
 
     @NotNull
     @Contract(pure = true,
@@ -768,7 +764,9 @@ public interface K<U> {
         return missing(type, key);
     }
 
+*/
     // =========================================================================
+/*
 
     @NotNull
     @Contract(pure = true,
@@ -843,8 +841,10 @@ public interface K<U> {
     }
 
 
+*/
     // =========================================================================
 
+/*
     @NotNull
     @Contract(pure = true,
             value = "_ -> new")
@@ -860,7 +860,7 @@ public interface K<U> {
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     static <U, V> K<Map<U, V>> map(@Nullable final Map<U, V> v,
                                    @NonNull @NotNull final String key) {
-        return map(v, key, (Q) Q.UNKNOWN_MAP.withKey(key));
+        return map(v, key, (Q) Q.unknownMap(key));
     }
 
     @NotNull
@@ -916,5 +916,6 @@ public interface K<U> {
         return missing(type, key);
     }
 
+*/
 
 }

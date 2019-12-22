@@ -190,8 +190,7 @@ final class ExtJacksonJsonSource extends UpdatableSourceBase {
     @Override
     @Synchronized
     protected boolean isNull(@NonNull @NotNull Q<?> type) {
-        final String key = requireNonNull(type.key());
-        return node(key).isNull();
+        return node(type.key()).isNull();
     }
 
     /**
@@ -200,12 +199,11 @@ final class ExtJacksonJsonSource extends UpdatableSourceBase {
     @Override
     @Synchronized
     public boolean has(@NotNull @NonNull final Q<?> type) {
-        final String key = requireNonNull(type.key());
 
-        if (this.node_(key).isMissingNode())
+        if (this.node_(type.key()).isMissingNode())
             return false;
 
-        final JsonNode node = this.node(key);
+        final JsonNode node = this.node(type.key());
 
         if (type.isNull() && node.isNull()
                 || type.isBool() && node.isBoolean()
@@ -219,8 +217,8 @@ final class ExtJacksonJsonSource extends UpdatableSourceBase {
                 || type.isDouble() && node.isDouble()
                 || type.isList() && node.isArray()
                 || type.isSet() && node.isArray() &&
-                this.set0(Q.UNKNOWN_SET.withKey(key)).size() !=
-                        this.list0(Q.UNKNOWN_LIST.withKey(key)).size())
+                this.set0(Q.unknownSet(type.key())).size() !=
+                        this.list0(Q.unknownList(type.key())).size())
             return true;
 
         try {
@@ -241,7 +239,7 @@ final class ExtJacksonJsonSource extends UpdatableSourceBase {
     @Synchronized
     protected Boolean bool0(@NotNull @NonNull final String key) {
         final JsonNode at = node(key);
-        return checkJsonType(at.isBoolean(), Q.BOOL.withKey(key), at, key).asBoolean();
+        return checkJsonType(at.isBoolean(), Q.bool(key), at, key).asBoolean();
     }
 
     /**
@@ -252,7 +250,7 @@ final class ExtJacksonJsonSource extends UpdatableSourceBase {
     @Synchronized
     protected Character char0(@NotNull @NonNull final String key) {
         final JsonNode at = node(key);
-        return checkJsonType(at.isTextual() && at.textValue().length() == 1, Q.STRING, at, key)
+        return checkJsonType(at.isTextual() && at.textValue().length() == 1, Q.string(key), at, key)
                 .textValue()
                 .charAt(0);
     }
@@ -265,7 +263,7 @@ final class ExtJacksonJsonSource extends UpdatableSourceBase {
     @Synchronized
     protected String string0(@NotNull @NonNull final String key) {
         final JsonNode at = node(key);
-        return checkJsonType(at.isTextual(), Q.STRING, at, key).asText();
+        return checkJsonType(at.isTextual(), Q.string(key), at, key).asText();
     }
 
     /**
@@ -277,7 +275,7 @@ final class ExtJacksonJsonSource extends UpdatableSourceBase {
     protected Number number0(@NotNull @NonNull final String key) {
         final JsonNode at = node(key);
         return checkJsonType(at.isShort() || at.isInt() || at.isLong(),
-                Q.LONG, at, key).longValue();
+                Q.long_(key), at, key).longValue();
     }
 
     /**
@@ -294,7 +292,7 @@ final class ExtJacksonJsonSource extends UpdatableSourceBase {
                         || at.isShort()
                         || at.isInt()
                         || at.isLong(),
-                Q.DOUBLE, at, key).doubleValue();
+                Q.double_(key), at, key).doubleValue();
     }
 
 
@@ -305,9 +303,8 @@ final class ExtJacksonJsonSource extends UpdatableSourceBase {
     @Override
     @Synchronized
     protected List<?> list0(@NotNull final Q<? extends List<?>> type) {
-        final String key = requireNonNull(type.key());
-        final JsonNode at = node(key);
-        checkJsonType(at.isArray(), Q.UNKNOWN_LIST.withKey(key), at, key);
+        final JsonNode at = node(type.key());
+        checkJsonType(at.isArray(), Q.unknownList(type.key()), at, type.key());
         final ObjectMapper reader = this.mapperSupplier.get();
         final CollectionType javaType = reader
                 .getTypeFactory()
@@ -317,7 +314,7 @@ final class ExtJacksonJsonSource extends UpdatableSourceBase {
             return reader.readValue(at.traverse(), javaType);
         }
         catch (final IOException e) {
-            throw new KfgTypeException(this.name(), key, type, at, "type mismatch", e);
+            throw new KfgTypeException(this.name(), type.key(), type, at, "type mismatch", e);
         }
     }
 
@@ -328,10 +325,9 @@ final class ExtJacksonJsonSource extends UpdatableSourceBase {
     @Override
     @Synchronized
     protected Set<?> set0(@NotNull final Q<? extends Set<?>> type) {
-        final String key = requireNonNull(type.key());
-        final JsonNode at = node(key);
+        final JsonNode at = node(type.key());
 
-        checkJsonType(at.isArray(), Q.UNKNOWN_SET.withKey(key), at, key);
+        checkJsonType(at.isArray(), Q.unknownSet(type.key()), at, type.key());
         final ObjectMapper reader = this.mapperSupplier.get();
         final CollectionType javaType = reader
                 .getTypeFactory()
@@ -343,12 +339,12 @@ final class ExtJacksonJsonSource extends UpdatableSourceBase {
             s = reader.readValue(at.traverse(), javaType);
         }
         catch (final IOException e) {
-            throw new KfgTypeException(this.name(), null, Q.UNKNOWN_LIST.withKey(key), type, "type mismatch", e);
+            throw new KfgTypeException(this.name(), null, Q.unknownList(type.key()), type, "type mismatch", e);
         }
 
-        final List<?> l = this.list0(Q.UNKNOWN_LIST.withKey(key));
+        final List<?> l = this.list0(Q.unknownList(type.key()));
         if (l.size() != s.size())
-            throw new KfgTypeException(this.name(), key, type, at, "type mismatch, duplicate values");
+            throw new KfgTypeException(this.name(), type.key(), type, at, "type mismatch, duplicate values");
 
         return s;
     }
@@ -360,9 +356,8 @@ final class ExtJacksonJsonSource extends UpdatableSourceBase {
     @NotNull
     @Synchronized
     protected Map<?, ?> map0(@NotNull final Q<? extends Map<?, ?>> type) {
-        final String key = requireNonNull(type.key());
-        final JsonNode at = node(key);
-        checkJsonType(at.isObject(), Q.UNKNOWN_MAP.withKey(key), at, key);
+        final JsonNode at = node(type.key());
+        checkJsonType(at.isObject(), Q.unknownMap(type.key()), at, type.key());
         final ObjectMapper reader = this.mapperSupplier.get();
         final MapType javaType = reader
                 .getTypeFactory()
@@ -372,7 +367,7 @@ final class ExtJacksonJsonSource extends UpdatableSourceBase {
             return reader.readValue(at.traverse(), javaType);
         }
         catch (final IOException e) {
-            throw new KfgTypeException(this.name(), null, Q.UNKNOWN_LIST.withKey(key), type, "type mismatch", e);
+            throw new KfgTypeException(this.name(), null, Q.unknownList(type.key()), type, "type mismatch", e);
         }
     }
 
@@ -383,15 +378,14 @@ final class ExtJacksonJsonSource extends UpdatableSourceBase {
     @NotNull
     @Synchronized
     protected Object custom0(@NotNull @NonNull final Q<?> type) {
-        final String key = requireNonNull(type.key());
         final ObjectMapper reader = this.mapperSupplier.get();
-        final JsonParser traverse = this.node(key).traverse();
+        final JsonParser traverse = this.node(type.key()).traverse();
 
         try {
             return reader.readValue(traverse, type.klass());
         }
         catch (final IOException e) {
-            throw new KfgTypeException(this.name(), key, type, null, "jackson error", e);
+            throw new KfgTypeException(this.name(), type.key(), type, null, "jackson error", e);
         }
     }
 

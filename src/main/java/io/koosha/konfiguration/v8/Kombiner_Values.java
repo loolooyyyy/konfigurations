@@ -16,8 +16,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 import java.util.function.Consumer;
 
-import static java.util.Objects.requireNonNull;
-
 @AllArgsConstructor
 @Accessors(fluent = true)
 @NotThreadSafe
@@ -73,7 +71,6 @@ final class Kombiner_Values {
     }
 
     boolean has(@NonNull @NotNull final Q<?> t) {
-        requireNonNull(t.key());
         return this.cache.containsKey(t);
     }
 

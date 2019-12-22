@@ -120,7 +120,7 @@ final class Kombiner implements Konfiguration {
     @Override
     @NotNull
     public K<Boolean> bool(@NotNull @NonNull final String key) {
-        return this.values.k(Q.BOOL.withKey(key));
+        return this.values.k(Q.bool(key));
     }
 
     /**
@@ -129,7 +129,7 @@ final class Kombiner implements Konfiguration {
     @Override
     @NotNull
     public K<Byte> byte_(@NotNull @NonNull final String key) {
-        return this.values.k(Q.BYTE.withKey(key));
+        return this.values.k(Q.byte_(key));
     }
 
     /**
@@ -138,7 +138,7 @@ final class Kombiner implements Konfiguration {
     @Override
     @NotNull
     public K<Character> char_(@NotNull @NonNull final String key) {
-        return this.values.k(Q.CHAR.withKey(key));
+        return this.values.k(Q.char_(key));
     }
 
     /**
@@ -147,7 +147,7 @@ final class Kombiner implements Konfiguration {
     @Override
     @NotNull
     public K<Short> short_(@NotNull @NonNull final String key) {
-        return this.values.k(Q.SHORT.withKey(key));
+        return this.values.k(Q.short_(key));
     }
 
     /**
@@ -156,7 +156,7 @@ final class Kombiner implements Konfiguration {
     @Override
     @NotNull
     public K<Integer> int_(@NotNull @NonNull final String key) {
-        return this.values.k(Q.INT.withKey(key));
+        return this.values.k(Q.int_(key));
     }
 
     /**
@@ -165,7 +165,7 @@ final class Kombiner implements Konfiguration {
     @Override
     @NotNull
     public K<Long> long_(@NotNull @NonNull final String key) {
-        return this.values.k(Q.LONG.withKey(key));
+        return this.values.k(Q.long_(key));
     }
 
     /**
@@ -174,7 +174,7 @@ final class Kombiner implements Konfiguration {
     @Override
     @NotNull
     public K<Float> float_(@NotNull @NonNull final String key) {
-        return this.values.k(Q.FLOAT.withKey(key));
+        return this.values.k(Q.float_(key));
     }
 
     /**
@@ -183,7 +183,7 @@ final class Kombiner implements Konfiguration {
     @Override
     @NotNull
     public K<Double> double_(@NotNull @NonNull final String key) {
-        return this.values.k(Q.DOUBLE.withKey(key));
+        return this.values.k(Q.double_(key));
     }
 
     /**
@@ -192,7 +192,7 @@ final class Kombiner implements Konfiguration {
     @Override
     @NotNull
     public K<String> string(@NotNull @NonNull final String key) {
-        return this.values.k(Q.STRING.withKey(key));
+        return this.values.k(Q.string(key));
     }
 
     /**
@@ -201,8 +201,7 @@ final class Kombiner implements Konfiguration {
     @Override
     @NotNull
     public <U> K<List<U>> list(@NotNull @NonNull final Q<List<U>> key) {
-        final String k = key.key();
-        if (k == null || k.isEmpty())
+        if (key.key().isEmpty())
             throw new KfgIllegalArgumentException(this.name(), "provided type has no key");
         return this.values.k(key);
     }
@@ -231,8 +230,7 @@ final class Kombiner implements Konfiguration {
     @Override
     @NotNull
     public <U> K<U> custom(@NotNull @NonNull final Q<U> type) {
-        final String k = type.key();
-        if (k == null || k.isEmpty())
+        if (type.key().isEmpty())
             throw new KfgIllegalArgumentException(this.name(), "provided type has no key");
         return this.values.k(type);
     }
@@ -242,11 +240,9 @@ final class Kombiner implements Konfiguration {
      */
     @Override
     public boolean has(@NotNull @NonNull final Q<?> type) {
-        final String k = type.key();
-        if (k == null || k.isEmpty())
+        if (type.key().isEmpty())
             throw new KfgIllegalArgumentException(this.name(), "provided type has no key");
-        final Q<?> t = Q.withKey0(type, k);
-        return r(() -> this.values.has(t) ||
+        return r(() -> this.values.has(type) ||
                 this.sources.vs().filter(x -> x.source() != this)
                             .anyMatch(x -> x.source().has(type)));
     }
