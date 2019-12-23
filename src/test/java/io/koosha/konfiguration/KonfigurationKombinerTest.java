@@ -1,6 +1,5 @@
 package io.koosha.konfiguration;
 
-
 import io.koosha.konfiguration.error.KfgMissingKeyException;
 import io.koosha.konfiguration.error.KfgTypeException;
 import org.testng.annotations.BeforeMethod;
@@ -13,11 +12,10 @@ import java.util.function.Supplier;
 import static java.util.Collections.singletonMap;
 import static org.testng.Assert.*;
 
-
 @SuppressWarnings("RedundantThrows")
 public final class KonfigurationKombinerTest {
 
-    final Faktory fac = Faktory.def();
+    final Faktory fac = Faktory.defaultImplementation();
 
     private AtomicBoolean flag = new AtomicBoolean(true);
 
@@ -25,13 +23,14 @@ public final class KonfigurationKombinerTest {
                                                        ? singletonMap("xxx", (Object) 12)
                                                        : singletonMap("xxx", (Object) 99);
 
+    private KonfigurationManager man;
     private Konfiguration k;
 
     @BeforeMethod
     public void setup() {
-
         this.flag.set(true);
-        this.k = fac.kombine(fac.map("map-sup", sup));
+        this.man = fac.kombine(fac.map("map-sup", sup));
+        this.k = man.getAndSetToNull();
     }
 
     @Test
@@ -40,14 +39,14 @@ public final class KonfigurationKombinerTest {
         assertEquals(k.int_("xxx").v(), (Integer) 12);
 
         flag.set(!flag.get());
-        k.manager().updateNow();
+        man.updateNow();
 
         assertEquals(k.int_("xxx").v(), (Integer) 99);
     }
 
     @Test(expectedExceptions = KfgTypeException.class)
     public void testV3() throws Exception {
-
+        //noinspection ResultOfMethodCallIgnored
         k.string("xxx");
     }
 
@@ -58,8 +57,8 @@ public final class KonfigurationKombinerTest {
         assertEquals(k.int_("xxx").v(), (Integer) 12);
 
         flag.set(!flag.get());
-        assertTrue(k.update());
-        assertFalse(k.update());
+        assertFalse(man.update().isEmpty());
+        assertTrue(man.update().isEmpty());
 
         assertEquals(k.int_("xxx").v(), (Integer) 99);
 
@@ -68,14 +67,13 @@ public final class KonfigurationKombinerTest {
 
     @Test(expectedExceptions = KfgMissingKeyException.class)
     public void testNoDefaultValue() {
-
+        //noinspection ResultOfMethodCallIgnored
         k.long_("some bla bla bla").v();
     }
 
     @Test
     public void testDefaultValue() {
-
-        assertEquals(k.long_("someblablabla").v(9876L), (Long) 9876L);
+        assertEquals(k.long_("some.bla.bla.bla").v(9876L), (Long) 9876L);
     }
 
 }

@@ -133,7 +133,6 @@ public interface K<U> {
      *                                original konfiguration source.
      * @see #v(Object)
      */
-    @Nullable
     @Contract(pure = true)
     @ApiStatus.AvailableSince(Faktory.VERSION_1)
     U v();

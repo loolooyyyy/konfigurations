@@ -34,14 +34,14 @@ public interface Faktory {
 
     @NotNull
     @Contract(pure = true)
-    static Faktory v8() {
+    static Faktory implementationV8() {
         return FaktoryV8.defaultInstance();
     }
 
     @NotNull
     @Contract(pure = true)
-    static Faktory def() {
-        return v8();
+    static Faktory defaultImplementation() {
+        return implementationV8();
     }
 
     long LOCK_WAIT_MILLIS__DEFAULT = 300;
@@ -77,16 +77,16 @@ public interface Faktory {
      */
     @Contract("_, _ -> new")
     @NotNull
-    default KonfigurationManager kombine(@NotNull String name,
-                                         @NotNull KonfigurationManager k0) {
+    default KonfigurationManager kombine(@NotNull final String name,
+                                         @NotNull final KonfigurationManager k0) {
         return this.kombine(name, singleton(k0));
     }
 
     @NotNull
     @Contract("_, _, _ -> new")
-    default KonfigurationManager kombine(@NonNull @NotNull String name,
-                                         @NonNull @NotNull KonfigurationManager k0,
-                                         @NonNull @NotNull KonfigurationManager... sources) {
+    default KonfigurationManager kombine(@NonNull @NotNull final String name,
+                                         @NonNull @NotNull final KonfigurationManager k0,
+                                         @NonNull @NotNull final KonfigurationManager... sources) {
         final List<KonfigurationManager> l = new ArrayList<>();
         l.add(k0);
         l.addAll(asList(sources));
@@ -113,7 +113,7 @@ public interface Faktory {
      * @return kombined sources.
      */
     @Contract("_ -> new")
-    default KonfigurationManager kombine(@NotNull KonfigurationManager k0) {
+    default KonfigurationManager kombine(@NotNull final KonfigurationManager k0) {
         return this.kombine(DEFAULT_KONFIG_NAME, k0);
     }
 
@@ -125,8 +125,8 @@ public interface Faktory {
      * @return kombined sources.
      */
     @Contract("_, _ -> new")
-    default KonfigurationManager kombine(@NotNull KonfigurationManager k0,
-                                         @NotNull KonfigurationManager... sources) {
+    default KonfigurationManager kombine(@NotNull final KonfigurationManager k0,
+                                         @NotNull final KonfigurationManager... sources) {
         return this.kombine(DEFAULT_KONFIG_NAME, k0, sources);
     }
 
@@ -139,7 +139,7 @@ public interface Faktory {
      * @throws KfgIllegalStateException is sources is empty.
      */
     @Contract("_ -> new")
-    default KonfigurationManager kombine(@NotNull Collection<KonfigurationManager> sources) {
+    default KonfigurationManager kombine(@NotNull final Collection<KonfigurationManager> sources) {
         return this.kombine(DEFAULT_KONFIG_NAME, sources);
     }
 
@@ -178,7 +178,7 @@ public interface Faktory {
     @Contract(pure = true,
             value = "_, _ -> new")
     default KonfigurationManager map(@NotNull String name,
-                                     @NotNull Map<String, ?> storage) {
+                                     @NotNull final Map<String, ?> storage) {
         final Map<String, ?> copy = unmodifiableMap(new HashMap<>(storage));
         return map(name, () -> copy);
     }
@@ -195,7 +195,7 @@ public interface Faktory {
     @NotNull
     @Contract(pure = true,
             value = "_ -> new")
-    default KonfigurationManager map(@NotNull Map<String, ?> storage) {
+    default KonfigurationManager map(@NotNull final Map<String, ?> storage) {
         return this.map(DEFAULT_KONFIG_NAME, storage);
     }
 
@@ -214,7 +214,7 @@ public interface Faktory {
     @NotNull
     @Contract(pure = true,
             value = "_ -> new")
-    default KonfigurationManager map(@NotNull Supplier<Map<String, ?>> storage) {
+    default KonfigurationManager map(@NotNull final Supplier<Map<String, ?>> storage) {
         return this.map(DEFAULT_KONFIG_NAME, storage);
     }
 
@@ -250,8 +250,8 @@ public interface Faktory {
     @NotNull
     @Contract(value = "_, _ -> new",
             pure = true)
-    default KonfigurationManager mapWithNested(@NotNull String name,
-                                               @NotNull Map<String, ?> storage) {
+    default KonfigurationManager mapWithNested(@NotNull final String name,
+                                               @NotNull final Map<String, ?> storage) {
         final Map<String, ?> copy = unmodifiableMap(new HashMap<>(storage));
         return mapWithNested(name, () -> copy);
     }
@@ -268,7 +268,7 @@ public interface Faktory {
     @NotNull
     @Contract(value = "_ -> new",
             pure = true)
-    default KonfigurationManager mapWithNested(@NotNull Map<String, ?> storage) {
+    default KonfigurationManager mapWithNested(@NotNull final Map<String, ?> storage) {
         return this.mapWithNested(DEFAULT_KONFIG_NAME, storage);
     }
 
@@ -287,7 +287,7 @@ public interface Faktory {
     @NotNull
     @Contract(value = "_ -> new",
             pure = true)
-    default KonfigurationManager mapWithNested(@NotNull Supplier<Map<String, ?>> storage) {
+    default KonfigurationManager mapWithNested(@NotNull final Supplier<Map<String, ?>> storage) {
         return this.mapWithNested(DEFAULT_KONFIG_NAME, storage);
     }
 
@@ -303,7 +303,7 @@ public interface Faktory {
      */
     @NotNull
     @Contract("_ -> new")
-    default KonfigurationManager preferences(@NotNull Preferences storage) {
+    default KonfigurationManager preferences(@NotNull final Preferences storage) {
         return this.preferences(DEFAULT_KONFIG_NAME, storage);
     }
 
@@ -322,8 +322,8 @@ public interface Faktory {
      */
     @NotNull
     @Contract("_, _ -> new")
-    default KonfigurationManager preferences(@NotNull Preferences storage,
-                                             @NotNull Deserializer deser) {
+    default KonfigurationManager preferences(@NotNull final Preferences storage,
+                                             @NotNull final Deserializer deser) {
         return this.preferences(DEFAULT_KONFIG_NAME, storage, deser);
     }
 
@@ -378,7 +378,7 @@ public interface Faktory {
      */
     @NotNull
     @Contract("_ -> new")
-    default KonfigurationManager jacksonJson_(@NotNull String json) {
+    default KonfigurationManager jacksonJson_(@NotNull final String json) {
         return this.jacksonJson(DEFAULT_KONFIG_NAME, json);
     }
 
@@ -407,8 +407,8 @@ public interface Faktory {
      */
     @NotNull
     @Contract("_, _ -> new")
-    default KonfigurationManager jacksonJson_(@NotNull String json,
-                                              @NotNull Supplier<ObjectMapper> objectMapper) {
+    default KonfigurationManager jacksonJson_(@NotNull final String json,
+                                              @NotNull final Supplier<ObjectMapper> objectMapper) {
         return this.jacksonJson(DEFAULT_KONFIG_NAME, json, objectMapper);
     }
 
@@ -431,7 +431,7 @@ public interface Faktory {
      * @throws KfgSourceException   if the the root element returned by jackson is null.
      */
     @Contract("_ -> new")
-    default KonfigurationManager jacksonJson_(@NotNull Supplier<String> json) {
+    default KonfigurationManager jacksonJson_(@NotNull final Supplier<String> json) {
         return this.jacksonJson(DEFAULT_KONFIG_NAME, json);
     }
 
@@ -459,8 +459,8 @@ public interface Faktory {
      */
     @NotNull
     @Contract("_, _ -> new")
-    default KonfigurationManager jacksonJson_(@NotNull Supplier<String> json,
-                                              @NotNull Supplier<ObjectMapper> objectMapper) {
+    default KonfigurationManager jacksonJson_(@NotNull final Supplier<String> json,
+                                              @NotNull final Supplier<ObjectMapper> objectMapper) {
         return this.jacksonJson(DEFAULT_KONFIG_NAME, json, objectMapper);
     }
 
@@ -484,8 +484,8 @@ public interface Faktory {
      */
     @NotNull
     @Contract("_, _ -> new")
-    default KonfigurationManager jacksonJson(@NotNull String name,
-                                             @NotNull String json) {
+    default KonfigurationManager jacksonJson(@NotNull final String name,
+                                             @NotNull final String json) {
         return jacksonJson(name, () -> json);
     }
 
@@ -514,9 +514,9 @@ public interface Faktory {
      */
     @NotNull
     @Contract("_, _, _ -> new")
-    default KonfigurationManager jacksonJson(@NotNull String name,
-                                             @NotNull String json,
-                                             @NotNull Supplier<ObjectMapper> objectMapper) {
+    default KonfigurationManager jacksonJson(@NotNull final String name,
+                                             @NotNull final String json,
+                                             @NotNull final Supplier<ObjectMapper> objectMapper) {
         return jacksonJson(name, () -> json, objectMapper);
     }
 
@@ -570,7 +570,7 @@ public interface Faktory {
      */
     @NotNull
     @Contract("_ -> new")
-    default KonfigurationManager snakeYaml_(@NotNull String yaml) {
+    default KonfigurationManager snakeYaml_(@NotNull final String yaml) {
         return this.snakeYaml(DEFAULT_KONFIG_NAME, yaml);
     }
 
@@ -599,8 +599,8 @@ public interface Faktory {
      */
     @NotNull
     @Contract("_, _ -> new")
-    default KonfigurationManager snakeYaml_(@NotNull String yaml,
-                                            @NotNull Supplier<Yaml> objectMapper) {
+    default KonfigurationManager snakeYaml_(@NotNull final String yaml,
+                                            @NotNull final Supplier<Yaml> objectMapper) {
         return this.snakeYaml(DEFAULT_KONFIG_NAME, yaml, objectMapper);
     }
 
@@ -626,7 +626,7 @@ public interface Faktory {
      */
     @NotNull
     @Contract("_ -> new")
-    default KonfigurationManager snakeYaml_(@NotNull Supplier<String> yaml) {
+    default KonfigurationManager snakeYaml_(@NotNull final Supplier<String> yaml) {
         return this.snakeYaml(DEFAULT_KONFIG_NAME, yaml);
     }
 
@@ -656,8 +656,8 @@ public interface Faktory {
      */
     @NotNull
     @Contract("_, _ -> new")
-    default KonfigurationManager snakeYaml_(@NotNull Supplier<String> yaml,
-                                            @NotNull Supplier<Yaml> objectMapper) {
+    default KonfigurationManager snakeYaml_(@NotNull final Supplier<String> yaml,
+                                            @NotNull final Supplier<Yaml> objectMapper) {
         return this.snakeYaml(DEFAULT_KONFIG_NAME, yaml, objectMapper);
     }
 
@@ -681,8 +681,8 @@ public interface Faktory {
      */
     @NotNull
     @Contract("_, _ -> new")
-    default KonfigurationManager snakeYaml(@NotNull String name,
-                                           @NotNull String yaml) {
+    default KonfigurationManager snakeYaml(@NotNull final String name,
+                                           @NotNull final String yaml) {
         return snakeYaml(name, () -> yaml);
     }
 
@@ -711,9 +711,9 @@ public interface Faktory {
      */
     @NotNull
     @Contract("_, _, _ -> new")
-    default KonfigurationManager snakeYaml(@NotNull String name,
-                                           @NotNull String yaml,
-                                           @NotNull Supplier<Yaml> objectMapper) {
+    default KonfigurationManager snakeYaml(@NotNull final String name,
+                                           @NotNull final String yaml,
+                                           @NotNull final Supplier<Yaml> objectMapper) {
         return snakeYaml(name, () -> yaml, objectMapper);
     }
 

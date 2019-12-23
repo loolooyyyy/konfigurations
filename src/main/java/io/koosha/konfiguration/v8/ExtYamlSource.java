@@ -459,13 +459,8 @@ final class ExtYamlSource extends UpdatableSourceBase {
     }
 
     private void ensureSafe(@Nullable final Q<?> type) {
-        if (this.safe && type != null && type.isParametrized())
+        if (this.safe && type != null && type.getTypeArgs().size() > 0)
             throw new UnsupportedOperationException("yaml does not support parameterized yet.");
-        //        Constructor constructor = new Constructor(Customer.class);
-        //        TypeDescription customTypeDescription = new TypeDescription(Customer.class);
-        //        customTypeDescription.addPropertyParameters("contactDetails", Contact.class);
-        //        constructor.addTypeDescription(customTypeDescription);
-        //        Yaml yaml = new Yaml(constructor);
     }
 
 

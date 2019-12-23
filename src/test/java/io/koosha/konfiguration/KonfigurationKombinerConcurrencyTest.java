@@ -1,6 +1,5 @@
 package io.koosha.konfiguration;
 
-
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -11,63 +10,26 @@ import java.util.concurrent.Executors;
 
 import static java.util.Arrays.asList;
 
-// import java.io.File;
-// import java.net.URL;
-// import java.nio.charset.StandardCharsets;
-// import java.util.Scanner;
-
-@SuppressWarnings("WeakerAccess")
+@SuppressWarnings({"WeakerAccess", "ResultOfMethodCallIgnored", "FieldCanBeLocal", "DefaultAnnotationParam"})
 public class KonfigurationKombinerConcurrencyTest {
 
-    final Faktory fac = Faktory.def();
+    public static final boolean NONDETERMINISTIC_TESTS = true;
 
-    KonfigurationKombinerConcurrencyTest() throws Exception{
+    final Faktory fac = Faktory.defaultImplementation();
 
-        // URL url0 = getClass().getResource("sample0.json");
-        // File file0 = new File(url0.toURI());
-        // this.JSON0 = new Scanner(file0, "UTF8").useDelimiter("\\Z").next();
-        this.JSON0 = SourceJacksonJsonTest.SAMPLE_0;
-
-        // URL url1 = getClass().getResource("sample1.json");
-        // File file1 = new File(url1.toURI());
-        // this.JSON1 = new Scanner(file1, "UTF8").useDelimiter("\\Z").next();
-        this.JSON1 = SourceJacksonJsonTest.SAMPLE_1;
-
-        this.MAP0 = Map.of("aInt", 12, "aBool", false, "aIntList", asList(1, 0, 2), "aLong", 88L);
-
-
-        this.MAP1 = Map.of("aInt", 99, "bBool", false, "aIntList", asList(2, 2));
-
-
-        this.MAP2 = Map.of("xx", 44, "yy", true);
-
-
-        // ----------------------
-
-        this.reset();
-
-        Konfiguration IN_MEM_2_SOURCE = fac.map(() -> this.MAP2);
-
-        Konfiguration inMemSource = fac.map(() -> this.map);
-
-        Konfiguration jsonSource = fac.jacksonJson_(() -> this.json);
-
-        final Konfiguration kombine = fac.kombine(inMemSource, IN_MEM_2_SOURCE, jsonSource);
-    }
-
-    private final Map<String, Object> MAP0;
-    private final Map<String, Object> MAP1;
-    private final Map<String, Object> MAP2;
-    private final String JSON0;
-    private final String JSON1;
+    private final Map<String, Object> MAP0 = Map.of("aInt", 12, "aBool", false, "aIntList", asList(1, 0, 2), "aLong", 88L);
+    private final Map<String, Object> MAP1 = Map.of("aInt", 99, "bBool", false, "aIntList", asList(2, 2));
+    private final Map<String, Object> MAP2 = Map.of("xx", 44, "yy", true);
+    private final String JSON0 = DummyCustom.JSON_SAMPLE_0;
+    private final String JSON1 = DummyCustom.JSON_SAMPLE_1;
 
     volatile boolean run = true;
     long c = 0;
 
-    private Map<String, Object> map;
-    private String json;
-    private Konfiguration k;
-    private KonfigurationManager km;
+    Map<String, Object> map;
+    String json;
+    Konfiguration k;
+    KonfigurationManager km;
 
     @BeforeMethod
     void reset() {
@@ -75,12 +37,22 @@ public class KonfigurationKombinerConcurrencyTest {
         this.json = this.JSON0;
     }
 
-    private void toggle() {
+    void toggle() {
         this.json = Objects.equals(this.json, JSON0) ? JSON1 : JSON0;
         this.map = Objects.equals(this.map, MAP0) ? MAP1 : MAP0;
     }
 
-    @Test(enabled = false)
+    @BeforeMethod
+    public void setup() {
+        this.reset();
+        KonfigurationManager IN_MEM_2_SOURCE = fac.map(() -> this.MAP2);
+        KonfigurationManager inMemSource = fac.map(() -> this.map);
+        KonfigurationManager jsonSource = fac.jacksonJson_(() -> this.json);
+        this.km = fac.kombine(inMemSource, IN_MEM_2_SOURCE, jsonSource);
+        this.k = km.getAndSetToNull();
+    }
+
+    @Test(enabled = NONDETERMINISTIC_TESTS)
     public void benchmark() {
         ExecutorService e = null;
         try {
@@ -88,7 +60,7 @@ public class KonfigurationKombinerConcurrencyTest {
             e.submit(() -> {
                 while (run) {
                     toggle();
-                    k.update();
+                    km.update();
                     c++;
                 }
             });
@@ -110,12 +82,12 @@ public class KonfigurationKombinerConcurrencyTest {
             System.out.println("total update count: " + c);
         }
         finally {
-            if(e != null)
+            if (e != null)
                 e.shutdown();
         }
     }
 
-    @Test(enabled = false)
+    @Test(enabled = NONDETERMINISTIC_TESTS)
     public void testMissedUpdates() {
         ExecutorService e = null;
         try {
@@ -125,7 +97,7 @@ public class KonfigurationKombinerConcurrencyTest {
                 e.submit(() -> {
                     while (run) {
                         toggle();
-                        k.update();
+                        km.update();
                     }
                 });
             }
@@ -142,7 +114,7 @@ public class KonfigurationKombinerConcurrencyTest {
             run = false;
         }
         finally {
-            if(e != null)
+            if (e != null)
                 e.shutdown();
         }
     }

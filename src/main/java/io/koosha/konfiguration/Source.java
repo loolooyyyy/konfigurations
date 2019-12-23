@@ -245,6 +245,28 @@ public interface Source {
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     <U> K<U> custom(@NotNull final Q<U> key);
 
+    /**
+     * Get a custom object of type Q konfiguration value.
+     *
+     * <p><b>Important:</b> the underlying konfiguration source must support
+     * this!
+     *
+     * <p><b>Important:</b> this method must <em>NOT</em> be used to obtain
+     * maps, lists or sets. Use the corresponding methods {@link #map(Q)},
+     * {@link #list(Q)} and {@link #set(Q)}.
+     *
+     * @param key type object of the requested value.
+     * @param <U> generic type of requested value.
+     * @return konfiguration value wrapper for the requested key.
+     */
+    @NotNull
+    @Contract(pure = true)
+    @ApiStatus.AvailableSince(Faktory.VERSION_8)
+    default <U> K<U> custom(@NotNull @NonNull final String key,
+                            @NotNull @NonNull final Class<U> type) {
+        return custom(new Q<>(key, type));
+    }
+
 
     // ========================================================================
 
@@ -258,6 +280,18 @@ public interface Source {
     boolean has(@NotNull Q<?> key);
 
     /**
+     * Check if {@code key} exists in the configuration.
+     *
+     * @return true if the key exists, false otherwise.
+     */
+    @Contract(pure = true)
+    @ApiStatus.AvailableSince(Faktory.VERSION_8)
+    default boolean has(@NotNull @NonNull final String key,
+                        @NotNull @NonNull final Class<?> type) {
+        return has(new Q<>(key, type));
+    }
+
+    /**
      * Check if map {@code key} exists in the configuration.
      *
      * @param key the config key to check it's existence
@@ -267,6 +301,20 @@ public interface Source {
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     default boolean hasMap(@NotNull @NonNull final Q<Map<?, ?>> key) {
         return this.has(key);
+    }
+
+    /**
+     * Check if map {@code key} exists in the configuration.
+     *
+     * @param key the config key to check it's existence
+     * @return true if the key exists, false otherwise.
+     */
+    @Contract(pure = true)
+    @ApiStatus.AvailableSince(Faktory.VERSION_8)
+    default boolean hasMap(@NotNull @NonNull final String key,
+                           @NotNull @NonNull final Class<?> keyType,
+                           @NotNull @NonNull final Class<?> valueType) {
+        return this.has(Q.mapOf(key, keyType, valueType));
     }
 
     /**
@@ -282,6 +330,19 @@ public interface Source {
     }
 
     /**
+     * Check if set {@code key} exists in the configuration.
+     *
+     * @param key the config key to check it's existence
+     * @return true if the key exists, false otherwise.
+     */
+    @Contract(pure = true)
+    @ApiStatus.AvailableSince(Faktory.VERSION_8)
+    default boolean hasSet(@NotNull @NonNull final String key,
+                           @NotNull @NonNull final Class<?> type) {
+        return this.has(Q.setOf(key, type));
+    }
+
+    /**
      * Check if list {@code key} exists in the configuration.
      *
      * @param key the config key to check it's existence
@@ -291,6 +352,19 @@ public interface Source {
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     default boolean hasList(@NotNull @NonNull final Q<List<?>> key) {
         return this.has(key);
+    }
+
+    /**
+     * Check if list {@code key} exists in the configuration.
+     *
+     * @param key the config key to check it's existence
+     * @return true if the key exists, false otherwise.
+     */
+    @Contract(pure = true)
+    @ApiStatus.AvailableSince(Faktory.VERSION_8)
+    default boolean hasList(@NotNull @NonNull final String key,
+                            @NotNull @NonNull final Class<?> type) {
+        return this.has(Q.listOf(key, type));
     }
 
     /**

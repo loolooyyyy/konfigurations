@@ -1,12 +1,8 @@
 package io.koosha.konfiguration;
 
-
 import org.testng.annotations.Test;
 
-import java.util.*;
-
 import static org.testng.Assert.*;
-
 
 @SuppressWarnings({"RedundantThrows", "ConstantConditions"})
 public class DummyVTest {
@@ -78,36 +74,6 @@ public class DummyVTest {
         assertEquals(K.stringOf(value, "").v("something"), value);
     }
 
-
-    @Test
-    public void testList() throws Exception {
-        List<Object> value = Arrays.asList(new Object(), new Object());
-        List<Object> def = Arrays.asList(new Object(), 1, 2, 3);
-        assertSame(K.list(value).v(), value);
-        assertSame(K.list(value).v(def), value);
-    }
-
-    @Test
-    public void testMap() throws Exception {
-        Map<Object, Object> value = new HashMap<>();
-        value.put(new Object(), new Object());
-        value.put(new Object(), new Object());
-
-        Map<Object, Object> def = new HashMap<>();
-        value.put("a", new Object());
-        value.put("b", new Object());
-
-        assertSame(K.map(value).v(), value);
-        assertSame(K.map(value).v(def), value);
-    }
-
-    @Test
-    public void testSet() throws Exception {
-        Set<Object> value = new HashSet<>(Arrays.asList(new Object(), new Object()));
-        Set<Object> def = new HashSet<>(Arrays.asList(new Object(), 1, 2, 3));
-        assertSame(K.set(value).v(), value);
-        assertSame(K.set(value).v(def), value);
-    }
 
     @Test
     public void testNull_() throws Exception {
