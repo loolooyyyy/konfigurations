@@ -214,6 +214,17 @@ final class SubsetView implements Konfiguration {
         return wrapped.custom(key(key));
     }
 
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @NotNull
+    public <U> K<U> custom(@NotNull @NonNull final String key,
+                           @NotNull @NonNull final Class<U> type) {
+        return this.wrapped.custom(key(key), type);
+    }
+
     // =========================================================================
 
     /**
@@ -222,6 +233,15 @@ final class SubsetView implements Konfiguration {
     @Override
     public boolean has(@NotNull @NonNull final Q<?> key) {
         return this.wrapped.has(key(key));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean has(@NotNull @NonNull final String key,
+                       @NotNull @NonNull final Class<?> type) {
+        return this.wrapped.has(key(key), type);
     }
 
     /**
@@ -308,6 +328,16 @@ final class SubsetView implements Konfiguration {
      * {@inheritDoc}
      */
     @Override
+    public boolean hasMap(@NotNull @NonNull final String key,
+                          @NotNull @NonNull final Class<?> keyType,
+                          @NotNull @NonNull final Class<?> valueType) {
+        return this.wrapped.hasMap(key(key), keyType, valueType);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public boolean hasSet(@NotNull @NonNull final Q<Set<?>> key) {
         return this.wrapped.hasSet(key(key));
     }
@@ -316,8 +346,26 @@ final class SubsetView implements Konfiguration {
      * {@inheritDoc}
      */
     @Override
+    public boolean hasSet(@NotNull @NonNull final String key,
+                          @NotNull @NonNull final Class<?> type) {
+        return this.wrapped.hasSet(key(key), type);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public boolean hasList(@NotNull @NonNull final Q<List<?>> key) {
         return this.wrapped.hasList(key(key));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean hasList(@NotNull @NonNull final String key,
+                           @NotNull @NonNull final Class<?> type) {
+        return this.wrapped.hasList(key, type);
     }
 
 

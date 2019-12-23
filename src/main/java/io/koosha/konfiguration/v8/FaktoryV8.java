@@ -16,6 +16,7 @@ import org.yaml.snakeyaml.Yaml;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Supplier;
 import java.util.prefs.Preferences;
 
@@ -51,11 +52,29 @@ public final class FaktoryV8 implements Faktory {
 
     // ================================================================ KOMBINER
 
+    private static final Object NAME_LOCK = new Object();
+    private static final long START = -1L;
+    private static volatile long name_pool = START;
+    private static volatile String str_pool = "H#";
+
+    private static String next() {
+        synchronized (NAME_LOCK) {
+            name_pool++;
+            if (name_pool == START)
+                str_pool = str_pool + "F_";
+        }
+        return str_pool + name_pool;
+    }
+
+    private static String name(@NotNull @NonNull final String name) {
+        return Objects.equals(name, Faktory.DEFAULT_KONFIG_NAME) ? next() : name;
+    }
+
     @Override
     @Contract("_ ->new")
     @NotNull
     public KonfigurationBuilder builder(@NotNull @NonNull final String name) {
-        return new Kombiner_Builder(name);
+        return new Kombiner_Builder(name(name));
     }
 
     /**
@@ -66,7 +85,10 @@ public final class FaktoryV8 implements Faktory {
     @Contract("_, _ -> new")
     public KonfigurationManager kombine(@NotNull @NonNull final String name,
                                         @NonNull @NotNull final Collection<KonfigurationManager> sources) {
-        return new Kombiner(name, sources, LOCK_WAIT_MILLIS__DEFAULT, true).man();
+        return new Kombiner(name(name), sources,
+                LOCK_WAIT_MILLIS__DEFAULT,
+                FAIR_LOCk__DEFAULT,
+                ALLOW_MIXED_TYPES__DEFAULT).man();
     }
 
     @NotNull
@@ -74,10 +96,11 @@ public final class FaktoryV8 implements Faktory {
     private KonfigurationManager kombine(@NotNull @NonNull final String name,
                                          @NotNull @NonNull final UpdatableSource source) {
         return new Kombiner(
-                name,
+                name(name),
                 singleton(CheatingMan.cheat(source)),
                 LOCK_WAIT_MILLIS__DEFAULT,
-                true).man();
+                FAIR_LOCk__DEFAULT,
+                ALLOW_MIXED_TYPES__DEFAULT).man();
     }
 
     // ==================================================================== MAP
@@ -91,7 +114,7 @@ public final class FaktoryV8 implements Faktory {
             value = "_, _ -> new")
     public KonfigurationManager map(@NotNull @NonNull final String name,
                                     @NotNull @NonNull final Supplier<Map<String, ?>> storage) {
-        return kombine(name, new ExtMapSource(name, storage, false));
+        return kombine(name(name), new ExtMapSource(name(name), storage, false));
     }
 
     /**
@@ -103,7 +126,7 @@ public final class FaktoryV8 implements Faktory {
             pure = true)
     public KonfigurationManager mapWithNested(@NotNull @NonNull final String name,
                                               @NotNull @NonNull final Supplier<Map<String, ?>> storage) {
-        return kombine(name, new ExtMapSource(name, storage, true));
+        return kombine(name(name), new ExtMapSource(name(name), storage, true));
     }
 
     // ============================================================ PREFERENCES
@@ -116,7 +139,7 @@ public final class FaktoryV8 implements Faktory {
     @Contract("_, _ -> new")
     public KonfigurationManager preferences(@NotNull @NonNull final String name,
                                             @NotNull @NonNull final Preferences storage) {
-        return kombine(name, new ExtPreferencesSource(name, storage, null));
+        return kombine(name(name), new ExtPreferencesSource(name(name), storage, null));
     }
 
     /**
@@ -128,7 +151,7 @@ public final class FaktoryV8 implements Faktory {
     public KonfigurationManager preferences(@NotNull @NonNull final String name,
                                             @NotNull @NonNull final Preferences storage,
                                             @NotNull @NonNull final Deserializer deser) {
-        return kombine(name, new ExtPreferencesSource(name, storage, deser));
+        return kombine(name(name), new ExtPreferencesSource(name(name), storage, deser));
     }
 
 
@@ -143,7 +166,7 @@ public final class FaktoryV8 implements Faktory {
     public KonfigurationManager jacksonJson(@NotNull @NonNull final String name,
                                             @NotNull @NonNull final Supplier<String> json) {
         final ObjectMapper mapper = ExtJacksonJsonSource.defaultJacksonObjectMapper();
-        return jacksonJson(name, json, () -> mapper);
+        return jacksonJson(name(name), json, () -> mapper);
     }
 
     /**
@@ -155,7 +178,7 @@ public final class FaktoryV8 implements Faktory {
     public KonfigurationManager jacksonJson(@NotNull @NonNull final String name,
                                             @NotNull @NonNull final Supplier<String> json,
                                             @NonNull @NotNull final Supplier<ObjectMapper> objectMapper) {
-        return kombine(name, new ExtJacksonJsonSource(name, json, objectMapper));
+        return kombine(name(name), new ExtJacksonJsonSource(name(name), json, objectMapper));
     }
 
     // ============================================================= SNAKE YAML
@@ -170,8 +193,8 @@ public final class FaktoryV8 implements Faktory {
     public KonfigurationManager snakeYaml(@NotNull @NonNull final String name,
                                           @NotNull @NonNull final Supplier<String> yaml) {
         ExtYamlSource.ensureDep(name);
-        return kombine(name,
-                new ExtYamlSource(name, yaml, () -> ExtYamlSource.getDefaultYamlSupplier(name), false));
+        return kombine(name(name),
+                new ExtYamlSource(name(name), yaml, () -> ExtYamlSource.getDefaultYamlSupplier(name(name)), false));
     }
 
     /**
@@ -185,7 +208,7 @@ public final class FaktoryV8 implements Faktory {
                                           @NotNull @NonNull final Supplier<String> yaml,
                                           @NonNull @NotNull final Supplier<Yaml> objectMapper) {
         ExtYamlSource.ensureDep(name);
-        return kombine(name, new ExtYamlSource(name, yaml, objectMapper, false));
+        return kombine(name(name), new ExtYamlSource(name(name), yaml, objectMapper, false));
     }
 
     /**
@@ -198,7 +221,7 @@ public final class FaktoryV8 implements Faktory {
                                                @NotNull @NonNull final Supplier<String> yaml,
                                                @NonNull @NotNull final Supplier<Yaml> objectMapper) {
         ExtYamlSource.ensureDep(name);
-        return kombine(name, new ExtYamlSource(name, yaml, objectMapper, false));
+        return kombine(name(name), new ExtYamlSource(name(name), yaml, objectMapper, false));
     }
 
 }

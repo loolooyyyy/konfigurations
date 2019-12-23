@@ -27,12 +27,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @ApiStatus.AvailableSince(Faktory.VERSION_8)
 public abstract class KonfigurationBuilderBase implements KonfigurationBuilder {
 
-    @Contract(value = "_, _, _, _ -> new",
+    @Contract(value = "_, _, _, _, _ -> new",
             pure = true)
     @ApiStatus.OverrideOnly
     protected abstract KonfigurationManager build0(
             @NotNull String name,
             boolean fairLock,
+            boolean mixedTypes,
             @Nullable Long lockWaitTime,
             @NotNull Collection<KonfigurationManager> sources);
 
@@ -71,6 +72,13 @@ public abstract class KonfigurationBuilderBase implements KonfigurationBuilder {
     private boolean fairLock;
 
     /**
+     * See {@link KonfigurationBuilder#mixedTypes(boolean)}.
+     *
+     * @see KonfigurationBuilder#mixedTypes(boolean)
+     */
+    private boolean mixedTypes;
+
+    /**
      * See {@link KonfigurationBuilder#lockWaitTime(long)}.
      *
      * @see KonfigurationBuilder#lockWaitTime(long)
@@ -103,6 +111,15 @@ public abstract class KonfigurationBuilderBase implements KonfigurationBuilder {
         this.fairLock = fair;
         return this;
     }
+
+    @Override
+    @NotNull
+    public final KonfigurationBuilder mixedTypes(final boolean allow) {
+        this.ensure();
+        this.mixedTypes = allow;
+        return this;
+    }
+
 
     /**
      * {@inheritDoc}
@@ -143,9 +160,12 @@ public abstract class KonfigurationBuilderBase implements KonfigurationBuilder {
         this.ensure();
         this.isConsumed.set(true);
         return this.build0(
-                this.name(), this.fairLock, this.lockWaitTime, this.sources);
+                this.name(),
+                this.fairLock,
+                this.mixedTypes,
+                this.lockWaitTime,
+                this.sources);
     }
-
 
     /**
      * Make sure {@link #build()} is not called yet.

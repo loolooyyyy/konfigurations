@@ -31,7 +31,7 @@ public class DummyCustom {
             "aLong", Long.MAX_VALUE,
             "aDouble", 3.14D,
             "aString", "hello world",
-            "aMap", map("a", 99, "c', 22"),
+            "aMap", map("a", 99, "c", 22),
             "aSet", new HashSet<>(asList(1, 2))
     );
     public static final Map<String, Object> MAP1 = map(
@@ -100,7 +100,8 @@ public class DummyCustom {
     public static <K, V> Map<K, V> map(final Object... objects) {
         Objects.requireNonNull(objects);
         if (objects.length % 2 != 0)
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("count: " + objects.length +
+                    " " + Arrays.toString(objects));
         final Map<K, V> m = new HashMap<>();
         for (int i = 0; i < objects.length; i += 2) {
             final K k = (K) objects[i];

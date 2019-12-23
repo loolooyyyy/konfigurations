@@ -13,7 +13,7 @@ import static java.util.Arrays.asList;
 @SuppressWarnings({"WeakerAccess", "ResultOfMethodCallIgnored", "FieldCanBeLocal", "DefaultAnnotationParam"})
 public class KonfigurationKombinerConcurrencyTest {
 
-    public static final boolean NONDETERMINISTIC_TESTS = true;
+    public static final boolean NONDETERMINISTIC_TESTS = false;
 
     final Faktory fac = Faktory.defaultImplementation();
 

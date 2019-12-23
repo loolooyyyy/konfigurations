@@ -24,9 +24,10 @@ final class Kombiner_Builder extends KonfigurationBuilderBase implements Konfigu
     @Override
     protected KonfigurationManager build0(@NotNull @NonNull String name,
                                           boolean fairLock,
+                                          boolean mixedTypes,
                                           @Nullable Long lockWaitTime,
                                           @NotNull @NonNull Collection<KonfigurationManager> sources) {
-        final Kombiner k = new Kombiner(name, sources, lockWaitTime, fairLock);
+        final Kombiner k = new Kombiner(name, sources, lockWaitTime, fairLock, mixedTypes);
         return k.man();
     }
 

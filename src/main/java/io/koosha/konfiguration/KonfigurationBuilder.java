@@ -73,6 +73,8 @@ public interface KonfigurationBuilder {
     @NotNull
     KonfigurationBuilder lockNoWait();
 
+    @NotNull
+    KonfigurationBuilder mixedTypes(boolean allow);
 
     @NotNull
     KonfigurationManager build();

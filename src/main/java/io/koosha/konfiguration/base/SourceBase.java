@@ -155,7 +155,7 @@ public abstract class SourceBase implements Source {
     public final K<Boolean> bool(@NonNull @NotNull final String key) {
         final Q<Boolean> type = Q.bool(key);
 
-        if (this.has(type))
+        if (!this.has(type))
             throw new KfgAssertionException(this.name(), null, type, "missing key");
 
         if (this.isNull(type))
@@ -176,7 +176,7 @@ public abstract class SourceBase implements Source {
     public final K<Character> char_(@NonNull @NotNull final String key) {
         final Q<Character> type = Q.char_(key);
 
-        if (this.has(type))
+        if (!this.has(type))
             throw new KfgAssertionException(this.name(), null, type, "missing key");
 
         if (this.isNull(type))
@@ -210,7 +210,7 @@ public abstract class SourceBase implements Source {
     public final K<String> string(@NonNull @NotNull final String key) {
         final Q<String> type = Q.string(key);
 
-        if (this.has(type))
+        if (!this.has(type))
             throw new KfgAssertionException(this.name(), null, type, "missing key");
 
         if (this.isNull(type))
@@ -237,7 +237,7 @@ public abstract class SourceBase implements Source {
     public final K<Byte> byte_(@NonNull @NotNull final String key) {
         final Q<Byte> type = Q.byte_(key);
 
-        if (this.has(type))
+        if (!this.has(type))
             throw new KfgAssertionException(this.name(), null, type, "missing key");
 
         if (this.isNull(type))
@@ -260,7 +260,7 @@ public abstract class SourceBase implements Source {
     public final K<Short> short_(@NonNull @NotNull final String key) {
         final Q<Short> type = Q.short_(key);
 
-        if (this.has(type))
+        if (!this.has(type))
             throw new KfgAssertionException(this.name(), null, type, "missing key");
 
         if (this.isNull(type))
@@ -283,7 +283,7 @@ public abstract class SourceBase implements Source {
     public final K<Integer> int_(@NonNull @NotNull final String key) {
         final Q<Integer> type = Q.int_(key);
 
-        if (this.has(type))
+        if (!this.has(type))
             throw new KfgAssertionException(this.name(), null, type, "missing key");
 
         if (this.isNull(type))
@@ -306,7 +306,7 @@ public abstract class SourceBase implements Source {
     public final K<Long> long_(@NonNull @NotNull final String key) {
         final Q<Long> type = Q.long_(key);
 
-        if (this.has(type))
+        if (!this.has(type))
             throw new KfgAssertionException(this.name(), null, type, "missing key");
 
         if (this.isNull(type))
@@ -329,7 +329,7 @@ public abstract class SourceBase implements Source {
     public final K<Float> float_(@NonNull @NotNull final String key) {
         final Q<Float> type = Q.float_(key);
 
-        if (this.has(type))
+        if (!this.has(type))
             throw new KfgAssertionException(this.name(), null, type, "missing key");
 
         if (this.isNull(type))
@@ -352,7 +352,7 @@ public abstract class SourceBase implements Source {
     public final K<Double> double_(@NonNull @NotNull final String key) {
         final Q<Double> type = Q.double_(key);
 
-        if (this.has(type))
+        if (!this.has(type))
             throw new KfgAssertionException(this.name(), null, type, "missing key");
 
         if (this.isNull(type))
@@ -400,7 +400,7 @@ public abstract class SourceBase implements Source {
     @Override
     @NotNull
     public final <U> K<Set<U>> set(@NotNull @NonNull Q<Set<U>> type) {
-        if (this.has(type))
+        if (!this.has(type))
             throw new KfgAssertionException(this.name(), null, type, "missing key");
 
         if (this.isNull(type))
@@ -426,7 +426,7 @@ public abstract class SourceBase implements Source {
      */
     @NotNull
     public final <U, V> K<Map<U, V>> map(@NotNull @NonNull final Q<Map<U, V>> type) {
-        if (this.has(type))
+        if (!this.has(type))
             throw new KfgAssertionException(this.name(), null, type, "missing key");
 
         if (this.isNull(type))
@@ -453,7 +453,7 @@ public abstract class SourceBase implements Source {
     @SuppressWarnings("unchecked")
     @NotNull
     public final <U> K<U> custom(@NotNull @NonNull final Q<U> type) {
-        if (this.has(type))
+        if (!this.has(type))
             throw new KfgAssertionException(this.name(), null, type, "missing key");
 
         if (this.isNull(type))

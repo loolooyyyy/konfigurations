@@ -4,6 +4,7 @@ import io.koosha.konfiguration.K;
 import io.koosha.konfiguration.Q;
 import io.koosha.konfiguration.Source;
 import io.koosha.konfiguration.error.KfgMissingKeyException;
+import io.koosha.konfiguration.error.KfgTypeException;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.experimental.Accessors;
@@ -25,6 +26,8 @@ final class Kombiner_Values {
     @NonNull
     @NotNull
     private final Kombiner origin;
+
+    private final boolean allowMixedTypes;
 
     @NotNull
     final Set<Q<?>> issuedKeys = new HashSet<>();
@@ -75,6 +78,20 @@ final class Kombiner_Values {
     }
 
     private void issue(@NotNull @NonNull final Q<?> q) {
+        if (this.issuedKeys.contains(q))
+            return;
+
+        if (!allowMixedTypes) {
+            final Optional<Q<?>> duplicate = this.issuedKeys
+                    .stream()
+                    .filter(x -> Objects.equals(x.key(), q.key()))
+                    .findFirst();
+            if (duplicate.isPresent())
+                throw new KfgTypeException(
+                        this.origin.name(), null, q, duplicate.get(),
+                        "mixed types is not allowed");
+        }
+
         this.issuedKeys.add(q);
     }
 

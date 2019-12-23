@@ -56,7 +56,8 @@ final class Kombiner implements Konfiguration {
     Kombiner(@NotNull @NonNull final String name,
              @NotNull @NonNull final Collection<KonfigurationManager> sources,
              @Nullable final Long lockWaitTimeMillis,
-             final boolean fairLock) {
+             final boolean fairLock,
+             final boolean allowMixedTypes) {
         this.name = name;
 
         // Find duplicate names.
@@ -92,7 +93,7 @@ final class Kombiner implements Konfiguration {
         this._lock = new Kombiner_Lock(name, lockWaitTimeMillis, fairLock);
         this.observers = new Kombiner_Observers(this.name);
         this._man.set(new Kombiner_Manager(this));
-        this.values = new Kombiner_Values(this);
+        this.values = new Kombiner_Values(this, allowMixedTypes);
         this.sources = new Kombiner_Sources(this);
 
         this.sources.replace(s);
@@ -321,15 +322,15 @@ final class Kombiner implements Konfiguration {
     // =========================================================================
 
     private static final Object HANDLE_LOCK = new Object();
-
-    private static volatile long id_pool = Long.MAX_VALUE;
-
-    private static volatile String str_pool = "";
+    private static final long START = -1L;
+    private static volatile long id_pool = START;
+    private static volatile String str_pool = "H#";
 
     private static String next() {
         synchronized (HANDLE_LOCK) {
             id_pool++;
-            str_pool = str_pool + "1";
+            if (id_pool == START)
+                str_pool = str_pool + "F_";
         }
         return str_pool + id_pool;
     }

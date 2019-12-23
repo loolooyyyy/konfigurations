@@ -68,7 +68,7 @@ public class KfgException extends RuntimeException {
      */
     @Override
     public String toString() {
-        return format("%s[key=%s,  neededType=%s, actualValue=%s]",
+        return format("%s[key=%s, neededType=%s, actualValue=%s]",
                 this.getClass().getName(),
                 this.key(),
                 this.neededType(),

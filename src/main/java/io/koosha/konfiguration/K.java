@@ -181,7 +181,7 @@ public interface K<U> {
             value = " _ -> new")
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     static <U> K<U> null_(@Nullable final Q<U> type) {
-        return null_(type, "");
+        return null_(type, type == null ? "" : type.key());
     }
 
     @NotNull

@@ -10,29 +10,24 @@ public class DummyVTest {
     private final static String key = "sample.key";
 
     @Test
-    public void testRegister() throws Exception {
-        K<?> dummyV = K.null_(Q.string(""));
-        assertSame(dummyV.register(k -> {
-        }), dummyV);
-    }
-
-    @Test
     public void testGetKey() throws Exception {
-        K<?> dummyV = K.null_(Q.string(""));
+        K<?> dummyV = K.null_(Q.string(key));
         assertSame(dummyV.key(), key);
+        dummyV = K.null_(Q.string(key), key + key);
+        assertSame(dummyV.key(), key + key);
     }
 
     @Test
     public void testV() throws Exception {
         long value = 99L;
-        K<?> dummyV = K.of(value, Q.long_(""));
+        K<?> dummyV = K.of(value, Q.long_(key));
         assertSame(dummyV.v(), value);
     }
 
     @Test
     public void testVWithDefaultValue() throws Exception {
         long value = 99L;
-        K<Long> dummyV = K.null_(Q.long_(""));
+        K<Long> dummyV = K.missing(Q.long_());
         assertSame(dummyV.v(value), value);
     }
 
@@ -40,12 +35,16 @@ public class DummyVTest {
     public void testFalse_() throws Exception {
         assertFalse(K.false_().v());
         assertFalse(K.false_().v(true));
+        assertFalse(K.false_(key).v());
+        assertFalse(K.false_(key).v(true));
     }
 
     @Test
     public void testTrue_() throws Exception {
         assertTrue(K.true_().v());
         assertTrue(K.true_().v(false));
+        assertTrue(K.true_(key).v());
+        assertTrue(K.true_(key).v(false));
     }
 
     @Test

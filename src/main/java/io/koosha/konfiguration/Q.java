@@ -532,7 +532,12 @@ public class Q<TYPE> {
 
     @Override
     public final String toString() {
-        return "Q(key=" + this.key() + ", klass=" + this.klass() + ", typeArgs=" + this.typeArgs + ")";
+        return toString_(this);
     }
+
+    private String toString_(final Q<?> q) {
+        return "Q(key=" + q.key + ", klass=" + q.klass + ", typeArgs=" + q.typeArgs + ")";
+    }
+
 
 }
