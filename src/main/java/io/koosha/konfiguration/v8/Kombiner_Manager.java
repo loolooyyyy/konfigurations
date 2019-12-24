@@ -21,6 +21,15 @@ import static java.util.stream.Collectors.toList;
 final class Kombiner_Manager implements KonfigurationManager {
 
     @NotNull
+    @NonNull
+    final Kombiner origin;
+    private final AtomicBoolean consumed = new AtomicBoolean(false);
+
+    public Kombiner_Manager(@NotNull @NonNull Kombiner kombiner) {
+        this.origin = kombiner;
+    }
+
+    @NotNull
     @Contract(value = "_ -> new",
             pure = true)
     @SuppressWarnings({"Convert2Lambda", "Anonymous2MethodRef"})
@@ -33,17 +42,6 @@ final class Kombiner_Manager implements KonfigurationManager {
                 r.run();
             }
         };
-    }
-
-
-    @NotNull
-    @NonNull
-    final Kombiner origin;
-
-    private final AtomicBoolean consumed = new AtomicBoolean(false);
-
-    public Kombiner_Manager(@NotNull @NonNull Kombiner kombiner) {
-        this.origin = kombiner;
     }
 
     /**

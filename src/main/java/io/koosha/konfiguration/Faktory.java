@@ -33,6 +33,14 @@ public interface Faktory {
 
     String DEFAULT_KONFIG_NAME = "io.koosha.konfiguration.Faktory.DEFAULT";
 
+    boolean ALLOW_MIXED_TYPES__DEFAULT = false;
+
+    boolean FAIR_LOCk__DEFAULT = true;
+
+    long LOCK_WAIT_MILLIS__DEFAULT = 300;
+
+    AtomicBoolean UNSAFE_YAML = new AtomicBoolean(true);
+
     @NotNull
     @Contract(pure = true)
     static Faktory implementationV8() {
@@ -44,13 +52,6 @@ public interface Faktory {
     static Faktory defaultImplementation() {
         return implementationV8();
     }
-
-    boolean ALLOW_MIXED_TYPES__DEFAULT = false;
-
-    boolean FAIR_LOCk__DEFAULT = true;
-
-    long LOCK_WAIT_MILLIS__DEFAULT = 300;
-    AtomicBoolean UNSAFE_YAML = new AtomicBoolean(true);
 
     /**
      * Implementation version.

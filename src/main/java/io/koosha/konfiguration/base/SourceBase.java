@@ -29,6 +29,91 @@ import java.util.Set;
 @ApiStatus.AvailableSince(Faktory.VERSION_8)
 public abstract class SourceBase implements Source {
 
+    @Contract(pure = true,
+            value = "null -> null")
+    @Nullable
+    private static Boolean toBool(@Nullable final Object o) {
+        if (o instanceof Boolean)
+            return (Boolean) o;
+
+        if (!(o instanceof Number))
+            return null;
+
+        final Long l = toLong((Number) o);
+        if (l == null)
+            return null;
+
+        //noinspection RedundantConditionalExpression
+        return l == 0 ? false : true;
+    }
+
+    @Contract(pure = true,
+            value = "null -> null")
+    @Nullable
+    private static Long toByte(@Nullable final Number o) {
+        return toIntegral(o, Byte.MIN_VALUE, Byte.MAX_VALUE);
+    }
+
+    @Contract(pure = true,
+            value = "null -> null")
+    @Nullable
+    private static Long toShort(@Nullable final Number o) {
+        return toIntegral(o, Short.MIN_VALUE, Short.MAX_VALUE);
+    }
+
+    @Contract(pure = true,
+            value = "null -> null")
+    @Nullable
+    private static Long toInt(@Nullable final Number o) {
+        return toIntegral(o, Integer.MIN_VALUE, Integer.MAX_VALUE);
+    }
+
+    @Contract(pure = true,
+            value = "null -> null")
+    @Nullable
+    private static Long toLong(@Nullable final Number o) {
+        return toIntegral(o, Long.MIN_VALUE, Long.MAX_VALUE);
+    }
+
+    @Contract(pure = true,
+            value = "null, _, _ -> null")
+    @Nullable
+    private static Long toIntegral(@Nullable final Number o,
+                                   final long min,
+                                   final long max) {
+        if (o == null || o instanceof Double || o instanceof Float)
+            return null;
+
+        if (o.longValue() < min || max < o.longValue())
+            return null;
+
+        return o.longValue();
+    }
+
+    @Contract(pure = true,
+            value = "null -> null")
+    @Nullable
+    private static Float toFloat(@Nullable final Number o) {
+        if (o == null)
+            return null;
+
+        if (o.doubleValue() < Float.MIN_VALUE
+                || Float.MAX_VALUE < o.doubleValue())
+            return null;
+
+        return o.floatValue();
+    }
+
+    @Contract(pure = true,
+            value = "null -> null")
+    @Nullable
+    private static Double toDouble(@Nullable final Number o) {
+        if (o == null)
+            return null;
+
+        return o.doubleValue();
+    }
+
     @NotNull
     @ApiStatus.OverrideOnly
     protected abstract Object bool0(@NotNull final String key);
@@ -37,6 +122,9 @@ public abstract class SourceBase implements Source {
     @ApiStatus.OverrideOnly
     // TODO check len if from str
     protected abstract Object char0(@NotNull final String key);
+
+
+    // =========================================================================
 
     @NotNull
     @ApiStatus.OverrideOnly
@@ -58,6 +146,8 @@ public abstract class SourceBase implements Source {
     @ApiStatus.OverrideOnly
     protected abstract Set<?> set0(@NotNull Q<? extends Set<?>> key);
 
+    // =========================================================================
+
     @NotNull
     @ApiStatus.OverrideOnly
     protected abstract Map<?, ?> map0(@NotNull Q<? extends Map<?, ?>> key);
@@ -68,10 +158,6 @@ public abstract class SourceBase implements Source {
 
     @ApiStatus.OverrideOnly
     protected abstract boolean isNull(@NotNull Q<?> key);
-
-
-    // =========================================================================
-
 
     /**
      * {@inheritDoc}
@@ -123,8 +209,6 @@ public abstract class SourceBase implements Source {
                                    @NotNull @NonNull final Class<T> type) {
         return set(Q.setOf(key, type));
     }
-
-    // =========================================================================
 
     /**
      * {@inheritDoc}
@@ -213,6 +297,9 @@ public abstract class SourceBase implements Source {
         return this.has(Q.bool(key));
     }
 
+
+    // =========================================================================
+
     /**
      * {@inheritDoc}
      */
@@ -276,9 +363,6 @@ public abstract class SourceBase implements Source {
     public final boolean hasDouble(@NotNull @NonNull final String key) {
         return this.has(Q.double_(key));
     }
-
-
-    // =========================================================================
 
     /**
      * {@inheritDoc}
@@ -407,6 +491,8 @@ public abstract class SourceBase implements Source {
 
         return this.k(type, vv.shortValue());
     }
+
+    // =========================================================================
 
     /**
      * {@inheritDoc}
@@ -625,8 +711,6 @@ public abstract class SourceBase implements Source {
         return this.k(type, v);
     }
 
-    // =========================================================================
-
     private void checkType0(@NonNull @NotNull final Q<?> neededType,
                             @NonNull @NotNull final Object value) {
         if (!neededType.matchesValue(value))
@@ -673,92 +757,6 @@ public abstract class SourceBase implements Source {
                     throw new KfgTypeNullException(this.name(), neededType);
         }
     }
-
-    @Contract(pure = true,
-            value = "null -> null")
-    @Nullable
-    private static Boolean toBool(@Nullable final Object o) {
-        if (o instanceof Boolean)
-            return (Boolean) o;
-
-        if (!(o instanceof Number))
-            return null;
-
-        final Long l = toLong((Number) o);
-        if (l == null)
-            return null;
-
-        //noinspection RedundantConditionalExpression
-        return l == 0 ? false : true;
-    }
-
-    @Contract(pure = true,
-            value = "null -> null")
-    @Nullable
-    private static Long toByte(@Nullable final Number o) {
-        return toIntegral(o, Byte.MIN_VALUE, Byte.MAX_VALUE);
-    }
-
-    @Contract(pure = true,
-            value = "null -> null")
-    @Nullable
-    private static Long toShort(@Nullable final Number o) {
-        return toIntegral(o, Short.MIN_VALUE, Short.MAX_VALUE);
-    }
-
-    @Contract(pure = true,
-            value = "null -> null")
-    @Nullable
-    private static Long toInt(@Nullable final Number o) {
-        return toIntegral(o, Integer.MIN_VALUE, Integer.MAX_VALUE);
-    }
-
-    @Contract(pure = true,
-            value = "null -> null")
-    @Nullable
-    private static Long toLong(@Nullable final Number o) {
-        return toIntegral(o, Long.MIN_VALUE, Long.MAX_VALUE);
-    }
-
-    @Contract(pure = true,
-            value = "null, _, _ -> null")
-    @Nullable
-    private static Long toIntegral(@Nullable final Number o,
-                                   final long min,
-                                   final long max) {
-        if (o == null || o instanceof Double || o instanceof Float)
-            return null;
-
-        if (o.longValue() < min || max < o.longValue())
-            return null;
-
-        return o.longValue();
-    }
-
-    @Contract(pure = true,
-            value = "null -> null")
-    @Nullable
-    private static Float toFloat(@Nullable final Number o) {
-        if (o == null)
-            return null;
-
-        if (o.doubleValue() < Float.MIN_VALUE
-                || Float.MAX_VALUE < o.doubleValue())
-            return null;
-
-        return o.floatValue();
-    }
-
-    @Contract(pure = true,
-            value = "null -> null")
-    @Nullable
-    private static Double toDouble(@Nullable final Number o) {
-        if (o == null)
-            return null;
-
-        return o.doubleValue();
-    }
-
 
     /**
      * Handle the case where value of a key is null.

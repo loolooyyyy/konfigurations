@@ -10,7 +10,7 @@ import java.util.concurrent.Executors;
 
 import static java.util.Arrays.asList;
 
-@SuppressWarnings({"WeakerAccess", "ResultOfMethodCallIgnored", "FieldCanBeLocal", "DefaultAnnotationParam"})
+@SuppressWarnings({"WeakerAccess", "ResultOfMethodCallIgnored", "FieldCanBeLocal", "DefaultAnnotationParam", "RedundantSuppression"})
 public class KonfigurationKombinerConcurrencyTest {
 
     public static final boolean NONDETERMINISTIC_TESTS = false;

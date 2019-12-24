@@ -1,6 +1,5 @@
 package io.koosha.konfiguration;
 
-import io.koosha.konfiguration.Faktory;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;

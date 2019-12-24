@@ -59,34 +59,6 @@ public class KfgException extends RuntimeException {
         this.say = null;
     }
 
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String toString() {
-        return format("%s[s=%s/%s, want=%s, have=%s]",
-                this.getClass().getName(), // %s[
-                this.source(), // s=%s
-                this.say == null ? "" : this.say, // /%s
-                this.neededType(), // want=%s
-                this.actualValue()); // have=%s
-    }
-
-
-    public final boolean hasSource() {
-        return this.source() != null;
-    }
-
-    public final boolean hasNeededType() {
-        return this.neededType() != null;
-    }
-
-    public final boolean hasActualValue() {
-        return this.actualValue() != null;
-    }
-
-
     static String msgOf(final Throwable t) {
         return t == null
                ? "[null exception]->[null exception]"
@@ -113,6 +85,31 @@ public class KfgException extends RuntimeException {
         }
 
         return format("[%s]->%s", representationC, representationV);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String toString() {
+        return format("%s[s=%s/%s, want=%s, have=%s]",
+                this.getClass().getName(), // %s[
+                this.source(), // s=%s
+                this.say == null ? "" : this.say, // /%s
+                this.neededType(), // want=%s
+                this.actualValue()); // have=%s
+    }
+
+    public final boolean hasSource() {
+        return this.source() != null;
+    }
+
+    public final boolean hasNeededType() {
+        return this.neededType() != null;
+    }
+
+    public final boolean hasActualValue() {
+        return this.actualValue() != null;
     }
 
 }

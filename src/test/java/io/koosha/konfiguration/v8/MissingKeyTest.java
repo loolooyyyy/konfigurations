@@ -18,15 +18,12 @@ import static java.util.Collections.singletonMap;
 public class MissingKeyTest {
 
     Faktory fac;
-
+    KonfigurationManager man;
+    Konfiguration k;
     private boolean testAAA = true;
-
     final Supplier<Map<String, Object>> sup = () -> testAAA
                                                     ? singletonMap("xxx", (Object) 12)
                                                     : singletonMap("xxx", (Object) 99);
-
-    KonfigurationManager man;
-    Konfiguration k;
 
     @BeforeMethod
     public void setup() {

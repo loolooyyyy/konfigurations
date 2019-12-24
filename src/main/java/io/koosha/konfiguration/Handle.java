@@ -1,6 +1,5 @@
 package io.koosha.konfiguration;
 
-import io.koosha.konfiguration.Faktory;
 import net.jcip.annotations.Immutable;
 import net.jcip.annotations.ThreadSafe;
 import org.jetbrains.annotations.ApiStatus;

@@ -32,22 +32,39 @@ import static java.lang.String.format;
 @ApiStatus.Internal
 final class DummyV<U> implements K<U> {
 
+    private final static Handle M_1 = new Handle() {
+        @Override
+        public String id() {
+            return this.getClass().getName();
+        }
+
+        @Override
+        public int hashCode() {
+            return id().hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            return obj == this;
+        }
+    };
+
     @Accessors(fluent = true)
     @Getter
     @NotNull
     @NonNull
+
     private final String key;
 
     @Nullable
     private final U v;
 
     private final boolean exists;
-
+    
     @Accessors(fluent = true)
     @Getter
     @Nullable
     private final Q<U> type;
-
 
     /**
      * {@inheritDoc}
@@ -115,6 +132,8 @@ final class DummyV<U> implements K<U> {
         return this.exists;
     }
 
+    // ________________________________________________________________________
+
     /**
      * {@inheritDoc}
      */
@@ -131,25 +150,6 @@ final class DummyV<U> implements K<U> {
         }
         return format("K[exists=%b,%s=%s]", this.exists, keyStr, vStr);
     }
-
-    // ________________________________________________________________________
-
-    private final static Handle M_1 = new Handle() {
-        @Override
-        public String id() {
-            return this.getClass().getName();
-        }
-
-        @Override
-        public int hashCode() {
-            return id().hashCode();
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            return obj == this;
-        }
-    };
 
 }
 

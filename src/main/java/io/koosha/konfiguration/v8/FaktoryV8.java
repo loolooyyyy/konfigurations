@@ -27,35 +27,22 @@ import static java.util.Collections.singleton;
 @ApiStatus.AvailableSince(Faktory.VERSION_8)
 public final class FaktoryV8 implements Faktory {
 
+    private static final Faktory INSTANCE = new FaktoryV8();
+    private static final String VERSION = "io.koosha.konfiguration:7.0.0";
+    private static final Object NAME_LOCK = new Object();
+    private static final long START = -1L;
+    private static volatile long name_pool = START;
+
+    // ================================================================ KOMBINER
+    private static volatile String str_pool = "H#";
     private FaktoryV8() {
     }
-
-    private static final Faktory INSTANCE = new FaktoryV8();
-
-    private static final String VERSION = "io.koosha.konfiguration:7.0.0";
 
     @Contract(pure = true)
     @NotNull
     public static Faktory defaultInstance() {
         return FaktoryV8.INSTANCE;
     }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    @Contract(pure = true)
-    @NotNull
-    public String getVersion() {
-        return VERSION;
-    }
-
-    // ================================================================ KOMBINER
-
-    private static final Object NAME_LOCK = new Object();
-    private static final long START = -1L;
-    private static volatile long name_pool = START;
-    private static volatile String str_pool = "H#";
 
     private static String next() {
         synchronized (NAME_LOCK) {
@@ -68,6 +55,16 @@ public final class FaktoryV8 implements Faktory {
 
     private static String name(@NotNull @NonNull final String name) {
         return Objects.equals(name, Faktory.DEFAULT_KONFIG_NAME) ? next() : name;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @Contract(pure = true)
+    @NotNull
+    public String getVersion() {
+        return VERSION;
     }
 
     @Override

@@ -1,10 +1,10 @@
 package io.koosha.konfiguration.v8;
 
 import io.koosha.konfiguration.K;
-import io.koosha.konfiguration.type.Q;
 import io.koosha.konfiguration.Source;
 import io.koosha.konfiguration.error.KfgMissingKeyException;
 import io.koosha.konfiguration.error.KfgTypeException;
+import io.koosha.konfiguration.type.Q;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.experimental.Accessors;
@@ -23,17 +23,14 @@ import java.util.function.Consumer;
 @ApiStatus.Internal
 final class Kombiner_Values {
 
+    @NotNull
+    final Set<Q<?>> issuedKeys = new HashSet<>();
+    @NotNull
+    final Map<Q<?>, ? super Object> cache = new HashMap<>();
     @NonNull
     @NotNull
     private final Kombiner origin;
-
     private final boolean allowMixedTypes;
-
-    @NotNull
-    final Set<Q<?>> issuedKeys = new HashSet<>();
-
-    @NotNull
-    final Map<Q<?>, ? super Object> cache = new HashMap<>();
 
     <U> K<U> k(@NotNull @NonNull final Q<U> type) {
         this.issue(type);

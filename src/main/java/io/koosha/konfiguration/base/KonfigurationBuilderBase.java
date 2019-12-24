@@ -27,18 +27,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @ApiStatus.AvailableSince(Faktory.VERSION_8)
 public abstract class KonfigurationBuilderBase implements KonfigurationBuilder {
 
-    @Contract(value = "_, _, _, _, _ -> new",
-            pure = true)
-    @ApiStatus.OverrideOnly
-    protected abstract KonfigurationManager build0(
-            @NotNull String name,
-            boolean fairLock,
-            boolean mixedTypes,
-            @Nullable Long lockWaitTime,
-            @NotNull Collection<KonfigurationManager> sources);
-
-    // =========================================================================
-
     /**
      * See {@link KonfigurationBuilder#name()}.
      *
@@ -85,6 +73,15 @@ public abstract class KonfigurationBuilderBase implements KonfigurationBuilder {
      */
     private Long lockWaitTime;
 
+    @Contract(value = "_, _, _, _, _ -> new",
+            pure = true)
+    @ApiStatus.OverrideOnly
+    protected abstract KonfigurationManager build0(
+            @NotNull String name,
+            boolean fairLock,
+            boolean mixedTypes,
+            @Nullable Long lockWaitTime,
+            @NotNull Collection<KonfigurationManager> sources);
 
     /**
      * {@inheritDoc}

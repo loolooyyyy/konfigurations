@@ -4,8 +4,8 @@ aIntList: [2, 2]
 aStringList: ["a", "c"]
 aLong: -9223372036854775808
 aDouble: 4.14
-aMap: 
-   a: "b"
-   c: "e"
+aMap:
+  a: "b"
+  c: "e"
 aSet: [3, 2, 1]
 aString: "goodbye world"

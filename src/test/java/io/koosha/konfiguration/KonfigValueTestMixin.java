@@ -13,10 +13,6 @@ import static org.testng.Assert.assertEquals;
 
 public abstract class KonfigValueTestMixin {
 
-    static final String ERR_MSG_TEMPLATE_TYPE = "required type=.*, but found=.* for key=.*";
-
-    static final String ERR_MSG_TEMPLATE_MISSING = "missing key";
-
     protected abstract Source k();
 
     protected abstract void update();

@@ -22,12 +22,13 @@ import static java.util.Arrays.asList;
 final class Q_Helper {
 
     public static final int MAX_NESTING_LEVEL = 16;
+    static final String X = "io.koosha.konfiguration.type.Q.UNKEYED";
+
+    // =========================================================================
 
     private Q_Helper() {
         // Utility class.
     }
-
-    // =========================================================================
 
     @Contract(pure = true)
     static void checkIsConcrete(@NotNull @NonNull final Q<?> q) {
@@ -97,6 +98,8 @@ final class Q_Helper {
         throw new KfgAssertionException("expected Class or ParameterizedType, got= " + t);
     }
 
+    // =========================================================================
+
     @Contract(pure = true)
     private static boolean isConcrete(@NotNull @NonNull final Type p,
                                       @Nullable Type root) {
@@ -117,8 +120,6 @@ final class Q_Helper {
                 return false;
         return true;
     }
-
-    // =========================================================================
 
     @Contract(pure = true,
             value = "->new")
@@ -168,7 +169,5 @@ final class Q_Helper {
                 klass,
                 q.args.isEmpty() ? "" : "<" + s + ">");
     }
-
-    static final String X = "io.koosha.konfiguration.type.Q.UNKEYED";
 
 }

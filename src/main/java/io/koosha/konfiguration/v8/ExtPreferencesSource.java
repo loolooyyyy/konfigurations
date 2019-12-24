@@ -1,6 +1,5 @@
 package io.koosha.konfiguration.v8;
 
-import io.koosha.konfiguration.type.Q;
 import io.koosha.konfiguration.base.Deserializer;
 import io.koosha.konfiguration.base.UpdatableSource;
 import io.koosha.konfiguration.base.UpdatableSourceBase;
@@ -8,6 +7,7 @@ import io.koosha.konfiguration.error.KfgIllegalStateException;
 import io.koosha.konfiguration.error.KfgSourceException;
 import io.koosha.konfiguration.error.KfgTypeException;
 import io.koosha.konfiguration.error.extended.KfgPreferencesError;
+import io.koosha.konfiguration.type.Q;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.SneakyThrows;
@@ -53,6 +53,15 @@ final class ExtPreferencesSource extends UpdatableSourceBase {
     @Accessors(fluent = true)
     private final String name;
 
+    ExtPreferencesSource(@NotNull @NonNull final String name,
+                         @NonNull @NotNull final Preferences preferences,
+                         @Nullable final Deserializer deserializer) {
+        this.name = name;
+        this.source = preferences;
+        this.deser = deserializer;
+        this.lastHash = hashOf();
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -71,17 +80,6 @@ final class ExtPreferencesSource extends UpdatableSourceBase {
     public UpdatableSource updatedSelf() {
         return this;
     }
-
-
-    ExtPreferencesSource(@NotNull @NonNull final String name,
-                         @NonNull @NotNull final Preferences preferences,
-                         @Nullable final Deserializer deserializer) {
-        this.name = name;
-        this.source = preferences;
-        this.deser = deserializer;
-        this.lastHash = hashOf();
-    }
-
 
     /**
      * {@inheritDoc}

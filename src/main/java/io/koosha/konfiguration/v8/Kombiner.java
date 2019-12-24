@@ -31,28 +31,23 @@ import static java.util.stream.Collectors.*;
 @ApiStatus.Internal
 final class Kombiner implements Konfiguration {
 
+    private static final Object HANDLE_LOCK = new Object();
+    private static final long START = -1L;
+    private static volatile long id_pool = START;
+    private static volatile String str_pool = "H#";
+    @NotNull
+    final Kombiner_Sources sources;
+    @NotNull
+    final Kombiner_Lock _lock;
+    @NotNull
+    final Kombiner_Observers observers;
+    @NotNull
+    final Kombiner_Values values;
     @NotNull
     @Getter
     @Accessors(fluent = true)
     private final String name;
-
-    @NotNull
-    final Kombiner_Sources sources;
-
-    @NotNull
-    final Kombiner_Lock _lock;
-
-    @NotNull
-    final Kombiner_Observers observers;
-
-    @NotNull
-    final Kombiner_Values values;
-
     private final AtomicReference<Kombiner_Manager> _man = new AtomicReference<>();
-
-    public KonfigurationManager man() {
-        return this._man.getAndSet(null);
-    }
 
     Kombiner(@NotNull @NonNull final String name,
              @NotNull @NonNull final Collection<KonfigurationManager> sources,
@@ -100,6 +95,25 @@ final class Kombiner implements Konfiguration {
         this.sources.replace(s);
     }
 
+    // =========================================================================
+
+    private static String next() {
+        synchronized (HANDLE_LOCK) {
+            id_pool++;
+            if (id_pool == START)
+                str_pool = str_pool + "F_";
+        }
+        return str_pool + id_pool;
+    }
+
+    public static Handle newHandle() {
+        return new HandleImpl(next());
+    }
+
+    public KonfigurationManager man() {
+        return this._man.getAndSet(null);
+    }
+
     Kombiner_Lock lock() {
         if (this._man.get() != null)
             throw new KfgIllegalStateException(this.name(), "konfiguration manager is not taken out yet");
@@ -113,8 +127,6 @@ final class Kombiner implements Konfiguration {
     <T> T w(@NonNull @NotNull final Supplier<T> func) {
         return lock().doWriteLocked(func);
     }
-
-    // =========================================================================
 
     /**
      * {@inheritDoc}
@@ -188,6 +200,8 @@ final class Kombiner implements Konfiguration {
         return this.values.k(Q.double_(key));
     }
 
+    // =========================================================================
+
     /**
      * {@inheritDoc}
      */
@@ -249,8 +263,6 @@ final class Kombiner implements Konfiguration {
                             .anyMatch(x -> x.source().has(type)));
     }
 
-    // =========================================================================
-
     /**
      * {@inheritDoc}
      */
@@ -260,6 +272,8 @@ final class Kombiner implements Konfiguration {
                            @NotNull @NonNull final String key) {
         return w(() -> observers.register(observer, key));
     }
+
+    // =========================================================================
 
     /**
      * {@inheritDoc}
@@ -320,22 +334,6 @@ final class Kombiner implements Konfiguration {
         });
     }
 
-    // =========================================================================
-
-    private static final Object HANDLE_LOCK = new Object();
-    private static final long START = -1L;
-    private static volatile long id_pool = START;
-    private static volatile String str_pool = "H#";
-
-    private static String next() {
-        synchronized (HANDLE_LOCK) {
-            id_pool++;
-            if (id_pool == START)
-                str_pool = str_pool + "F_";
-        }
-        return str_pool + id_pool;
-    }
-
     @ThreadSafe
     @Immutable
     @Accessors(fluent = true)
@@ -348,10 +346,6 @@ final class Kombiner implements Konfiguration {
         @Getter
         private final String id;
 
-    }
-
-    public static Handle newHandle() {
-        return new HandleImpl(next());
     }
 
 

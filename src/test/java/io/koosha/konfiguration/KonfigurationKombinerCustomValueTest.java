@@ -13,11 +13,8 @@ import static java.util.Collections.singletonMap;
 public class KonfigurationKombinerCustomValueTest {
 
     final DummyCustom value = new DummyCustom();
-
-    Faktory fac;
-
     final String key = "theKey";
-
+    Faktory fac;
     private Konfiguration k;
 
     @BeforeMethod

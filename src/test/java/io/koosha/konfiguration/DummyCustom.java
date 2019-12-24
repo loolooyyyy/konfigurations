@@ -7,22 +7,6 @@ import static java.util.Arrays.asList;
 @SuppressWarnings({"FieldCanBeLocal", "WeakerAccess", "unused"})
 public class DummyCustom {
 
-    public String str = "";
-    public int i = 0;
-
-    public DummyCustom() {
-    }
-
-    public DummyCustom(final String str, final int i) {
-        this.str = str;
-        this.i = i;
-    }
-
-    public String concat() {
-        return this.str + " ::: " + this.i;
-    }
-
-
     public static final Map<String, Object> MAP0 = map(
             "aInt", 12,
             "aBool", true,
@@ -45,19 +29,16 @@ public class DummyCustom {
             "aMap", map("a", "b", "c", "e"),
             "aSet", new HashSet<>(asList(1, 2, 3))
     );
-
     public static final String JSON_SAMPLE_0 = "{ \"aInt\": 12, \"aBool\": true, " +
             "\"aIntList\": [1, 0, 2], \"aStringList\": [\"a\", \"B\", \"c\"], " +
             "\"aLong\": 9223372036854775807, \"aDouble\": 3.14, \"aMap\": " +
             "{ \"a\": 99, \"c\": 22 }, \"aSet\": [1, 2, 1, 2], \"aString\": " +
             "\"hello world\", \"some\": { \"nested\": { \"key\": 99, " +
             "\"userDefined\" : { \"str\": \"I'm all set\", \"i\": 99 } } } }";
-
     public static final String JSON_SAMPLE_1 = "{ \"aInt\": 99, \"aBool\": false, " +
             "\"aIntList\": [2, 2], \"aStringList\": [\"a\", \"c\"], \"aLong\": " +
             "-9223372036854775808, \"aDouble\": 4.14, \"aMap\": { \"a\": \"b\", " +
             "\"c\": \"e\" }, \"aSet\": [3, 2, 1, 2], \"aString\": \"goodbye world\" }";
-
     public static final String YAML_SAMPLE_0 = "aInt: 12\n" +
             "aBool: true\n" +
             "aIntList: \n" +
@@ -80,7 +61,6 @@ public class DummyCustom {
             "            str: \"I'm all set\"\n" +
             "            i: 99\n" +
             "        \n";
-
     public static final String YAML_SAMPLE_1 = "aInt: 99\n" +
             "aBool: false\n" +
             "aIntList: [2, 2]\n" +
@@ -92,7 +72,20 @@ public class DummyCustom {
             "   c: \"e\"\n" +
             "aSet: [3, 2, 1]\n" +
             "aString: \"goodbye world\"\n";
+    public String str = "";
+    public int i = 0;
 
+    public DummyCustom() {
+    }
+
+    public DummyCustom(final String str, final int i) {
+        this.str = str;
+        this.i = i;
+    }
+
+    public String concat() {
+        return this.str + " ::: " + this.i;
+    }
 
     // =========================================================================
 
@@ -110,6 +103,5 @@ public class DummyCustom {
         }
         return Collections.unmodifiableMap(m);
     }
-
 
 }

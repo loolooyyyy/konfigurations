@@ -1,6 +1,6 @@
 aInt: 12
 aBool: true
-aIntList: 
+aIntList:
   - 1
   - 0
   - 2
@@ -8,15 +8,15 @@ aStringList: ["a", "B", "c"]
 aLong: 9223372036854775807
 aDouble: 3.14
 aMap:
-    "a": 99,
-    "c": 22
+  "a": 99,
+  "c": 22
 aSet: [1, 2]
 aString: "hello world"
 
 some:
-    nested: 
-        key: 99
-        userDefined: 
-            str: "I'm all set"
-            i: 99
+  nested:
+    key: 99
+    userDefined:
+      str: "I'm all set"
+      i: 99
         

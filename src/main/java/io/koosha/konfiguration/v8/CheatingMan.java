@@ -25,22 +25,6 @@ import static java.util.Objects.requireNonNull;
 final class CheatingMan implements KonfigurationManager {
 
     @NotNull
-    @Contract("_->new")
-    static CheatingMan cheat(@NotNull @NonNull final KonfigurationManager origin) {
-        if (origin instanceof CheatingMan)
-            return (CheatingMan) origin;
-        return new CheatingMan(origin);
-    }
-
-    @NotNull
-    @Contract("_->new")
-    static CheatingMan cheat(@NotNull @NonNull final Source origin) {
-        return new CheatingMan(origin);
-    }
-
-    // =========================================================================
-
-    @NotNull
     @NonNull
     @Getter
     private final String name;
@@ -49,11 +33,11 @@ final class CheatingMan implements KonfigurationManager {
     @Getter(AccessLevel.PROTECTED)
     private final KonfigurationManager man;
 
+    // =========================================================================
     @NonNull
     @NotNull
     @Getter(AccessLevel.PROTECTED)
     private final Source source;
-
 
     private CheatingMan(@NonNull @NotNull KonfigurationManager origin) {
         this.name = origin.name();
@@ -67,6 +51,19 @@ final class CheatingMan implements KonfigurationManager {
         this.source = origin;
     }
 
+    @NotNull
+    @Contract("_->new")
+    static CheatingMan cheat(@NotNull @NonNull final KonfigurationManager origin) {
+        if (origin instanceof CheatingMan)
+            return (CheatingMan) origin;
+        return new CheatingMan(origin);
+    }
+
+    @NotNull
+    @Contract("_->new")
+    static CheatingMan cheat(@NotNull @NonNull final Source origin) {
+        return new CheatingMan(origin);
+    }
 
     @Contract("->fail")
     @Nullable

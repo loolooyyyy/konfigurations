@@ -41,49 +41,6 @@ public class Q<TYPE> {
         this(key, 0);
     }
 
-    @NotNull
-    @Contract("_, _ -> new")
-    static Q<?> of(@NotNull @NonNull final Type type,
-                   final boolean isRoot) {
-        return new Q<>(X, type, isRoot ? 0 : 1);
-    }
-
-    @NotNull
-    @Contract("_, _ -> new")
-    public static Q<?> of(@NotNull @NonNull final String key,
-                          @NotNull @NonNull final Type type) {
-        return new Q<>(key, type, 0);
-    }
-
-    @NotNull
-    @Contract("_, _ -> new")
-    public static <T> Q<T> of(@NotNull @NonNull final String key,
-                              @NotNull @NonNull final Class<T> klass) {
-        return new Q<>(key, klass, 0);
-    }
-
-    @NotNull
-    @Contract("_, _, _ -> new")
-    public static <T> Q<T> of(@NotNull @NonNull final String key,
-                              @NotNull @NonNull final Class<T> klass,
-                              @NotNull @NonNull final List<? extends @NotNull Type> args) {
-        return new Q<>(key, klass, args.stream()
-                                       .map(Objects::requireNonNull)
-                                       .map(x -> of(x, false))
-                                       .collect(toList()));
-    }
-
-    @NotNull
-    @Contract("_, _, _ -> new")
-    public static <T> Q<T> construct(@NotNull @NonNull final String key,
-                                     @NotNull @NonNull final Class<T> klass,
-                                     @NotNull @NonNull final List<@NotNull Q<?>> args) {
-        args.forEach(Objects::requireNonNull);
-        return new Q<>(key, klass, args);
-    }
-
-    // =========================================================================
-
     private Q(@NotNull @NonNull final String key,
               @NotNull @NonNull final Class<TYPE> klass,
               @NotNull @NonNull final List<@NotNull Q<?>> args) {
@@ -138,188 +95,49 @@ public class Q<TYPE> {
             checkIsConcrete(this);
     }
 
-    @Contract(pure = true)
-    public final boolean matchesType(final Type other) {
-        if (other == null)
-            return true;
-        if (!this.klass.isAssignableFrom(this.klass))
-            return false;
-        return match(this, other);
-    }
-
-    @Contract(pure = true)
-    public final boolean matchesType(final Q<?> other) {
-        if (other == null || other == this)
-            return true;
-        if (!this.klass.isAssignableFrom(other.klass))
-            return false;
-        return match(this, other);
-    }
-
-    @Contract(pure = true)
-    public final boolean matchesValue(final Object v) {
-        return matchValue0(this, v);
-    }
-
-    // =================================
-
     @NotNull
-    @Contract(pure = true)
-    public final String key() {
-        if (Objects.equals(this.key, X))
-            throw new KfgIllegalStateException(null, "this Q type is not keyed: " + this);
-        return this.key;
+    @Contract("_, _ -> new")
+    static Q<?> of(@NotNull @NonNull final Type type,
+                   final boolean isRoot) {
+        return new Q<>(X, type, isRoot ? 0 : 1);
     }
 
     @NotNull
-    @Contract(pure = true)
-    public final Class<TYPE> klass() {
-        return this.klass;
+    @Contract("_, _ -> new")
+    public static Q<?> of(@NotNull @NonNull final String key,
+                          @NotNull @NonNull final Type type) {
+        return new Q<>(key, type, 0);
     }
 
     @NotNull
-    @Contract(pure = true,
-            value = "_->new")
-    public final Q<TYPE> withKey(@NotNull @NonNull final String key) {
-        if (key.isEmpty())
-            throw new KfgIllegalArgumentException(null, "empty key");
-
-        return Objects.equals(this.key, key)
-               ? construct(key, this.klass, this.args)
-               : this;
-    }
-
-    // =================================
-
-    @Contract(pure = true)
-    @NotNull
-    public final Class<?> getCollectionContainedClass() {
-        if (!Collection.class.isAssignableFrom(this.klass))
-            throw new KfgIllegalStateException(null, "type is not a collection: " + this);
-        if (this.args.size() < 1)
-            throw new KfgIllegalStateException(null, "collection type is not present: " + this);
-        return this.args.get(0).klass;
-    }
-
-    @Contract(pure = true,
-            value = "->new")
-    @NotNull
-    public final Q<?> getCollectionContainedQ() {
-        final Class<?> c = this.getCollectionContainedClass();
-        return of(this.key + "::collection", c);
-    }
-
-    @Contract(pure = true)
-    @NotNull
-    public final Class<?> getMapKeyClass() {
-        if (!Map.class.isAssignableFrom(this.klass))
-            throw new KfgIllegalStateException(null, Q.unknownMap(key), null, "type is not a map");
-        if (this.args.size() < 1)
-            throw new KfgIllegalStateException(null, "map key type is not present: " + this);
-        return this.args.get(0).klass;
-    }
-
-    @Contract(pure = true)
-    @NotNull
-    public final Class<?> getMapValueClass() {
-        if (!Map.class.isAssignableFrom(this.klass))
-            throw new KfgIllegalStateException(null, Q.unknownMap(key), null, "type is not a map");
-        if (this.args.size() < 2)
-            throw new KfgIllegalStateException(null, "map value type is not present: " + this);
-        return this.args.get(1).klass;
-    }
-
-    @Contract(pure = true,
-            value = "->new")
-    @NotNull
-    public final Q<?> getMapKeyQ() {
-        return of(this.key + "::map-key", this.getMapKeyClass());
-    }
-
-    @Contract(pure = true,
-            value = "->new")
-    @NotNull
-    public final Q<?> getMapValueQ() {
-        return of(this.key + "::map-value", this.getMapValueClass());
+    @Contract("_, _ -> new")
+    public static <T> Q<T> of(@NotNull @NonNull final String key,
+                              @NotNull @NonNull final Class<T> klass) {
+        return new Q<>(key, klass, 0);
     }
 
     @NotNull
-    @Contract(pure = true)
-    public final List<Q<?>> args() {
-        return this.args;
+    @Contract("_, _, _ -> new")
+    public static <T> Q<T> of(@NotNull @NonNull final String key,
+                              @NotNull @NonNull final Class<T> klass,
+                              @NotNull @NonNull final List<? extends @NotNull Type> args) {
+        return new Q<>(key, klass, args.stream()
+                                       .map(Objects::requireNonNull)
+                                       .map(x -> of(x, false))
+                                       .collect(toList()));
     }
+
+    @NotNull
+    @Contract("_, _, _ -> new")
+    public static <T> Q<T> construct(@NotNull @NonNull final String key,
+                                     @NotNull @NonNull final Class<T> klass,
+                                     @NotNull @NonNull final List<@NotNull Q<?>> args) {
+        args.forEach(Objects::requireNonNull);
+        return new Q<>(key, klass, args);
+    }
+
 
     // =========================================================================
-
-    @Contract(pure = true)
-    public final boolean isBool() {
-        return Boolean.class.isAssignableFrom(this.klass);
-    }
-
-    @Contract(pure = true)
-    public final boolean isChar() {
-        return Character.class.isAssignableFrom(this.klass);
-    }
-
-    @Contract(pure = true)
-    public final boolean isString() {
-        return String.class.isAssignableFrom(this.klass);
-    }
-
-    @Contract(pure = true)
-    public final boolean isByte() {
-        return Byte.class.isAssignableFrom(this.klass);
-    }
-
-    @Contract(pure = true)
-    public final boolean isShort() {
-        return Short.class.isAssignableFrom(this.klass);
-    }
-
-    @Contract(pure = true)
-    public final boolean isInt() {
-        return Integer.class.isAssignableFrom(this.klass);
-    }
-
-    @Contract(pure = true)
-    public final boolean isLong() {
-        return Long.class.isAssignableFrom(this.klass);
-    }
-
-    @Contract(pure = true)
-    public final boolean isFloat() {
-        return Float.class.isAssignableFrom(this.klass);
-    }
-
-    @Contract(pure = true)
-    public final boolean isDouble() {
-        return Double.class.isAssignableFrom(this.klass);
-    }
-
-    @Contract(pure = true)
-    public final boolean isSet() {
-        return Set.class.isAssignableFrom(this.klass);
-    }
-
-    @Contract(pure = true)
-    public final boolean isList() {
-        return List.class.isAssignableFrom(this.klass);
-    }
-
-    @Contract(pure = true)
-    public final boolean isMap() {
-        return Map.class.isAssignableFrom(this.klass);
-    }
-
-    @Contract(pure = true)
-    public final boolean isNull() {
-        return isVoid();
-    }
-
-    @Contract(pure = true)
-    public final boolean isVoid() {
-        return Void.class.isAssignableFrom(this.klass);
-    }
 
     @NotNull
     @Contract(value = "_ -> new",
@@ -414,6 +232,8 @@ public class Q<TYPE> {
     public static Q<List<?>> unknownList(@NotNull @NonNull final String key) {
         return (Q) Q.of(key, List.class);
     }
+
+    // =========================================================================
 
     @NotNull
     @Contract(value = "-> new",
@@ -532,6 +352,183 @@ public class Q<TYPE> {
                                             @NotNull @NonNull final Class<U> klassK,
                                             @NotNull @NonNull final Class<V> klassV) {
         return of(key, (Class) Map.class, l(klassK, klassV));
+    }
+
+    @Contract(pure = true)
+    public final boolean matchesType(final Type other) {
+        if (other == null)
+            return true;
+        if (!this.klass.isAssignableFrom(this.klass))
+            return false;
+        return match(this, other);
+    }
+
+    @Contract(pure = true)
+    public final boolean matchesType(final Q<?> other) {
+        if (other == null || other == this)
+            return true;
+        if (!this.klass.isAssignableFrom(other.klass))
+            return false;
+        return match(this, other);
+    }
+
+    @Contract(pure = true)
+    public final boolean matchesValue(final Object v) {
+        return matchValue0(this, v);
+    }
+
+    @NotNull
+    @Contract(pure = true)
+    public final String key() {
+        if (Objects.equals(this.key, X))
+            throw new KfgIllegalStateException(null, "this Q type is not keyed: " + this);
+        return this.key;
+    }
+
+    @NotNull
+    @Contract(pure = true)
+    public final Class<TYPE> klass() {
+        return this.klass;
+    }
+
+    @NotNull
+    @Contract(pure = true,
+            value = "_->new")
+    public final Q<TYPE> withKey(@NotNull @NonNull final String key) {
+        if (key.isEmpty())
+            throw new KfgIllegalArgumentException(null, "empty key");
+
+        return Objects.equals(this.key, key)
+               ? construct(key, this.klass, this.args)
+               : this;
+    }
+
+    @Contract(pure = true)
+    @NotNull
+    public final Class<?> getCollectionContainedClass() {
+        if (!Collection.class.isAssignableFrom(this.klass))
+            throw new KfgIllegalStateException(null, "type is not a collection: " + this);
+        if (this.args.size() < 1)
+            throw new KfgIllegalStateException(null, "collection type is not present: " + this);
+        return this.args.get(0).klass;
+    }
+
+    @Contract(pure = true,
+            value = "->new")
+    @NotNull
+    public final Q<?> getCollectionContainedQ() {
+        final Class<?> c = this.getCollectionContainedClass();
+        return of(this.key + "::collection", c);
+    }
+
+    @Contract(pure = true)
+    @NotNull
+    public final Class<?> getMapKeyClass() {
+        if (!Map.class.isAssignableFrom(this.klass))
+            throw new KfgIllegalStateException(null, Q.unknownMap(key), null, "type is not a map");
+        if (this.args.size() < 1)
+            throw new KfgIllegalStateException(null, "map key type is not present: " + this);
+        return this.args.get(0).klass;
+    }
+
+    @Contract(pure = true)
+    @NotNull
+    public final Class<?> getMapValueClass() {
+        if (!Map.class.isAssignableFrom(this.klass))
+            throw new KfgIllegalStateException(null, Q.unknownMap(key), null, "type is not a map");
+        if (this.args.size() < 2)
+            throw new KfgIllegalStateException(null, "map value type is not present: " + this);
+        return this.args.get(1).klass;
+    }
+
+    @Contract(pure = true,
+            value = "->new")
+    @NotNull
+    public final Q<?> getMapKeyQ() {
+        return of(this.key + "::map-key", this.getMapKeyClass());
+    }
+
+    @Contract(pure = true,
+            value = "->new")
+    @NotNull
+    public final Q<?> getMapValueQ() {
+        return of(this.key + "::map-value", this.getMapValueClass());
+    }
+
+    @NotNull
+    @Contract(pure = true)
+    public final List<Q<?>> args() {
+        return this.args;
+    }
+
+    @Contract(pure = true)
+    public final boolean isBool() {
+        return Boolean.class.isAssignableFrom(this.klass);
+    }
+
+    @Contract(pure = true)
+    public final boolean isChar() {
+        return Character.class.isAssignableFrom(this.klass);
+    }
+
+    @Contract(pure = true)
+    public final boolean isString() {
+        return String.class.isAssignableFrom(this.klass);
+    }
+
+    @Contract(pure = true)
+    public final boolean isByte() {
+        return Byte.class.isAssignableFrom(this.klass);
+    }
+
+    @Contract(pure = true)
+    public final boolean isShort() {
+        return Short.class.isAssignableFrom(this.klass);
+    }
+
+    @Contract(pure = true)
+    public final boolean isInt() {
+        return Integer.class.isAssignableFrom(this.klass);
+    }
+
+    @Contract(pure = true)
+    public final boolean isLong() {
+        return Long.class.isAssignableFrom(this.klass);
+    }
+
+    @Contract(pure = true)
+    public final boolean isFloat() {
+        return Float.class.isAssignableFrom(this.klass);
+    }
+
+    @Contract(pure = true)
+    public final boolean isDouble() {
+        return Double.class.isAssignableFrom(this.klass);
+    }
+
+    @Contract(pure = true)
+    public final boolean isSet() {
+        return Set.class.isAssignableFrom(this.klass);
+    }
+
+    @Contract(pure = true)
+    public final boolean isList() {
+        return List.class.isAssignableFrom(this.klass);
+    }
+
+    @Contract(pure = true)
+    public final boolean isMap() {
+        return Map.class.isAssignableFrom(this.klass);
+    }
+
+    @Contract(pure = true)
+    public final boolean isNull() {
+        return isVoid();
+    }
+
+    @Contract(pure = true)
+    public final boolean isVoid() {
+        return Void.class.isAssignableFrom(this.klass);
     }
 
     @Override

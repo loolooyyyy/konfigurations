@@ -44,94 +44,16 @@ import static java.util.Objects.requireNonNull;
 @ApiStatus.Internal
 final class ExtJacksonJsonSource extends UpdatableSourceBase {
 
-    @Contract(pure = true,
-            value = "->new")
-    @NotNull
-    static ObjectMapper defaultJacksonObjectMapper() {
-        ensureDep(null);
-        final ObjectMapper mapper = new ObjectMapper();
-        mapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
-        return mapper;
-    }
-
     private final Supplier<ObjectMapper> mapperSupplier;
     private final Supplier<String> json;
     private final int lastHash;
     private final JsonNode root;
-
+    
     @NonNull
     @NotNull
     @Getter
     @Accessors(fluent = true)
     private final String name;
-
-
-    /**
-     * {@inheritDoc}
-     */
-    @Contract(pure = true)
-    @Override
-    public boolean hasUpdate() {
-        final String newJson = json.get();
-        return newJson != null && newJson.hashCode() != lastHash;
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @return
-     */
-    @Contract(pure = true,
-            value = "-> new")
-    @NotNull
-    @Override
-    public UpdatableSource updatedSelf() {
-        return this.hasUpdate()
-               ? new ExtJacksonJsonSource(name(), json, mapperSupplier)
-               : this;
-    }
-
-
-    private JsonNode node_(@NonNull @NotNull final String key) {
-        if (key.isEmpty())
-            throw new KfgIllegalArgumentException(this.name(), "empty konfig key");
-
-        final String k = "/" + key.replace('.', '/');
-        return this.root.findPath(k);
-    }
-
-    @Synchronized
-    private JsonNode node(@NotNull @NonNull final String key) {
-        if (key.isEmpty())
-            throw new KfgIllegalArgumentException(this.name(), "empty konfig key");
-
-        final JsonNode node = node_(key);
-        if (node.isMissingNode())
-            throw new KfgMissingKeyException(this.name(), Q.unknown(key));
-        return node;
-    }
-
-    private JsonNode checkJsonType(final boolean condition,
-                                   final Q<?> required,
-                                   final JsonNode node,
-                                   final String key) {
-        if (!condition)
-            throw new KfgTypeException(this.name(), required.withKey(key), node);
-        if (node.isNull())
-            throw new KfgTypeNullException(this.name(), required.withKey(key));
-        return node;
-    }
-
-    private static void ensureDep(@Nullable final String source) {
-        try {
-            Class.forName("com.fasterxml.jackson.databind.JsonNode");
-        }
-        catch (final ClassNotFoundException e) {
-            throw new KfgUnsupportedOperationException(source,
-                    "jackson library missing: com.fasterxml.jackson.databind.JsonNode",
-                    e);
-        }
-    }
 
     /**
      * Creates an instance with a with the given json
@@ -183,6 +105,81 @@ final class ExtJacksonJsonSource extends UpdatableSourceBase {
         this.lastHash = this.json.get().hashCode();
     }
 
+    @Contract(pure = true,
+            value = "->new")
+    @NotNull
+    static ObjectMapper defaultJacksonObjectMapper() {
+        ensureDep(null);
+        final ObjectMapper mapper = new ObjectMapper();
+        mapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+        return mapper;
+    }
+
+    private static void ensureDep(@Nullable final String source) {
+        try {
+            Class.forName("com.fasterxml.jackson.databind.JsonNode");
+        }
+        catch (final ClassNotFoundException e) {
+            throw new KfgUnsupportedOperationException(source,
+                    "jackson library missing: com.fasterxml.jackson.databind.JsonNode",
+                    e);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Contract(pure = true)
+    @Override
+    public boolean hasUpdate() {
+        final String newJson = json.get();
+        return newJson != null && newJson.hashCode() != lastHash;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return
+     */
+    @Contract(pure = true,
+            value = "-> new")
+    @NotNull
+    @Override
+    public UpdatableSource updatedSelf() {
+        return this.hasUpdate()
+               ? new ExtJacksonJsonSource(name(), json, mapperSupplier)
+               : this;
+    }
+
+    private JsonNode node_(@NonNull @NotNull final String key) {
+        if (key.isEmpty())
+            throw new KfgIllegalArgumentException(this.name(), "empty konfig key");
+
+        final String k = "/" + key.replace('.', '/');
+        return this.root.findPath(k);
+    }
+
+    @Synchronized
+    private JsonNode node(@NotNull @NonNull final String key) {
+        if (key.isEmpty())
+            throw new KfgIllegalArgumentException(this.name(), "empty konfig key");
+
+        final JsonNode node = node_(key);
+        if (node.isMissingNode())
+            throw new KfgMissingKeyException(this.name(), Q.unknown(key));
+        return node;
+    }
+
+    private JsonNode checkJsonType(final boolean condition,
+                                   final Q<?> required,
+                                   final JsonNode node,
+                                   final String key) {
+        if (!condition)
+            throw new KfgTypeException(this.name(), required.withKey(key), node);
+        if (node.isNull())
+            throw new KfgTypeNullException(this.name(), required.withKey(key));
+        return node;
+    }
 
     /**
      * {@inheritDoc}

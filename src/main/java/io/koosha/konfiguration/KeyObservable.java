@@ -6,8 +6,6 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collection;
-
 /**
  * A source which allows observers observe changes to keys in that source.
  * <p>

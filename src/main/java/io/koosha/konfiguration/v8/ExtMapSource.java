@@ -42,6 +42,17 @@ final class ExtMapSource extends UpdatableSourceBase {
     private final String name;
 
 
+    ExtMapSource(@NotNull @NonNull final String name,
+                 @NonNull @NotNull final Supplier<Map<String, ?>> map,
+                 final boolean enableNestedMap) {
+        this.name = name;
+        this.map = map;
+        this.root = new HashMap<>(map.get());
+        this.enableNestedMap = enableNestedMap;
+        this.lastHash = this.root.hashCode();
+        requireNonNull(this.map.get(), "supplied map is null");
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -67,7 +78,6 @@ final class ExtMapSource extends UpdatableSourceBase {
                ? new ExtMapSource(name(), map, enableNestedMap)
                : this;
     }
-
 
     @NotNull
     @Contract(pure = true)
@@ -102,18 +112,6 @@ final class ExtMapSource extends UpdatableSourceBase {
         final T t = (T) value;
         return t;
     }
-
-    ExtMapSource(@NotNull @NonNull final String name,
-                 @NonNull @NotNull final Supplier<Map<String, ?>> map,
-                 final boolean enableNestedMap) {
-        this.name = name;
-        this.map = map;
-        this.root = new HashMap<>(map.get());
-        this.enableNestedMap = enableNestedMap;
-        this.lastHash = this.root.hashCode();
-        requireNonNull(this.map.get(), "supplied map is null");
-    }
-
 
     /**
      * {@inheritDoc}
