@@ -1,6 +1,6 @@
 package io.koosha.konfiguration.error;
 
-import io.koosha.konfiguration.Q;
+import io.koosha.konfiguration.type.Q;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import net.jcip.annotations.ThreadSafe;
@@ -19,47 +19,44 @@ public class KfgException extends RuntimeException {
     private final String source;
 
     @Nullable
-    private final String key;
-
-    @Nullable
     private final Q<?> neededType;
 
     @Nullable
     private final String actualValue;
 
+    @Nullable
+    private final String say;
+
     public KfgException(@Nullable final String source,
-                        @Nullable final String key,
                         @Nullable final Q<?> neededType,
                         @Nullable final Object actualValue,
                         @Nullable final String message,
                         @Nullable final Throwable cause) {
         super(message, cause);
         this.source = source;
-        this.key = key;
         this.neededType = neededType;
         this.actualValue = toStringOf(actualValue);
+        this.say = message;
     }
 
     public KfgException(@Nullable final String source,
-                        @Nullable final String key,
                         @Nullable final Q<?> neededType,
                         @Nullable final Object actualValue,
                         @Nullable String message) {
         super(message);
         this.source = source;
-        this.key = key;
         this.neededType = neededType;
         this.actualValue = toStringOf(actualValue);
+        this.say = message;
     }
 
     public KfgException(@Nullable final String source,
-                        @Nullable final String key,
                         @Nullable final Q<?> neededType,
                         @Nullable final Object actualValue) {
         this.source = source;
-        this.key = key;
         this.neededType = neededType;
         this.actualValue = toStringOf(actualValue);
+        this.say = null;
     }
 
 
@@ -68,31 +65,24 @@ public class KfgException extends RuntimeException {
      */
     @Override
     public String toString() {
-        return format("%s[key=%s, neededType=%s, actualValue=%s]",
-                this.getClass().getName(),
-                this.key(),
-                this.neededType(),
-                this.actualValue());
+        return format("%s[s=%s/%s, want=%s, have=%s]",
+                this.getClass().getName(), // %s[
+                this.source(), // s=%s
+                this.say == null ? "" : this.say, // /%s
+                this.neededType(), // want=%s
+                this.actualValue()); // have=%s
     }
 
 
-    @SuppressWarnings("unused")
-    public boolean hasSource() {
+    public final boolean hasSource() {
         return this.source() != null;
     }
 
-    @SuppressWarnings("unused")
-    public boolean hasKey() {
-        return this.key() != null;
-    }
-
-    @SuppressWarnings("unused")
-    public boolean hasNeededType() {
+    public final boolean hasNeededType() {
         return this.neededType() != null;
     }
 
-    @SuppressWarnings("unused")
-    public boolean hasActualValue() {
+    public final boolean hasActualValue() {
         return this.actualValue() != null;
     }
 
@@ -104,12 +94,14 @@ public class KfgException extends RuntimeException {
     }
 
     static String toStringOf(final Object value) {
+        if (value instanceof Q)
+            return value.toString();
         String representationC;
         try {
             representationC = value == null ? "null" : value.getClass().getName();
         }
         catch (Throwable t) {
-            representationC = "[" + "value.getClass().getName()" + "]->" + msgOf(t);
+            representationC = "[" + "value.getClass().getName()" + "]=>" + msgOf(t);
         }
 
         String representationV;
@@ -117,10 +109,10 @@ public class KfgException extends RuntimeException {
             representationV = Objects.toString(value);
         }
         catch (Throwable t) {
-            representationV = "[" + "Objects.toString(value)" + "]->" + msgOf(t);
+            representationV = "[" + "Objects.toString(value)" + "]=>" + msgOf(t);
         }
 
-        return format("[%s]:[%s]", representationC, representationV);
+        return format("[%s]->%s", representationC, representationV);
     }
 
 }

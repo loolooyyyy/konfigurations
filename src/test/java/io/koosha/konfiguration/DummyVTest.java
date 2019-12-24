@@ -1,5 +1,6 @@
 package io.koosha.konfiguration;
 
+import io.koosha.konfiguration.type.Q;
 import org.testng.annotations.Test;
 
 import static org.testng.Assert.*;

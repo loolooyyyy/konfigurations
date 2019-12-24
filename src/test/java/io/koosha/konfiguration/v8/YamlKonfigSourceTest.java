@@ -3,7 +3,6 @@ package io.koosha.konfiguration.v8;
 import io.koosha.konfiguration.KonfigValueTestMixin;
 import io.koosha.konfiguration.Source;
 import io.koosha.konfiguration.base.UpdatableSource;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -20,14 +19,10 @@ public class YamlKonfigSourceTest extends KonfigValueTestMixin {
     private final AtomicReference<String> yaml = new AtomicReference<>();
     UpdatableSource k;
 
-    @BeforeClass
-    public void classSetup() throws Exception {
-    }
-
     @BeforeMethod
     public void setup() throws Exception {
         yaml.set(YAML_SAMPLE_0);
-        this.k = new ExtYamlSource("test", yaml::get,
+        this.k = new ExtYamlSource(getClass().getSimpleName(), yaml::get,
                 () -> ExtYamlSource.getDefaultYamlSupplier("test"), true);
     }
 

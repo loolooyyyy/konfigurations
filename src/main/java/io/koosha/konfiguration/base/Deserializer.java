@@ -1,6 +1,6 @@
 package io.koosha.konfiguration.base;
 
-import io.koosha.konfiguration.Q;
+import io.koosha.konfiguration.type.Q;
 import net.jcip.annotations.ThreadSafe;
 import org.jetbrains.annotations.NotNull;
 

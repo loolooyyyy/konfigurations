@@ -1,6 +1,6 @@
 package io.koosha.konfiguration.error;
 
-import io.koosha.konfiguration.Q;
+import io.koosha.konfiguration.type.Q;
 import net.jcip.annotations.ThreadSafe;
 import org.jetbrains.annotations.Nullable;
 
@@ -8,14 +8,8 @@ import org.jetbrains.annotations.Nullable;
 public class KfgMissingKeyException extends KfgException {
 
     public KfgMissingKeyException(@Nullable final String source,
-                                  @Nullable final String key) {
-        super(source, key, null, null);
-    }
-
-    public KfgMissingKeyException(@Nullable final String source,
-                                  @Nullable final String key,
                                   @Nullable final Q<?> type) {
-        super(source, key, type, null);
+        super(source, type, null);
     }
 
 }

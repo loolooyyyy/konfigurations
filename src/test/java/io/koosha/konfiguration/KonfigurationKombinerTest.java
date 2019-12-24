@@ -1,7 +1,6 @@
 package io.koosha.konfiguration;
 
 import io.koosha.konfiguration.error.KfgMissingKeyException;
-import io.koosha.konfiguration.error.KfgTypeException;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -17,7 +16,7 @@ public final class KonfigurationKombinerTest {
 
     final Faktory fac = Faktory.defaultImplementation();
 
-    private AtomicBoolean flag = new AtomicBoolean(true);
+    private AtomicBoolean flag = new AtomicBoolean(false);
 
     private final Supplier<Map<String, ?>> sup = () -> flag.get()
                                                        ? singletonMap("xxx", (Object) 12)
@@ -44,24 +43,30 @@ public final class KonfigurationKombinerTest {
         assertEquals(k.int_("xxx").v(), (Integer) 99);
     }
 
-    @Test(expectedExceptions = KfgTypeException.class)
+    @Test(expectedExceptions = KfgMissingKeyException.class)
     public void testV3() throws Exception {
         //noinspection ResultOfMethodCallIgnored
-        k.string("xxx");
+        k.string("xxx").v();
     }
 
 
     @Test
     public void testDoublyUpdate() throws Exception {
+        assertEquals(k.int_("xxx").v(), (Integer) 12);
 
+        k.register(key -> {});
         assertEquals(k.int_("xxx").v(), (Integer) 12);
 
         flag.set(!flag.get());
-        assertFalse(man.update().isEmpty());
-        assertTrue(man.update().isEmpty());
 
+        k.register(key -> {});
+        assertEquals(k.int_("xxx").v(), (Integer) 12);
+
+        assertFalse(man.update().isEmpty());
         assertEquals(k.int_("xxx").v(), (Integer) 99);
 
+        assertTrue(man.update().isEmpty());
+        assertEquals(k.int_("xxx").v(), (Integer) 99);
     }
 
 

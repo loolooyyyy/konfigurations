@@ -1,6 +1,6 @@
 package io.koosha.konfiguration;
 
-import io.koosha.konfiguration.error.KfgTypeException;
+import io.koosha.konfiguration.error.KfgMissingKeyException;
 import org.testng.annotations.Test;
 
 import java.util.HashMap;
@@ -97,89 +97,89 @@ public abstract class KonfigValueTestMixin {
     // BAD CASES
 
 
-    @Test(expectedExceptions = KfgTypeException.class)
+    @Test(expectedExceptions = KfgMissingKeyException.class)
     public void testBadInt0() throws Exception {
         //noinspection ResultOfMethodCallIgnored
         this.k().int_("aBool");
     }
 
-    @Test(expectedExceptions = KfgTypeException.class)
+    @Test(expectedExceptions = KfgMissingKeyException.class)
     public void testBadInt1() throws Exception {
         //noinspection ResultOfMethodCallIgnored
         this.k().int_("aLong");
     }
 
-    @Test(expectedExceptions = KfgTypeException.class)
+    @Test(expectedExceptions = KfgMissingKeyException.class)
     public void testBadInt2() throws Exception {
         //noinspection ResultOfMethodCallIgnored
         this.k().int_("aString");
     }
 
-    @Test(expectedExceptions = KfgTypeException.class)
+    @Test(expectedExceptions = KfgMissingKeyException.class)
     public void testBadInt3() throws Exception {
         //noinspection ResultOfMethodCallIgnored
         this.k().int_("aDouble");
     }
 
 
-    @Test(expectedExceptions = KfgTypeException.class)
+    @Test(expectedExceptions = KfgMissingKeyException.class)
     public void testBadDouble0() throws Exception {
         //noinspection ResultOfMethodCallIgnored
         this.k().double_("aBool");
     }
 
-    @Test(expectedExceptions = KfgTypeException.class)
+    @Test(expectedExceptions = KfgMissingKeyException.class)
     public void testBadDouble() throws Exception {
         //noinspection ResultOfMethodCallIgnored
         this.k().double_("aString");
     }
 
 
-    @Test(expectedExceptions = KfgTypeException.class)
+    @Test(expectedExceptions = KfgMissingKeyException.class)
     public void testBadLong0() throws Exception {
         //noinspection ResultOfMethodCallIgnored
         this.k().long_("aBool");
     }
 
-    @Test(expectedExceptions = KfgTypeException.class)
+    @Test(expectedExceptions = KfgMissingKeyException.class)
     public void testBadLong1() throws Exception {
         //noinspection ResultOfMethodCallIgnored
         this.k().long_("aString");
     }
 
-    @Test(expectedExceptions = KfgTypeException.class)
+    @Test(expectedExceptions = KfgMissingKeyException.class)
     public void testBadLong2() throws Exception {
         //noinspection ResultOfMethodCallIgnored
         this.k().long_("aDouble");
     }
 
 
-    @Test(expectedExceptions = KfgTypeException.class)
+    @Test(expectedExceptions = KfgMissingKeyException.class)
     public void testBadString0() throws Exception {
         //noinspection ResultOfMethodCallIgnored
         this.k().string("aInt");
     }
 
-    @Test(expectedExceptions = KfgTypeException.class)
+    @Test(expectedExceptions = KfgMissingKeyException.class)
     public void testBadString1() throws Exception {
         //noinspection ResultOfMethodCallIgnored
         this.k().string("aBool");
     }
 
-    @Test(expectedExceptions = KfgTypeException.class)
+    @Test(expectedExceptions = KfgMissingKeyException.class)
     public void testBadString2() throws Exception {
         //noinspection ResultOfMethodCallIgnored
         this.k().string("aIntList");
     }
 
 
-    @Test(expectedExceptions = KfgTypeException.class)
+    @Test(expectedExceptions = KfgMissingKeyException.class)
     public void testBadList0() throws Exception {
         //noinspection ResultOfMethodCallIgnored
         this.k().list("aInt", Integer.class);
     }
 
-    @Test(expectedExceptions = KfgTypeException.class)
+    @Test(expectedExceptions = KfgMissingKeyException.class)
     public void testBadList1() throws Exception {
         //noinspection ResultOfMethodCallIgnored
         this.k().list("aString", String.class);

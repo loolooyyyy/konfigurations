@@ -5,7 +5,6 @@ import io.koosha.konfiguration.DummyCustom;
 import io.koosha.konfiguration.KonfigValueTestMixin;
 import io.koosha.konfiguration.Source;
 import io.koosha.konfiguration.base.UpdatableSource;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -16,22 +15,17 @@ import static org.testng.Assert.assertTrue;
 
 
 @SuppressWarnings("RedundantThrows")
-public class SourceJacksonJsonTest extends KonfigValueTestMixin {
+public class JacksonJsonTest extends KonfigValueTestMixin {
 
     final AtomicReference<String> json = new AtomicReference<>();
     UpdatableSource k;
 
-    @BeforeClass
-    public void classSetup() throws Exception {
-        this.json.set(DummyCustom.JSON_SAMPLE_0);
-        this.k = new ExtJacksonJsonSource("test",
-                json::get,
-                ExtJacksonJsonSource::defaultJacksonObjectMapper);
-    }
-
     @BeforeMethod
     public void setup() throws Exception {
-        json.set(DummyCustom.JSON_SAMPLE_0);
+        this.json.set(DummyCustom.JSON_SAMPLE_0);
+        this.k = new ExtJacksonJsonSource(getClass().getSimpleName(),
+                json::get,
+                ExtJacksonJsonSource::defaultJacksonObjectMapper);
     }
 
     @Override

@@ -1,6 +1,6 @@
 package io.koosha.konfiguration.v8;
 
-import io.koosha.konfiguration.Q;
+import io.koosha.konfiguration.type.Q;
 import io.koosha.konfiguration.base.UpdatableSource;
 import io.koosha.konfiguration.base.UpdatableSourceBase;
 import io.koosha.konfiguration.error.KfgUnsupportedOperationException;
@@ -459,7 +459,7 @@ final class ExtYamlSource extends UpdatableSourceBase {
     }
 
     private void ensureSafe(@Nullable final Q<?> type) {
-        if (this.safe && type != null && type.getTypeArgs().size() > 0)
+        if (this.safe && type != null && type.args().size() > 0)
             throw new UnsupportedOperationException("yaml does not support parameterized yet.");
     }
 

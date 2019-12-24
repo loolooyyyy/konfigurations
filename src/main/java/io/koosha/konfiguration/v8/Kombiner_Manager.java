@@ -1,8 +1,9 @@
 package io.koosha.konfiguration.v8;
 
+import io.koosha.konfiguration.K;
 import io.koosha.konfiguration.KonfigurationManager;
-import io.koosha.konfiguration.Q;
 import io.koosha.konfiguration.Source;
+import io.koosha.konfiguration.type.Q;
 import lombok.NonNull;
 import net.jcip.annotations.NotThreadSafe;
 import org.jetbrains.annotations.ApiStatus;
@@ -119,7 +120,9 @@ final class Kombiner_Manager implements KonfigurationManager {
                     .map(CheatingMan::source)
                     .findFirst();
 
-            final Object newV = first.map(k -> k.custom(q)).orElse(null);
+            @SuppressWarnings({"unchecked", "rawtypes"})
+            final Object newV = first.map(k -> k.custom(q))
+                                     .orElse(K.null_((Q) q)).v();
             final Object oldV = origin.has(q)
                                 ? origin.values.v_(q, null, true)
                                 : null;
@@ -132,13 +135,13 @@ final class Kombiner_Manager implements KonfigurationManager {
                 newCache.put(q, newV);
         });
 
-        return origin.w(() -> {
-            for (final Q<?> q : updated)
-                updateTasks.addAll(this.origin.observers.get(q));
+        updateTasks.addAll(this.origin.observers.get());
+        for (final Q<?> q : updated)
+            updateTasks.addAll(this.origin.observers.get(q));
 
+        return origin.w(() -> {
             origin.sources.replace(newSources);
             origin.values.replace(newCache);
-
             return updateTasks;
         });
     }

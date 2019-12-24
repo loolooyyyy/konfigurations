@@ -3,6 +3,7 @@ package io.koosha.konfiguration.v8;
 import io.koosha.konfiguration.*;
 import io.koosha.konfiguration.error.KfgIllegalArgumentException;
 import io.koosha.konfiguration.error.KfgIllegalStateException;
+import io.koosha.konfiguration.type.Q;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;

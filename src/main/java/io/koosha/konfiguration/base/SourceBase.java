@@ -2,12 +2,12 @@ package io.koosha.konfiguration.base;
 
 import io.koosha.konfiguration.Faktory;
 import io.koosha.konfiguration.K;
-import io.koosha.konfiguration.Q;
 import io.koosha.konfiguration.Source;
-import io.koosha.konfiguration.error.KfgAssertionException;
 import io.koosha.konfiguration.error.KfgIllegalStateException;
+import io.koosha.konfiguration.error.KfgMissingKeyException;
 import io.koosha.konfiguration.error.KfgTypeException;
 import io.koosha.konfiguration.error.KfgTypeNullException;
+import io.koosha.konfiguration.type.Q;
 import lombok.AccessLevel;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -72,11 +72,144 @@ public abstract class SourceBase implements Source {
 
     // =========================================================================
 
+
+    /**
+     * {@inheritDoc}
+     */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    @NotNull
+    @Override
+    public final <U> K<U> custom(@NotNull @NonNull final String key) {
+        return this.custom((Q) Q.unknown(key));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @NotNull
+    @Override
+    public final <U> K<U> custom(@NotNull @NonNull final String key,
+                                 @NotNull @NonNull final Class<U> type) {
+        return custom(Q.of(key, type));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @NotNull
+    @Override
+    public final <T> K<List<T>> list(@NotNull @NonNull final String key,
+                                     @NotNull @NonNull final Class<T> type) {
+        return list(Q.listOf(key, type));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @NotNull
+    @Override
+    public final <U, V> K<Map<U, V>> map(@NotNull @NonNull final String key,
+                                         @NotNull @NonNull final Class<U> keyKlass,
+                                         @NotNull @NonNull final Class<V> valueKlass) {
+        return map(Q.mapOf(key, keyKlass, valueKlass));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @NotNull
+    @Override
+    public final <T> K<Set<T>> set(@NotNull @NonNull final String key,
+                                   @NotNull @NonNull final Class<T> type) {
+        return set(Q.setOf(key, type));
+    }
+
+    // =========================================================================
+
     /**
      * {@inheritDoc}
      */
     @Override
-    public final boolean hasBool(@NotNull @NonNull String key) {
+    public boolean has(@NotNull final Q<?> key) {
+        try {
+            //noinspection ResultOfMethodCallIgnored
+            this.custom(key);
+            return true;
+        }
+        catch (KfgMissingKeyException | KfgTypeException e) {
+            return false;
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public final boolean has(@NotNull @NonNull final String key,
+                             @NotNull @NonNull final Class<?> type) {
+        return this.has(Q.of(key, type));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public final boolean hasMap(@NotNull @NonNull final Q<Map<?, ?>> key) {
+        return this.has(key);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public final boolean hasMap(@NotNull @NonNull final String key,
+                                @NotNull @NonNull final Class<?> keyType,
+                                @NotNull @NonNull final Class<?> valueType) {
+        return this.hasSet((Q) Q.mapOf(key, keyType, valueType));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public final boolean hasSet(@NotNull @NonNull final Q<Set<?>> key) {
+        return this.has(key);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    @Override
+    public final boolean hasSet(@NotNull @NonNull final String key,
+                                @NotNull @NonNull final Class<?> type) {
+        return this.hasSet((Q) Q.setOf(key, type));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public final boolean hasList(@NotNull @NonNull final Q<List<?>> key) {
+        return this.has(key);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    @Override
+    public final boolean hasList(@NotNull @NonNull final String key,
+                                 @NotNull @NonNull final Class<?> type) {
+        return this.hasList((Q) Q.listOf(key, type));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public final boolean hasBool(@NotNull @NonNull final String key) {
         return this.has(Q.bool(key));
     }
 
@@ -84,7 +217,7 @@ public abstract class SourceBase implements Source {
      * {@inheritDoc}
      */
     @Override
-    public final boolean hasChar(@NotNull @NonNull String key) {
+    public final boolean hasChar(@NotNull @NonNull final String key) {
         return this.has(Q.char_(key));
     }
 
@@ -92,7 +225,7 @@ public abstract class SourceBase implements Source {
      * {@inheritDoc}
      */
     @Override
-    public final boolean hasString(@NotNull @NonNull String key) {
+    public final boolean hasString(@NotNull @NonNull final String key) {
         return this.has(Q.string(key));
     }
 
@@ -100,7 +233,7 @@ public abstract class SourceBase implements Source {
      * {@inheritDoc}
      */
     @Override
-    public final boolean hasByte(@NotNull @NonNull String key) {
+    public final boolean hasByte(@NotNull @NonNull final String key) {
         return this.has(Q.byte_(key));
     }
 
@@ -108,7 +241,7 @@ public abstract class SourceBase implements Source {
      * {@inheritDoc}
      */
     @Override
-    public final boolean hasShort(@NotNull @NonNull String key) {
+    public final boolean hasShort(@NotNull @NonNull final String key) {
         return this.has(Q.short_(key));
     }
 
@@ -116,7 +249,7 @@ public abstract class SourceBase implements Source {
      * {@inheritDoc}
      */
     @Override
-    public final boolean hasInt(@NotNull @NonNull String key) {
+    public final boolean hasInt(@NotNull @NonNull final String key) {
         return this.has(Q.int_(key));
     }
 
@@ -124,7 +257,7 @@ public abstract class SourceBase implements Source {
      * {@inheritDoc}
      */
     @Override
-    public final boolean hasLong(@NotNull @NonNull String key) {
+    public final boolean hasLong(@NotNull @NonNull final String key) {
         return this.has(Q.long_(key));
     }
 
@@ -132,7 +265,7 @@ public abstract class SourceBase implements Source {
      * {@inheritDoc}
      */
     @Override
-    public final boolean hasFloat(@NotNull @NonNull String key) {
+    public final boolean hasFloat(@NotNull @NonNull final String key) {
         return this.has(Q.float_(key));
     }
 
@@ -140,7 +273,7 @@ public abstract class SourceBase implements Source {
      * {@inheritDoc}
      */
     @Override
-    public final boolean hasDouble(@NotNull @NonNull String key) {
+    public final boolean hasDouble(@NotNull @NonNull final String key) {
         return this.has(Q.double_(key));
     }
 
@@ -156,7 +289,7 @@ public abstract class SourceBase implements Source {
         final Q<Boolean> type = Q.bool(key);
 
         if (!this.has(type))
-            throw new KfgAssertionException(this.name(), null, type, "missing key");
+            throw new KfgMissingKeyException(this.name(), type);
 
         if (this.isNull(type))
             return this.null_(type);
@@ -164,7 +297,7 @@ public abstract class SourceBase implements Source {
         final Object v = this.bool0(key);
         final Boolean vv = toBool(v);
         if (vv == null)
-            throw new KfgTypeException(this.name(), null, type, v);
+            throw new KfgMissingKeyException(this.name(), type);
         return this.k(type, vv);
     }
 
@@ -177,7 +310,7 @@ public abstract class SourceBase implements Source {
         final Q<Character> type = Q.char_(key);
 
         if (!this.has(type))
-            throw new KfgAssertionException(this.name(), null, type, "missing key");
+            throw new KfgMissingKeyException(this.name(), type);
 
         if (this.isNull(type))
             return this.null_(type);
@@ -196,7 +329,7 @@ public abstract class SourceBase implements Source {
                     vv = str.charAt(0);
             }
             catch (final ClassCastException cce1) {
-                throw new KfgTypeException(this.name(), null, type, v);
+                throw new KfgMissingKeyException(this.name(), type);
             }
         }
         return this.k(type, vv);
@@ -211,7 +344,7 @@ public abstract class SourceBase implements Source {
         final Q<String> type = Q.string(key);
 
         if (!this.has(type))
-            throw new KfgAssertionException(this.name(), null, type, "missing key");
+            throw new KfgMissingKeyException(this.name(), type);
 
         if (this.isNull(type))
             return this.null_(type);
@@ -223,7 +356,7 @@ public abstract class SourceBase implements Source {
             vv = (String) v;
         }
         catch (final ClassCastException cce) {
-            throw new KfgTypeException(this.name(), null, type, v);
+            throw new KfgMissingKeyException(this.name(), type);
         }
 
         return this.k(type, vv);
@@ -238,7 +371,7 @@ public abstract class SourceBase implements Source {
         final Q<Byte> type = Q.byte_(key);
 
         if (!this.has(type))
-            throw new KfgAssertionException(this.name(), null, type, "missing key");
+            throw new KfgMissingKeyException(this.name(), type);
 
         if (this.isNull(type))
             return this.null_(type);
@@ -247,7 +380,7 @@ public abstract class SourceBase implements Source {
 
         final Long vv = toByte(v);
         if (vv == null)
-            throw new KfgTypeException(this.name(), null, type, v);
+            throw new KfgMissingKeyException(this.name(), type);
 
         return this.k(type, vv.byteValue());
     }
@@ -261,7 +394,7 @@ public abstract class SourceBase implements Source {
         final Q<Short> type = Q.short_(key);
 
         if (!this.has(type))
-            throw new KfgAssertionException(this.name(), null, type, "missing key");
+            throw new KfgMissingKeyException(this.name(), type);
 
         if (this.isNull(type))
             return this.null_(type);
@@ -270,7 +403,7 @@ public abstract class SourceBase implements Source {
 
         final Long vv = toShort(v);
         if (vv == null)
-            throw new KfgTypeException(this.name(), null, type, v);
+            throw new KfgMissingKeyException(this.name(), type);
 
         return this.k(type, vv.shortValue());
     }
@@ -284,7 +417,7 @@ public abstract class SourceBase implements Source {
         final Q<Integer> type = Q.int_(key);
 
         if (!this.has(type))
-            throw new KfgAssertionException(this.name(), null, type, "missing key");
+            throw new KfgMissingKeyException(this.name(), type);
 
         if (this.isNull(type))
             return this.null_(type);
@@ -293,7 +426,7 @@ public abstract class SourceBase implements Source {
 
         final Long vv = toInt(v);
         if (vv == null)
-            throw new KfgTypeException(this.name(), null, type, v);
+            throw new KfgMissingKeyException(this.name(), type);
 
         return this.k(type, vv.intValue());
     }
@@ -307,7 +440,7 @@ public abstract class SourceBase implements Source {
         final Q<Long> type = Q.long_(key);
 
         if (!this.has(type))
-            throw new KfgAssertionException(this.name(), null, type, "missing key");
+            throw new KfgMissingKeyException(this.name(), type);
 
         if (this.isNull(type))
             return this.null_(type);
@@ -316,7 +449,7 @@ public abstract class SourceBase implements Source {
 
         final Long vv = toLong(v);
         if (vv == null)
-            throw new KfgTypeException(this.name(), null, type, v);
+            throw new KfgMissingKeyException(this.name(), type);
 
         return this.k(type, vv);
     }
@@ -330,7 +463,7 @@ public abstract class SourceBase implements Source {
         final Q<Float> type = Q.float_(key);
 
         if (!this.has(type))
-            throw new KfgAssertionException(this.name(), null, type, "missing key");
+            throw new KfgMissingKeyException(this.name(), type);
 
         if (this.isNull(type))
             return null_(type);
@@ -339,7 +472,7 @@ public abstract class SourceBase implements Source {
 
         final Float vv = toFloat(v);
         if (vv == null)
-            throw new KfgTypeException(this.name(), null, type, v);
+            throw new KfgMissingKeyException(this.name(), type);
 
         return this.k(type, vv);
     }
@@ -353,7 +486,7 @@ public abstract class SourceBase implements Source {
         final Q<Double> type = Q.double_(key);
 
         if (!this.has(type))
-            throw new KfgAssertionException(this.name(), null, type, "missing key");
+            throw new KfgMissingKeyException(this.name(), type);
 
         if (this.isNull(type))
             return null_(type);
@@ -362,7 +495,7 @@ public abstract class SourceBase implements Source {
 
         final Double vv = toDouble(v);
         if (vv == null)
-            throw new KfgTypeException(this.name(), null, type, v);
+            throw new KfgMissingKeyException(this.name(), type);
 
         return this.k(type, vv);
     }
@@ -374,7 +507,7 @@ public abstract class SourceBase implements Source {
     @NotNull
     public final <U> K<List<U>> list(@NotNull @NonNull final Q<List<U>> type) {
         if (!this.has(type))
-            throw new KfgAssertionException(this.name(), null, type, "missing key");
+            throw new KfgMissingKeyException(this.name(), type);
 
         if (this.isNull(type))
             return null_(type);
@@ -386,7 +519,7 @@ public abstract class SourceBase implements Source {
             vv = (List<?>) v;
         }
         catch (final ClassCastException cce) {
-            throw new KfgTypeException(this.name(), null, type, v);
+            throw new KfgMissingKeyException(this.name(), type);
         }
 
         this.checkCollectionType(type, vv);
@@ -401,7 +534,7 @@ public abstract class SourceBase implements Source {
     @NotNull
     public final <U> K<Set<U>> set(@NotNull @NonNull Q<Set<U>> type) {
         if (!this.has(type))
-            throw new KfgAssertionException(this.name(), null, type, "missing key");
+            throw new KfgMissingKeyException(this.name(), type);
 
         if (this.isNull(type))
             return null_(type);
@@ -413,7 +546,7 @@ public abstract class SourceBase implements Source {
             vv = (Set<?>) v;
         }
         catch (final ClassCastException cce) {
-            throw new KfgTypeException(this.name(), null, type, v);
+            throw new KfgMissingKeyException(this.name(), type);
         }
 
         this.checkCollectionType(type, vv);
@@ -427,7 +560,7 @@ public abstract class SourceBase implements Source {
     @NotNull
     public final <U, V> K<Map<U, V>> map(@NotNull @NonNull final Q<Map<U, V>> type) {
         if (!this.has(type))
-            throw new KfgAssertionException(this.name(), null, type, "missing key");
+            throw new KfgMissingKeyException(this.name(), type);
 
         if (this.isNull(type))
             return null_(type);
@@ -439,7 +572,7 @@ public abstract class SourceBase implements Source {
             vv = (Map<?, ?>) v;
         }
         catch (final ClassCastException cce) {
-            throw new KfgTypeException(this.name(), null, type, v);
+            throw new KfgMissingKeyException(this.name(), type);
         }
 
         this.checkCollectionType(type, vv);
@@ -450,15 +583,12 @@ public abstract class SourceBase implements Source {
     /**
      * {@inheritDoc}
      */
-    @SuppressWarnings("unchecked")
     @NotNull
     public final <U> K<U> custom(@NotNull @NonNull final Q<U> type) {
-        if (!this.has(type))
-            throw new KfgAssertionException(this.name(), null, type, "missing key");
-
         if (this.isNull(type))
             return null_(type);
 
+/*
         if (type.isBool())
             return (K<U>) bool(type.key());
         if (type.isChar())
@@ -488,6 +618,7 @@ public abstract class SourceBase implements Source {
         if (type.isSet())
             return (K<U>) set(raw);
 
+*/
         final Object v = this.custom0(type);
         this.checkType(type, v);
 
@@ -499,41 +630,36 @@ public abstract class SourceBase implements Source {
     private void checkType0(@NonNull @NotNull final Q<?> neededType,
                             @NonNull @NotNull final Object value) {
         if (!neededType.matchesValue(value))
-            throw new KfgTypeException(this.name(), neededType.key(), neededType, value);
+            throw new KfgTypeException(this.name(), neededType, value);
     }
 
-    private void checkCollectionType0(@NonNull @NotNull final Q<?> neededType,
+    private void checkCollectionType0(@NonNull @NotNull final Q<?> neededType0,
                                       @NonNull @NotNull final Object value) {
-        if (neededType.isMap()) {
+        if (neededType0.isMap()) {
             if (!(value instanceof Map))
-                throw new KfgIllegalStateException(this.name(), neededType.key(), neededType, value, "expecting a map");
+                throw new KfgIllegalStateException(this.name(), neededType0, value, "expecting a map");
 
+            if (((Map<?, ?>) value).containsKey(null) && !allowNullInCollection_(neededType0, value))
+                throw new KfgTypeNullException(this.name(), neededType0);
 
-            for (final Object o : ((Map<?, ?>) value).values())
-                if (o != null)
-                    try {
-                        checkType0(neededType, o);
-                    }
-                    catch (KfgTypeException k) {
-                        throw new KfgTypeException(this.name(), null, neededType, value);
-                    }
-                else if (!allowNullInCollection_(neededType, value))
-                    throw new KfgTypeNullException(this.name(), null, neededType);
+            final Q<?> neededKeyType = neededType0.getMapKeyQ();
+            final Q<?> neededValueType = neededType0.getMapValueQ();
 
-            for (final Object o : ((Map<?, ?>) value).keySet())
-                if (o != null)
-                    try {
-                        checkType0(neededType, o);
-                    }
-                    catch (KfgTypeException k) {
-                        throw new KfgTypeException(this.name(), null, neededType, value);
-                    }
-                else if (!allowNullInCollection_(neededType, value))
-                    throw new KfgTypeNullException(this.name(), null, neededType);
+            for (final Map.Entry<?, ?> o : ((Map<?, ?>) value).entrySet())
+                try {
+                    checkType0(neededKeyType, o.getKey());
+                    checkType0(neededValueType, o.getValue());
+                }
+                catch (KfgTypeException k) {
+                    throw new KfgTypeException(this.name(), neededType0, value);
+                }
         }
         else {
             if (!(value instanceof Collection))
-                throw new KfgIllegalStateException(this.name(), null, neededType, value, "expecting a collection");
+                throw new KfgIllegalStateException(
+                        this.name(), neededType0, value, "expecting a collection");
+
+            final Q<?> neededType = neededType0.getCollectionContainedQ();
 
             for (final Object o : (Collection<?>) value)
                 if (o != null)
@@ -541,10 +667,10 @@ public abstract class SourceBase implements Source {
                         checkType0(neededType, o);
                     }
                     catch (KfgTypeException k) {
-                        throw new KfgTypeException(this.name(), null, neededType, value);
+                        throw new KfgTypeException(this.name(), neededType, value);
                     }
                 else if (!allowNullInCollection_(neededType, value))
-                    throw new KfgTypeNullException(this.name(), null, neededType);
+                    throw new KfgTypeNullException(this.name(), neededType);
         }
     }
 

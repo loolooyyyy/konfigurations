@@ -23,7 +23,7 @@ public class MapKonfigSourceTest extends KonfigValueTestMixin {
     @BeforeMethod
     public void setup() throws Exception {
         this.map.set(DummyCustom.MAP0);
-        this.k = new ExtMapSource("test", map::get, false);
+        this.k = new ExtMapSource(getClass().getSimpleName(), map::get, false);
     }
 
     @Override

@@ -1,6 +1,7 @@
 package io.koosha.konfiguration;
 
 import io.koosha.konfiguration.error.KfgMissingKeyException;
+import io.koosha.konfiguration.type.Q;
 import lombok.NonNull;
 import net.jcip.annotations.Immutable;
 import net.jcip.annotations.ThreadSafe;

@@ -1,7 +1,7 @@
 package io.koosha.konfiguration.v8;
 
 import io.koosha.konfiguration.K;
-import io.koosha.konfiguration.Q;
+import io.koosha.konfiguration.type.Q;
 import io.koosha.konfiguration.Source;
 import io.koosha.konfiguration.error.KfgMissingKeyException;
 import io.koosha.konfiguration.error.KfgTypeException;
@@ -64,7 +64,7 @@ final class Kombiner_Values {
                 .filter(source -> source.has(key))
                 .findFirst();
         if (!first.isPresent() && mustExist)
-            throw new KfgMissingKeyException(this.origin.name(), null, key);
+            throw new KfgMissingKeyException(this.origin.name(), key);
         this.issue(key);
         if (!first.isPresent())
             return def;
@@ -88,7 +88,7 @@ final class Kombiner_Values {
                     .findFirst();
             if (duplicate.isPresent())
                 throw new KfgTypeException(
-                        this.origin.name(), null, q, duplicate.get(),
+                        this.origin.name(), q, duplicate.get(),
                         "mixed types is not allowed");
         }
 

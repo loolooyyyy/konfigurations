@@ -1,6 +1,7 @@
 package io.koosha.konfiguration;
 
 import io.koosha.konfiguration.error.KfgMissingKeyException;
+import io.koosha.konfiguration.type.Q;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -86,7 +87,8 @@ final class DummyV<U> implements K<U> {
         if (this.exists())
             return this.v;
 
-        throw new KfgMissingKeyException(null, this.key, this.type);
+        throw new KfgMissingKeyException(null,
+                this.type == null ? Q.unknown(this.key) : this.type.withKey(this.key));
     }
 
     /**
@@ -98,7 +100,8 @@ final class DummyV<U> implements K<U> {
         final U v = this.v();
 
         if (v == null)
-            throw new KfgMissingKeyException(null, this.key, this.type);
+            throw new KfgMissingKeyException(null,
+                    this.type == null ? Q.unknown(this.key) : this.type.withKey(this.key));
 
         return v;
     }

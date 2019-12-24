@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.koosha.konfiguration.base.Deserializer;
 import io.koosha.konfiguration.error.KfgIllegalStateException;
 import io.koosha.konfiguration.error.KfgSourceException;
+import io.koosha.konfiguration.type.Q;
 import io.koosha.konfiguration.v8.FaktoryV8;
 import lombok.NonNull;
 import org.jetbrains.annotations.ApiStatus;

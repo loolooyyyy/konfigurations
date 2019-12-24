@@ -32,7 +32,7 @@ public class MissingKeyTest {
     public void setup() {
         fac = FaktoryV8.defaultInstance();
         this.testAAA = true;
-        this.man = fac.map(sup::get);
+        this.man = fac.map(getClass().getSimpleName(), sup::get);
         this.k = man.getAndSetToNull();
     }
 

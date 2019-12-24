@@ -12,13 +12,13 @@ public class KfgSourceException extends KfgException {
 
     public KfgSourceException(@Nullable final String source,
                               @Nullable final String message) {
-        super(source, null, null, null, message);
+        super(source, null, null, message);
     }
 
     public KfgSourceException(@Nullable final String source,
                               @Nullable final String message,
                               @Nullable final Throwable cause) {
-        super(source, null, null, null, message, cause);
+        super(source, null, null, message, cause);
     }
 
 }

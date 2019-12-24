@@ -4,7 +4,10 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import java.util.Collections;
+import java.util.Map;
+import java.util.function.Supplier;
+
+import static java.util.Collections.singletonMap;
 
 @SuppressWarnings("WeakerAccess")
 public class KonfigurationKombinerCustomValueTest {
@@ -19,15 +22,16 @@ public class KonfigurationKombinerCustomValueTest {
 
     @BeforeMethod
     public void setup() {
-        this.k = fac.kombine(fac.map("map-konf", () -> Collections.singletonMap(
-                key,
-                value))).getAndSetToNull();
+        final Supplier<Map<String, ?>> mapSupplier = () -> singletonMap(key, value);
+        final KonfigurationManager map = fac.map("map-konf", mapSupplier);
+        final KonfigurationManager kombine = fac.kombine(map);
+        this.k = kombine.getAndSetToNull();
         this.fac = Faktory.defaultImplementation();
     }
 
     @Test
     public void testCustomValue() {
-        K<DummyCustom> custom = k.custom(new Q<>(key, DummyCustom.class));
+        K<DummyCustom> custom = k.custom(key, DummyCustom.class);
         Assert.assertSame(custom.v(), value);
     }
 

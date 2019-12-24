@@ -8,13 +8,13 @@ public class KfgConcurrencyException extends KfgException {
 
     public KfgConcurrencyException(@Nullable String source,
                                    @Nullable String message) {
-        super(source, null, null, null, message);
+        super(source, null, null, message);
     }
 
     public KfgConcurrencyException(@Nullable String source,
                                    @Nullable String message,
                                    @Nullable Throwable cause) {
-        super(source, null, null, null, message, cause);
+        super(source, null, null, message, cause);
     }
 
 }

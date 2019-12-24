@@ -3,8 +3,8 @@ package io.koosha.konfiguration.v8;
 import io.koosha.konfiguration.Handle;
 import io.koosha.konfiguration.K;
 import io.koosha.konfiguration.KeyObserver;
-import io.koosha.konfiguration.Q;
 import io.koosha.konfiguration.error.KfgMissingKeyException;
+import io.koosha.konfiguration.type.Q;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -53,7 +53,7 @@ final class Kombiner_K<U> implements K<U> {
         final U v = this.v();
 
         if (v == null)
-            throw new KfgMissingKeyException(this.origin.name(), null, this.type);
+            throw new KfgMissingKeyException(this.origin.name(), this.type);
 
         return v;
     }
@@ -104,8 +104,8 @@ final class Kombiner_K<U> implements K<U> {
      * @return
      */
     @Override
-    public @NotNull String key() {
-        //noinspection ConstantConditions
+    @NotNull
+    public String key() {
         return this.type.key();
     }
 
@@ -116,7 +116,7 @@ final class Kombiner_K<U> implements K<U> {
     @Override
     public String toString() {
         try {
-            return format("K(%s/%s=%s)", this.type, this.type.key(), this.v());
+            return format("K(%s/%s)", this.type, this.type.key());
         }
         catch (final Exception e) {
             return format("K(%s)::error", this.type.toString());

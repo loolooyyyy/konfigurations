@@ -1,6 +1,6 @@
 package io.koosha.konfiguration.error;
 
-import io.koosha.konfiguration.Q;
+import io.koosha.konfiguration.type.Q;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import net.jcip.annotations.ThreadSafe;
@@ -23,7 +23,7 @@ public class KfgAssertionException extends KfgException {
     private final Map<String, ?> context;
 
     public KfgAssertionException(@Nullable String message) {
-        super(null, null, null, null, message);
+        super(null, null, null, message);
         this.context = emptyMap();
     }
 
@@ -31,7 +31,7 @@ public class KfgAssertionException extends KfgException {
                                  @Nullable String key,
                                  @Nullable Q<?> neededType,
                                  @Nullable String message) {
-        super(source, key, neededType, null, message);
+        super(source, neededType, null, message);
         this.context = emptyMap();
     }
 

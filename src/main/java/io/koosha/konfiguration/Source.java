@@ -1,5 +1,8 @@
 package io.koosha.konfiguration;
 
+import io.koosha.konfiguration.error.KfgMissingKeyException;
+import io.koosha.konfiguration.error.KfgTypeException;
+import io.koosha.konfiguration.type.Q;
 import lombok.NonNull;
 import net.jcip.annotations.NotThreadSafe;
 import org.jetbrains.annotations.ApiStatus;
@@ -204,27 +207,7 @@ public interface Source {
         return set(Q.setOf(key, type));
     }
 
-
     // ========================================================================
-
-    /**
-     * Get a custom object, type depends on underlying sources.
-     *
-     * <p><b>Important:</b> the underlying konfiguration source must support
-     * this!
-     *
-     * <p><b>Important:</b> this method must <em>NOT</em> be used to obtain
-     * maps, lists or sets.
-     *
-     * @param key unique key of the konfiguration being requested.
-     * @return konfiguration value wrapper for the requested key.
-     */
-    @NotNull
-    @Contract(pure = true)
-    @ApiStatus.AvailableSince(Faktory.VERSION_8)
-    default <U> K<U> custom(@NotNull @NonNull final String key) {
-        throw new UnsupportedOperationException();
-    }
 
     /**
      * Get a custom object of type Q konfiguration value.
@@ -246,6 +229,26 @@ public interface Source {
     <U> K<U> custom(@NotNull final Q<U> key);
 
     /**
+     * Get a custom object, type depends on underlying sources.
+     *
+     * <p><b>Important:</b> the underlying konfiguration source must support
+     * this!
+     *
+     * <p><b>Important:</b> this method must <em>NOT</em> be used to obtain
+     * maps, lists or sets.
+     *
+     * @param key unique key of the konfiguration being requested.
+     * @return konfiguration value wrapper for the requested key.
+     */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    @NotNull
+    @Contract(pure = true)
+    @ApiStatus.AvailableSince(Faktory.VERSION_8)
+    default <U> K<U> custom(@NotNull @NonNull final String key) {
+        return custom((Q) Q.unknown(key));
+    }
+
+    /**
      * Get a custom object of type Q konfiguration value.
      *
      * <p><b>Important:</b> the underlying konfiguration source must support
@@ -264,9 +267,8 @@ public interface Source {
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     default <U> K<U> custom(@NotNull @NonNull final String key,
                             @NotNull @NonNull final Class<U> type) {
-        return custom(new Q<>(key, type));
+        return custom(Q.of(key, type));
     }
-
 
     // ========================================================================
 
@@ -277,7 +279,16 @@ public interface Source {
      */
     @Contract(pure = true)
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
-    boolean has(@NotNull Q<?> key);
+    default boolean has(@NotNull final Q<?> key) {
+        try {
+            //noinspection ResultOfMethodCallIgnored
+            this.custom(key);
+            return true;
+        }
+        catch (KfgTypeException | KfgMissingKeyException e) {
+            return false;
+        }
+    }
 
     /**
      * Check if {@code key} exists in the configuration.
@@ -288,7 +299,7 @@ public interface Source {
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     default boolean has(@NotNull @NonNull final String key,
                         @NotNull @NonNull final Class<?> type) {
-        return has(new Q<>(key, type));
+        return this.has(Q.of(key, type));
     }
 
     /**

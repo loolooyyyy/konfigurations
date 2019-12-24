@@ -1,6 +1,6 @@
 package io.koosha.konfiguration.v8;
 
-import io.koosha.konfiguration.Q;
+import io.koosha.konfiguration.type.Q;
 import io.koosha.konfiguration.base.Deserializer;
 import io.koosha.konfiguration.base.UpdatableSource;
 import io.koosha.konfiguration.base.UpdatableSourceBase;
@@ -187,7 +187,7 @@ final class ExtPreferencesSource extends UpdatableSourceBase {
     protected Object char0(@NotNull @NonNull final String key) {
         final String s = ((String) this.string0(sane(key)));
         if (s.length() != 1)
-            throw new KfgTypeException(this.name(), key, Q.char_(key), s);
+            throw new KfgTypeException(this.name(), Q.char_(key), s);
         return ((String) this.string0(sane(key))).charAt(0);
     }
 

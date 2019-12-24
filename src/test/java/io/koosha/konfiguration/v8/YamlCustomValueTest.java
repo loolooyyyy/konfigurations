@@ -17,8 +17,7 @@ public class YamlCustomValueTest {
 
     @Test
     public void testCustomValue() {
-
-        final DummyCustom bang = new ExtYamlSource("test", () -> "bang:\n  str : hello\n  i: 99",
+        final DummyCustom bang = new ExtYamlSource(getClass().getSimpleName(), () -> "bang:\n  str : hello\n  i: 99",
                 () -> ExtYamlSource.getDefaultYamlSupplier("test"), true)
                 .custom("bang", DummyCustom.class).v();
         assertEquals(bang.i, 99);
@@ -32,7 +31,7 @@ public class YamlCustomValueTest {
                 StandardCharsets.UTF_8)
                 .useDelimiter("\\Z").next();
 
-        final DummyCustom2 bang = new ExtYamlSource("test", () -> y,
+        final DummyCustom2 bang = new ExtYamlSource(getClass().getSimpleName(), () -> y,
                 () -> ExtYamlSource.getDefaultYamlSupplier("test"), true)
                 .custom("bang", DummyCustom2.class).v();
 

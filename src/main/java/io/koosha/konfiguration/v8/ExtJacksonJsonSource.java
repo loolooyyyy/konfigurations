@@ -7,11 +7,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.CollectionType;
 import com.fasterxml.jackson.databind.type.MapType;
-import io.koosha.konfiguration.Q;
 import io.koosha.konfiguration.base.UpdatableSource;
 import io.koosha.konfiguration.base.UpdatableSourceBase;
 import io.koosha.konfiguration.error.*;
 import io.koosha.konfiguration.error.extended.KfgJacksonError;
+import io.koosha.konfiguration.type.Q;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Synchronized;
@@ -107,7 +107,7 @@ final class ExtJacksonJsonSource extends UpdatableSourceBase {
 
         final JsonNode node = node_(key);
         if (node.isMissingNode())
-            throw new KfgMissingKeyException(this.name(), key);
+            throw new KfgMissingKeyException(this.name(), Q.unknown(key));
         return node;
     }
 
@@ -116,9 +116,9 @@ final class ExtJacksonJsonSource extends UpdatableSourceBase {
                                    final JsonNode node,
                                    final String key) {
         if (!condition)
-            throw new KfgTypeException(this.name(), key, required, node);
+            throw new KfgTypeException(this.name(), required.withKey(key), node);
         if (node.isNull())
-            throw new KfgTypeNullException(this.name(), key, required);
+            throw new KfgTypeNullException(this.name(), required.withKey(key));
         return node;
     }
 
@@ -209,9 +209,9 @@ final class ExtJacksonJsonSource extends UpdatableSourceBase {
                 || type.isBool() && node.isBoolean()
                 || type.isChar() && node.isTextual() && node.asText().length() == 1
                 || type.isString() && node.isTextual()
-                || type.isByte() && node.isShort() && node.asInt() <= Byte.MAX_VALUE && Byte.MIN_VALUE <= node.asInt()
-                || type.isShort() && node.isShort()
-                || type.isInt() && node.isInt()
+                || type.isByte() && node.isLong() && node.asLong() <= Byte.MAX_VALUE && Byte.MIN_VALUE <= node.asLong()
+                || type.isShort() && node.isLong() && node.asLong() <= Short.MAX_VALUE && Short.MIN_VALUE <= node.asLong()
+                || type.isInt() && node.isLong() && node.asLong() <= Integer.MAX_VALUE && Integer.MIN_VALUE <= node.asLong()
                 || type.isLong() && node.isLong()
                 || type.isFloat() && node.isFloat()
                 || type.isDouble() && node.isDouble()
@@ -314,7 +314,7 @@ final class ExtJacksonJsonSource extends UpdatableSourceBase {
             return reader.readValue(at.traverse(), javaType);
         }
         catch (final IOException e) {
-            throw new KfgTypeException(this.name(), type.key(), type, at, "type mismatch", e);
+            throw new KfgTypeException(this.name(), type, at, "type mismatch", e);
         }
     }
 
@@ -339,12 +339,12 @@ final class ExtJacksonJsonSource extends UpdatableSourceBase {
             s = reader.readValue(at.traverse(), javaType);
         }
         catch (final IOException e) {
-            throw new KfgTypeException(this.name(), null, Q.unknownList(type.key()), type, "type mismatch", e);
+            throw new KfgTypeException(this.name(), Q.unknownList(type.key()), type, "type mismatch", e);
         }
 
         final List<?> l = this.list0(Q.unknownList(type.key()));
         if (l.size() != s.size())
-            throw new KfgTypeException(this.name(), type.key(), type, at, "type mismatch, duplicate values");
+            throw new KfgTypeException(this.name(), type, at, "type mismatch, duplicate values");
 
         return s;
     }
@@ -367,7 +367,7 @@ final class ExtJacksonJsonSource extends UpdatableSourceBase {
             return reader.readValue(at.traverse(), javaType);
         }
         catch (final IOException e) {
-            throw new KfgTypeException(this.name(), null, Q.unknownList(type.key()), type, "type mismatch", e);
+            throw new KfgTypeException(this.name(), Q.unknownList(type.key()), type, "type mismatch", e);
         }
     }
 
@@ -385,7 +385,7 @@ final class ExtJacksonJsonSource extends UpdatableSourceBase {
             return reader.readValue(traverse, type.klass());
         }
         catch (final IOException e) {
-            throw new KfgTypeException(this.name(), type.key(), type, null, "jackson error", e);
+            throw new KfgTypeException(this.name(), type, null, "jackson error", e);
         }
     }
 

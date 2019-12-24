@@ -2,7 +2,7 @@ package io.koosha.konfiguration.v8;
 
 import io.koosha.konfiguration.Handle;
 import io.koosha.konfiguration.KeyObserver;
-import io.koosha.konfiguration.Q;
+import io.koosha.konfiguration.type.Q;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.experimental.Accessors;
@@ -38,6 +38,8 @@ final class Kombiner_Observer {
     Kombiner_Observer(@NonNull @NotNull final WeakReference<KeyObserver> soft,
                       @Nullable final String key,
                       @Nullable final Q<?> type) {
+        if (key != null && type != null)
+            throw new IllegalStateException();
         this.soft = soft;
         this.hard = null;
         this.key = key;
@@ -47,6 +49,8 @@ final class Kombiner_Observer {
     Kombiner_Observer(@NonNull @NotNull final KeyObserver hard,
                       @Nullable final String key,
                       @Nullable final Q<?> type) {
+        if (key != null && type != null)
+            throw new IllegalStateException();
         this.soft = null;
         this.hard = hard;
         this.key = key;

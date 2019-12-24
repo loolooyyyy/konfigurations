@@ -1,20 +1,23 @@
-package io.koosha.konfiguration;
+package io.koosha.konfiguration.type;
 
+import io.koosha.konfiguration.Faktory;
 import io.koosha.konfiguration.error.KfgIllegalArgumentException;
 import io.koosha.konfiguration.error.KfgIllegalStateException;
 import lombok.NonNull;
 import lombok.experimental.Accessors;
 import net.jcip.annotations.Immutable;
 import net.jcip.annotations.ThreadSafe;
-import org.jetbrains.annotations.*;
+import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
-import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
-import java.util.stream.Collectors;
 
-import static io.koosha.konfiguration.Q_Helper.*;
-import static java.util.Arrays.stream;
+import static io.koosha.konfiguration.type.Matcher.match;
+import static io.koosha.konfiguration.type.Matcher.matchValue0;
+import static io.koosha.konfiguration.type.Q_Helper.*;
+import static java.util.stream.Collectors.toList;
 
 @SuppressWarnings("unused")
 @ThreadSafe
@@ -24,45 +27,74 @@ import static java.util.Arrays.stream;
 public class Q<TYPE> {
 
     @NotNull
-    private final String key;
+    final String key;
 
     @NotNull
-    private final Class<TYPE> klass;
+    final Class<TYPE> klass;
 
     @NotNull
-    private final List<Q<?>> typeArgs;
+    final List<Q<?>> args;
+
+    final boolean isRoot;
 
     protected Q(@NotNull @NonNull final String key) {
         this(key, 0);
     }
 
-    public Q(@NotNull @NonNull final String key,
-             @NotNull @NonNull final Type x) {
-        this(key, x, 0);
+    @NotNull
+    @Contract("_, _ -> new")
+    static Q<?> of(@NotNull @NonNull final Type type,
+                   final boolean isRoot) {
+        return new Q<>(X, type, isRoot ? 0 : 1);
     }
 
-    public Q(@NotNull @NonNull final String key,
-             @NotNull @NonNull Class<TYPE> klass) {
-        this.key = key;
-        this.klass = upper(klass);
-        this.typeArgs = l();
-        checkIsConcrete(this);
+    @NotNull
+    @Contract("_, _ -> new")
+    public static Q<?> of(@NotNull @NonNull final String key,
+                          @NotNull @NonNull final Type type) {
+        return new Q<>(key, type, 0);
     }
 
-    public Q(@NotNull @NonNull final String key,
-             @NotNull @NonNull Class<TYPE> klass,
-             @NotNull @NonNull final List<@NotNull Q<?>> typeArgs) {
-        final List<Q<?>> cp = copy(typeArgs);
-        if (cp.contains(null))
-            throw new KfgIllegalArgumentException(null, "type contain null: " + typeArgs);
-        this.key = key;
-        this.klass = upper(klass);
-        this.typeArgs = cp;
-        checkIsConcrete(this);
+    @NotNull
+    @Contract("_, _ -> new")
+    public static <T> Q<T> of(@NotNull @NonNull final String key,
+                              @NotNull @NonNull final Class<T> klass) {
+        return new Q<>(key, klass, 0);
+    }
+
+    @NotNull
+    @Contract("_, _, _ -> new")
+    public static <T> Q<T> of(@NotNull @NonNull final String key,
+                              @NotNull @NonNull final Class<T> klass,
+                              @NotNull @NonNull final List<? extends @NotNull Type> args) {
+        return new Q<>(key, klass, args.stream()
+                                       .map(Objects::requireNonNull)
+                                       .map(x -> of(x, false))
+                                       .collect(toList()));
+    }
+
+    @NotNull
+    @Contract("_, _, _ -> new")
+    public static <T> Q<T> construct(@NotNull @NonNull final String key,
+                                     @NotNull @NonNull final Class<T> klass,
+                                     @NotNull @NonNull final List<@NotNull Q<?>> args) {
+        args.forEach(Objects::requireNonNull);
+        return new Q<>(key, klass, args);
     }
 
     // =========================================================================
-    @SuppressWarnings("unchecked")
+
+    private Q(@NotNull @NonNull final String key,
+              @NotNull @NonNull final Class<TYPE> klass,
+              @NotNull @NonNull final List<@NotNull Q<?>> args) {
+        this.key = key;
+        this.klass = upper(klass);
+        this.isRoot = true;
+        this.args = copy(args);
+        this.args.forEach(Objects::requireNonNull);
+        checkIsConcrete(this);
+    }
+
     private Q(@NotNull @NonNull final String key,
               final int nestingLevel) {
         if (nestingLevel >= Q_Helper.MAX_NESTING_LEVEL)
@@ -70,27 +102,20 @@ public class Q<TYPE> {
         if (nestingLevel == 0)
             checkIsConcrete(this.getClass().getGenericSuperclass());
 
-        final Type t = typeArgumentsOf(this)[0];
+        final Type t = typeArgumentsOf(this);
 
+        this.isRoot = nestingLevel == 0;
         this.key = key;
-        this.klass = (Class<TYPE>) raw(t);
+        this.klass = raw(t);
+        this.args = copy(typeArgumentsOf(t)
+                .stream()
+                .map(x -> new Q<>(X, x, nestingLevel + 1))
+                .collect(toList()));
 
-        if (!(t instanceof ParameterizedType)) {
-            this.typeArgs = l();
-        }
-        else {
-            //noinspection rawtypes
-            this.typeArgs = (List) copy(stream(((ParameterizedType) t)
-                    .getActualTypeArguments())
-                    .map(x -> new Q(X, x, nestingLevel + 1))
-                    .collect(Collectors.toList()));
-        }
-
-        if (nestingLevel == 0)
+        if (this.isRoot)
             checkIsConcrete(this);
     }
 
-    @SuppressWarnings("unchecked")
     private Q(@NotNull @NonNull final String key,
               @NotNull @NonNull final Type t,
               final int nestingLevel) {
@@ -101,18 +126,13 @@ public class Q<TYPE> {
         if (nestingLevel == 0)
             checkIsConcrete(t);
 
+        this.isRoot = nestingLevel == 0;
         this.key = key;
-        this.klass = (Class<TYPE>) raw(t);
-        if (!(t instanceof ParameterizedType)) {
-            this.typeArgs = l();
-        }
-        else {
-            //noinspection rawtypes
-            this.typeArgs = (List) copy(stream(((ParameterizedType) t)
-                    .getActualTypeArguments())
-                    .map(x -> new Q(X, x, nestingLevel + 1))
-                    .collect(Collectors.toList()));
-        }
+        this.klass = raw(t);
+        this.args = copy(typeArgumentsOf(t)
+                .stream()
+                .map(x -> new Q<>(X, x, nestingLevel + 1))
+                .collect(toList()));
 
         if (nestingLevel == 0)
             checkIsConcrete(this);
@@ -138,11 +158,7 @@ public class Q<TYPE> {
 
     @Contract(pure = true)
     public final boolean matchesValue(final Object v) {
-        if (v == null || Objects.equals(this.klass, Object.class))
-            return true;
-        if (!this.klass.isAssignableFrom(v.getClass()))
-            return false;
-        return match(this, v.getClass());
+        return matchValue0(this, v);
     }
 
     // =================================
@@ -169,58 +185,69 @@ public class Q<TYPE> {
             throw new KfgIllegalArgumentException(null, "empty key");
 
         return Objects.equals(this.key, key)
-               ? new Q<>(key, this.klass, this.typeArgs)
+               ? construct(key, this.klass, this.args)
                : this;
     }
 
     // =================================
 
     @Contract(pure = true)
-    @Nullable
-    private Q<?> get(@Range(from = 0,
-            to = Byte.MAX_VALUE) final int i) {
-        return i < this.typeArgs.size() ? this.typeArgs.get(i) : null;
-    }
-
-    @Contract(pure = true)
     @NotNull
     public final Class<?> getCollectionContainedClass() {
         if (!Collection.class.isAssignableFrom(this.klass))
             throw new KfgIllegalStateException(null, "type is not a collection: " + this);
-        final Q<?> type = this.get(0);
-        if (type == null)
+        if (this.args.size() < 1)
             throw new KfgIllegalStateException(null, "collection type is not present: " + this);
-        return type.klass;
+        return this.args.get(0).klass;
+    }
+
+    @Contract(pure = true,
+            value = "->new")
+    @NotNull
+    public final Q<?> getCollectionContainedQ() {
+        final Class<?> c = this.getCollectionContainedClass();
+        return of(this.key + "::collection", c);
     }
 
     @Contract(pure = true)
     @NotNull
     public final Class<?> getMapKeyClass() {
         if (!Map.class.isAssignableFrom(this.klass))
-            throw new KfgIllegalStateException(null, this.key, Q.unknownMap(key), null, "type is not a map");
-        final Q<?> type = this.get(0);
-        if (type == null)
+            throw new KfgIllegalStateException(null, Q.unknownMap(key), null, "type is not a map");
+        if (this.args.size() < 1)
             throw new KfgIllegalStateException(null, "map key type is not present: " + this);
-        return type.klass;
+        return this.args.get(0).klass;
     }
 
     @Contract(pure = true)
     @NotNull
     public final Class<?> getMapValueClass() {
         if (!Map.class.isAssignableFrom(this.klass))
-            throw new KfgIllegalStateException(null, this.key, Q.unknownMap(key), null, "type is not a map");
-        final Q<?> type = this.get(1);
-        if (type == null)
+            throw new KfgIllegalStateException(null, Q.unknownMap(key), null, "type is not a map");
+        if (this.args.size() < 2)
             throw new KfgIllegalStateException(null, "map value type is not present: " + this);
-        return type.klass;
+        return this.args.get(1).klass;
+    }
+
+    @Contract(pure = true,
+            value = "->new")
+    @NotNull
+    public final Q<?> getMapKeyQ() {
+        return of(this.key + "::map-key", this.getMapKeyClass());
+    }
+
+    @Contract(pure = true,
+            value = "->new")
+    @NotNull
+    public final Q<?> getMapValueQ() {
+        return of(this.key + "::map-value", this.getMapValueClass());
     }
 
     @NotNull
     @Contract(pure = true)
-    public final List<Q<?>> getTypeArgs() {
-        return this.typeArgs;
+    public final List<Q<?>> args() {
+        return this.args;
     }
-
 
     // =========================================================================
 
@@ -294,80 +321,74 @@ public class Q<TYPE> {
         return Void.class.isAssignableFrom(this.klass);
     }
 
-    @Contract(pure = true)
-    public final boolean hasKey() {
-        //noinspection ConstantConditions
-        return this.key() != null && !this.key().isEmpty() && !Objects.equals(this.key, X);
-    }
-
     @NotNull
     @Contract(value = "_ -> new",
             pure = true)
     public static Q<Boolean> bool(@NotNull @NonNull final String key) {
-        return new Q<>(key, Boolean.class);
+        return Q.of(key, Boolean.class);
     }
 
     @NotNull
     @Contract(value = "_ -> new",
             pure = true)
     public static Q<Character> char_(@NotNull @NonNull final String key) {
-        return new Q<>(key, Character.class);
+        return Q.of(key, Character.class);
     }
 
     @NotNull
     @Contract(value = "_ -> new",
             pure = true)
     public static Q<Byte> byte_(@NotNull @NonNull final String key) {
-        return new Q<>(key, Byte.class);
+        return Q.of(key, Byte.class);
     }
 
     @NotNull
     @Contract(value = "_ -> new",
             pure = true)
     public static Q<Short> short_(@NotNull @NonNull final String key) {
-        return new Q<>(key, Short.class);
+        return Q.of(key, Short.class);
     }
 
     @NotNull
     @Contract(value = "_ -> new",
             pure = true)
     public static Q<Integer> int_(@NotNull @NonNull final String key) {
-        return new Q<>(key, Integer.class);
+        return Q.of(key, Integer.class);
     }
 
     @NotNull
     @Contract(value = "_ -> new",
             pure = true)
     public static Q<Long> long_(@NotNull @NonNull final String key) {
-        return new Q<>(key, Long.class);
+        return Q.of(key, Long.class);
     }
 
     @NotNull
     @Contract(value = "_ -> new",
             pure = true)
     public static Q<Float> float_(@NotNull @NonNull final String key) {
-        return new Q<>(key, Float.class);
+        return Q.of(key, Float.class);
     }
 
     @NotNull
     @Contract(value = "_ -> new",
             pure = true)
     public static Q<Double> double_(@NotNull @NonNull final String key) {
-        return new Q<>(key, Double.class);
+        return Q.of(key, Double.class);
     }
 
     @NotNull
     @Contract(value = "_ -> new",
             pure = true)
     public static Q<String> string(@NotNull @NonNull final String key) {
-        return new Q<>(key, String.class);
+        return Q.of(key, String.class);
     }
 
     @NotNull
     @Contract(value = "_ -> new",
             pure = true)
     public static Q<?> unknown(@NotNull @NonNull final String key) {
-        return new Q<>(key, Object.class);
+        return Q.of(key, Object.class);
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -375,7 +396,7 @@ public class Q<TYPE> {
     @Contract(value = "_ -> new",
             pure = true)
     public static Q<Map<?, ?>> unknownMap(@NotNull @NonNull final String key) {
-        return (Q) new Q<>(key, Map.class);
+        return (Q) Q.of(key, Map.class);
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -383,7 +404,7 @@ public class Q<TYPE> {
     @Contract(value = "_ -> new",
             pure = true)
     public static Q<Set<?>> unknownSet(@NotNull @NonNull final String key) {
-        return (Q) new Q<>(key, Set.class);
+        return (Q) Q.of(key, Set.class);
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -391,7 +412,7 @@ public class Q<TYPE> {
     @Contract(value = "_ -> new",
             pure = true)
     public static Q<List<?>> unknownList(@NotNull @NonNull final String key) {
-        return (Q) new Q<>(key, List.class);
+        return (Q) Q.of(key, List.class);
     }
 
     @NotNull
@@ -491,7 +512,7 @@ public class Q<TYPE> {
             pure = true)
     public static <U> Q<List<U>> listOf(@NotNull @NonNull final String key,
                                         @NotNull @NonNull final Class<U> klass) {
-        return new Q<List<U>>(key, (Class) List.class, lq(klass));
+        return of(key, (Class) List.class, l(klass));
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -500,7 +521,7 @@ public class Q<TYPE> {
             pure = true)
     public static <U> Q<Set<U>> setOf(@NonNull @NotNull final String key,
                                       @NotNull @NonNull final Class<U> klass) {
-        return new Q<Set<U>>(key, (Class) Set.class, lq(klass));
+        return of(key, (Class) Set.class, l(klass));
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -510,7 +531,7 @@ public class Q<TYPE> {
     public static <U, V> Q<Map<U, V>> mapOf(@NotNull @NonNull final String key,
                                             @NotNull @NonNull final Class<U> klassK,
                                             @NotNull @NonNull final Class<V> klassV) {
-        return new Q<Map<U, V>>(key, (Class) Map.class, lq(klassK, klassV));
+        return of(key, (Class) Map.class, l(klassK, klassV));
     }
 
     @Override
@@ -522,22 +543,17 @@ public class Q<TYPE> {
         final Q<?> other = (Q<?>) o;
         return Objects.equals(this.key(), other.key())
                 && Objects.equals(this.klass(), other.klass())
-                && Objects.equals(this.typeArgs, other.typeArgs);
+                && Objects.equals(this.args, other.args);
     }
 
     @Override
     public final int hashCode() {
-        return Objects.hash(this.key, this.klass, this.typeArgs);
+        return Objects.hash(this.key, this.klass, this.args);
     }
 
     @Override
     public final String toString() {
         return toString_(this);
     }
-
-    private String toString_(final Q<?> q) {
-        return "Q(key=" + q.key + ", klass=" + q.klass + ", typeArgs=" + q.typeArgs + ")";
-    }
-
 
 }

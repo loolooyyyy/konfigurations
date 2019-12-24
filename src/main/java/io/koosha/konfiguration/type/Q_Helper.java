@@ -1,10 +1,11 @@
-package io.koosha.konfiguration;
+package io.koosha.konfiguration.type;
 
 import io.koosha.konfiguration.error.KfgAssertionException;
-import io.koosha.konfiguration.error.KfgIllegalArgumentException;
 import io.koosha.konfiguration.error.KfgIllegalStateException;
 import io.koosha.konfiguration.error.KfgUnsupportedOperationException;
 import lombok.NonNull;
+import net.jcip.annotations.Immutable;
+import net.jcip.annotations.ThreadSafe;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -13,6 +14,11 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
 
+import static java.lang.String.format;
+import static java.util.Arrays.asList;
+
+@Immutable
+@ThreadSafe
 final class Q_Helper {
 
     public static final int MAX_NESTING_LEVEL = 16;
@@ -21,45 +27,12 @@ final class Q_Helper {
         // Utility class.
     }
 
-
-    // =========================================================================
-
-    @SuppressWarnings("rawtypes")
-    @Contract(pure = true)
-    static boolean match(@NotNull @NonNull final Q<?> a,
-                         @NotNull @NonNull final Type b) {
-        return match(a, new Q(X, b), 0);
-    }
-
-    @Contract(pure = true)
-    static boolean match(@NotNull @NonNull final Q<?> a,
-                         @NotNull @NonNull final Q<?> b) {
-        return match(a, b, 0);
-    }
-
-    static boolean match(@NotNull @NonNull final Q<?> a,
-                         @NotNull @NonNull final Q<?> b,
-                         final int nestingLevel) {
-        if (nestingLevel >= Q_Helper.MAX_NESTING_LEVEL)
-            throw new KfgIllegalArgumentException(null, "max nesting level reached");
-        if (!a.klass().isAssignableFrom(b.klass()))
-            return false;
-        if (a.getTypeArgs().size() != b.getTypeArgs().size())
-            return false;
-        final List<Q<?>> at = a.getTypeArgs();
-        final List<Q<?>> bt = b.getTypeArgs();
-        for (int i = 0; i < at.size(); i++)
-            if (!match(at.get(i), bt.get(i)))
-                return false;
-        return true;
-    }
-
     // =========================================================================
 
     @Contract(pure = true)
     static void checkIsConcrete(@NotNull @NonNull final Q<?> q) {
         checkIsConcrete(q.klass());
-        for (Q<?> typeArg : q.getTypeArgs())
+        for (Q<?> typeArg : q.args())
             checkIsConcrete(typeArg);
     }
 
@@ -88,65 +61,64 @@ final class Q_Helper {
 
     @Contract(pure = true)
     static Type checkIsConcrete(@NotNull @NonNull final Type p) {
-        checkIsConcrete(p, p);
+        if (!isConcrete(p, p))
+            throw new KfgUnsupportedOperationException(
+                    "only Class and ParameterizedType are supported: " + p);
         return p;
     }
 
     @Contract(pure = true)
-    static ParameterizedType parametrizedTypeOf(@NotNull @NonNull final Object o) {
+    static Type typeArgumentsOf(@NotNull @NonNull final Object o) {
         final Type genericSuperclass = o.getClass().getGenericSuperclass();
         if (!(genericSuperclass instanceof ParameterizedType))
             throw new KfgIllegalStateException(null, "encountered non generic type: " + o);
-        return ((ParameterizedType) genericSuperclass);
+        final Type[] a = ((ParameterizedType) genericSuperclass)
+                .getActualTypeArguments();
+        if (a.length == 0)
+            throw new KfgIllegalStateException(null, "encountered non generic type: " + o);
+        if (a.length > 1)
+            throw new KfgIllegalStateException(null, "too many generic types, expecting one: " + o);
+        return a[0];
     }
 
+    static List<Type> typeArgumentsOf(@NotNull @NonNull final Type t) {
+        return t instanceof ParameterizedType
+               ? asList(((ParameterizedType) t).getActualTypeArguments())
+               : l();
+    }
+
+    @SuppressWarnings("unchecked")
     @Contract(pure = true)
-    static Type[] typeArgumentsOf(@NotNull @NonNull final Object o) {
-        return parametrizedTypeOf(o).getActualTypeArguments();
-    }
-
-    static Class<?> raw(@NotNull @NonNull final Type t) {
+    static <T> Class<T> raw(@NotNull @NonNull final Type t) {
         if (t instanceof Class)
-            return upper((Class<?>) t);
+            return upper((Class<T>) t);
         if (t instanceof ParameterizedType)
-            return (Class<?>) ((ParameterizedType) t).getRawType();
+            return upper((Class<T>) ((ParameterizedType) t).getRawType());
         throw new KfgAssertionException("expected Class or ParameterizedType, got= " + t);
     }
 
     @Contract(pure = true)
-    private static void checkIsConcrete(@NotNull @NonNull final Type p,
-                                        @Nullable Type root) {
+    private static boolean isConcrete(@NotNull @NonNull final Type p,
+                                      @Nullable Type root) {
         if (root == null)
             root = p;
 
         if (!(p instanceof Class) && !(p instanceof ParameterizedType))
-            throw new KfgUnsupportedOperationException(
-                    "only Class and ParameterizedType are supported: "
-                            + root + "::" + p);
+            return false;
 
         if (!(p instanceof ParameterizedType))
-            return;
+            return true;
 
         final ParameterizedType pp = (ParameterizedType) p;
-        checkIsConcrete(root, pp.getRawType());
+        if (!isConcrete(root, pp.getRawType()))
+            return false;
         for (final Type ppp : pp.getActualTypeArguments())
-            checkIsConcrete(root, ppp);
+            if (!isConcrete(root, ppp))
+                return false;
+        return true;
     }
 
     // =========================================================================
-
-    @NotNull
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    static List<Q<?>> lq(@NotNull @NonNull final Class<?> c0) {
-        return l(new Q(X, c0));
-    }
-
-    @NotNull
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    static List<Q<?>> lq(@NotNull @NonNull final Class<?> c0,
-                         @NotNull @NonNull final Class<?> c1) {
-        return l(new Q(X, c0), new Q(X, c1));
-    }
 
     @Contract(pure = true,
             value = "->new")
@@ -167,7 +139,7 @@ final class Q_Helper {
     @NotNull
     static <T> List<T> l(final T a0,
                          final T a1) {
-        return Collections.unmodifiableList(Arrays.asList(a0, a1));
+        return Collections.unmodifiableList(asList(a0, a1));
     }
 
     @Contract(pure = true,
@@ -182,7 +154,21 @@ final class Q_Helper {
         return Collections.unmodifiableList(new ArrayList<>(c));
     }
 
-    static final String X = "io.koosha.konfiguration.Q.UNKEYED";
+    static String toString_(@NotNull @NonNull final Q<?> q) {
+        String s = q.args.toString();
+        if (s.startsWith("[") && s.endsWith("]"))
+            s = s.substring(1, s.length() - 1);
 
+        String klass = q.klass.getName();
+        if (klass.startsWith("java.lang.") || klass.startsWith("java.util."))
+            klass = klass.substring(10);
+
+        return format("%s%s%s",
+                q.isRoot ? "Q:" + q.key + ":" : "",
+                klass,
+                q.args.isEmpty() ? "" : "<" + s + ">");
+    }
+
+    static final String X = "io.koosha.konfiguration.type.Q.UNKEYED";
 
 }
