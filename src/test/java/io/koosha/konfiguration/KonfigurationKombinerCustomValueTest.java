@@ -22,6 +22,7 @@ public class KonfigurationKombinerCustomValueTest {
 
     @BeforeMethod
     public void setup() {
+        fac = Faktory.defaultImplementation();
         final Supplier<Map<String, ?>> mapSupplier = () -> singletonMap(key, value);
         final KonfigurationManager map = fac.map("map-konf", mapSupplier);
         final KonfigurationManager kombine = fac.kombine(map);
