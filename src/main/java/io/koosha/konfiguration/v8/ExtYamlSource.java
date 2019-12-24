@@ -2,6 +2,8 @@ package io.koosha.konfiguration.v8;
 
 import io.koosha.konfiguration.base.UpdatableSource;
 import io.koosha.konfiguration.base.UpdatableSourceBase;
+import io.koosha.konfiguration.error.KfgAssertionException;
+import io.koosha.konfiguration.error.KfgTypeException;
 import io.koosha.konfiguration.error.KfgUnsupportedOperationException;
 import io.koosha.konfiguration.error.extended.KfgSnakeYamlAssertionError;
 import io.koosha.konfiguration.error.extended.KfgSnakeYamlError;
@@ -16,22 +18,15 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.constructor.Constructor;
 import org.yaml.snakeyaml.error.YAMLException;
-import org.yaml.snakeyaml.nodes.*;
 
 import java.beans.ConstructorProperties;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Parameter;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
-import static java.util.Arrays.asList;
 import static java.util.Objects.requireNonNull;
-import static java.util.stream.Collectors.toList;
 
 /**
  * Reads konfig from a yaml source (supplied as string).
@@ -47,16 +42,23 @@ import static java.util.stream.Collectors.toList;
 final class ExtYamlSource extends UpdatableSourceBase {
 
     private static final Pattern DOT = Pattern.compile(Pattern.quote("."));
+
     private static final ThreadLocal<Yaml> defaultYamlSupplier = new ThreadLocal<>();
+
     private final boolean safe;
+
     private final Supplier<Yaml> mapper;
+
     private final Supplier<String> yaml;
+
     private final Map<String, ?> root;
+
     @NonNull
     @NotNull
     @Getter
     @Accessors(fluent = true)
     private final String name;
+
     private int lastHash;
 
     /**
@@ -103,26 +105,11 @@ final class ExtYamlSource extends UpdatableSourceBase {
         this.root = Collections.unmodifiableMap(newMapper.load(newYaml));
     }
 
-    private static Class<?> lower(Class<?> c) {
-        if (c == Boolean.class)
-            return boolean.class;
-        if (c == Integer.class)
-            return int.class;
-        if (c == Long.class)
-            return long.class;
-        if (c == Float.class)
-            return float.class;
-        if (c == Double.class)
-            return double.class;
-        return c;
-    }
-
-    static Yaml getDefaultYamlSupplier(@NotNull @NonNull final String name) {
+    static Yaml getDefaultYamlSupplier() {
         ensureDep(Thread.currentThread().getName());
         Yaml y = defaultYamlSupplier.get();
         if (y == null) {
-            y = new Yaml(new ByConstructorConstructor<>(
-                    name,
+            y = new Yaml(new ExtYamlSourceByConstructorConstructor<>(
                     (Class<? extends ConstructorProperties>) ConstructorProperties.class,
                     (Function<? super ConstructorProperties, String[]>) ConstructorProperties::value
             ));
@@ -189,7 +176,45 @@ final class ExtYamlSource extends UpdatableSourceBase {
     @Override
     public boolean has(@NotNull @NonNull final Q<?> type) {
         try {
-            return type.matchesValue(get(type.key()));
+            final Object o = get(type.key());
+            if (type.matchesValue(o))
+                return true;
+            if (type.isSet() && List.class.isAssignableFrom(o.getClass()) && new HashSet<>((List<?>) o).size() == ((List<?>) o).size())
+                return true;
+            if (type.isNumber() && Number.class.isAssignableFrom(o.getClass())) {
+                if (type.isFloat())
+                    return ((Number) o).doubleValue() >= Float.MIN_VALUE
+                            && ((Number) o).doubleValue() <= Float.MAX_VALUE;
+                if (type.isDouble())
+                    return true;
+
+                // No coercing floating to int/long.
+                if (o instanceof Double || o instanceof Float)
+                    return false;
+
+                final long min;
+                final long max;
+                if (type.isByte()) {
+                    min = Byte.MIN_VALUE;
+                    max = Byte.MIN_VALUE;
+                }
+                else if (type.isShort()) {
+                    min = Short.MIN_VALUE;
+                    max = Short.MIN_VALUE;
+                }
+                else if (type.isInt()) {
+                    min = Integer.MIN_VALUE;
+                    max = Integer.MIN_VALUE;
+                }
+                else if (type.isLong()) {
+                    return true;
+                }
+                else {
+                    throw new KfgAssertionException("expecting a number");
+                }
+                return ((Number) o).longValue() <= max && min <= ((Number) o).longValue();
+            }
+            return false;
         }
         catch (final KfgSnakeYamlAssertionError e) {
             return false;
@@ -215,7 +240,7 @@ final class ExtYamlSource extends UpdatableSourceBase {
 
     private void ensureSafe(@Nullable final Q<?> type) {
         if (this.safe && type != null && type.args().size() > 0)
-            throw new UnsupportedOperationException("yaml does not support parameterized yet.");
+            throw new KfgSnakeYamlError(this.name, "yaml does not support parameterized yet.");
     }
 
     /**
@@ -316,245 +341,12 @@ final class ExtYamlSource extends UpdatableSourceBase {
         final Object g = this.get(type.key());
         final Yaml mapper = this.mapper.get();
         final String yamlAgain = mapper.dump(g);
-        return mapper.loadAs(yamlAgain, type.klass());
-    }
-
-    private static final class ByConstructorConstructor<A extends Annotation> extends Constructor {
-
-        @NotNull
-        private final String name;
-
-        @NotNull
-        private final Class<? extends A> marker;
-
-        @NotNull
-        private final Function<? super A, String[]> markerExtractor;
-
-        ByConstructorConstructor(@NotNull @NonNull final String name,
-                                 @NonNull @NotNull final Class<? extends A> marker,
-                                 @NotNull @NonNull final Function<? super A, String[]> markerExtractor) {
-            this.name = name;
-            this.marker = marker;
-            this.markerExtractor = markerExtractor;
-            this.yamlClassConstructors.put(NodeId.mapping, new KonstructMapping());
+        try {
+            return mapper.loadAs(yamlAgain, type.klass());
         }
-
-        @SuppressWarnings("SameParameterValue")
-        private static <A extends Annotation> java.lang.reflect.Constructor<?> find(
-                final String source,
-                final Class<? extends A> marker,
-                final Function<? super A, String[]> markerExtractor,
-                final Class<?> origin,
-                final Map<String, ? extends Param> cArgsByName,
-                final List<String> cArgNames) {
-            final List<java.lang.reflect.Constructor<?>> constructors = Arrays
-                    .stream(origin.getDeclaredConstructors())
-                    .filter(it -> it.getAnnotation(marker) != null)
-                    .filter(it -> asList(markerExtractor.apply(it.getAnnotation(marker))).containsAll(cArgNames)
-                            && cArgNames.containsAll(asList(markerExtractor.apply(it.getAnnotation(marker)))))
-                    .filter(it -> {
-                        final Parameter[] ps = it.getParameters();
-                        final String[] ns = markerExtractor.apply(it.getAnnotation(marker));
-                        for (int i = 0; i < ns.length; i++)
-                            if (!ps[i].getType().isAssignableFrom(cArgsByName.get(ns[i]).type))
-                                return false;
-                        return true;
-                    })
-                    .collect(toList());
-            if (constructors.isEmpty())
-                throw new KfgSnakeYamlError(source, "no constructor with ConstructorProperties is liable");
-            if (constructors.size() > 1)
-                throw new KfgSnakeYamlError(source, "multiple constructor with ConstructorProperties are liable");
-            return constructors.get(0);
+        catch (final YAMLException e) {
+            throw new KfgTypeException(this.name, type, null, e);
         }
-
-        private static class Param {
-            String name;
-            Class<?> type;
-            Object value;
-
-            Param(final String name) {
-                this.name = name;
-            }
-
-
-            final Double double_() {
-                return (Double) this.value;
-            }
-
-            final byte[] byteArray() {
-                return (byte[]) this.value;
-            }
-
-            final boolean typeIs(Object... other) {
-                for (final Object o : other)
-                    if (o == this.type)
-                        return true;
-                return false;
-            }
-
-        }
-
-        private static final class ParamNode extends Param {
-            Node node;
-
-            public ParamNode(String name, Node node) {
-                super(name);
-                this.node = node;
-            }
-
-            Class<?>[] getActualTypeArguments() {
-                return null;
-            }
-        }
-
-        private class KonstructMapping extends ConstructMapping {
-
-            @Override
-            public Object construct(final Node node) {
-                if (Map.class.isAssignableFrom(node.getType()) ||
-                        Collection.class.isAssignableFrom(node.getType()) ||
-                        typeDefinitions.containsKey(node.getType()))
-                    return super.construct(node);
-
-                if (node.isTwoStepsConstruction())
-                    throw new YAMLException("encountered two step node: " + node);
-
-                final MappingNode mnode = (MappingNode) node;
-                flattenMapping(mnode);
-
-                final List<ParamNode> consArgs = mnode
-                        .getValue()
-                        .stream()
-                        .map(tuple -> {
-                            if (!(tuple.getKeyNode() instanceof ScalarNode))
-                                throw new YAMLException(
-                                        "Keys must be scalars but found: " + tuple.getKeyNode());
-                            final ScalarNode keyNode = (ScalarNode) tuple.getKeyNode();
-                            keyNode.setType(String.class);
-                            return new ParamNode((String) constructObject(keyNode), tuple.getValueNode());
-                        })
-                        .peek(t -> {
-                            final Tag tag = t.node.getTag();
-                            Class<?> tp = null;
-                            if (tag == Tag.INT)
-                                tp = Integer.class;
-                            else if (tag == Tag.FLOAT)
-                                tp = Float.class;
-                            else if (tag == Tag.STR)
-                                tp = String.class;
-                            else if (tag == Tag.MAP)
-                                tp = Map.class;
-                            else if (tag == Tag.SEQ)
-                                tp = List.class;
-                            else if (tag == Tag.SET)
-                                tp = Set.class;
-                            else if (tag == Tag.BOOL)
-                                tp = Boolean.class;
-                            else if (tag == Tag.NULL)
-                                tp = Object.class;
-                            t.type = tp;
-                            if (tp != null)
-                                t.node.setType(tp);
-                        })
-                        .peek(t -> {
-                            if (t.node.getNodeId() != NodeId.scalar) {
-                                // only if there is no explicit TypeDescription
-                                final Class<?>[] args = t.getActualTypeArguments();
-                                if (args != null && args.length > 0) {
-                                    // type safe (generic) collection may contain the proper class
-                                    if (t.node.getNodeId() == NodeId.sequence) {
-                                        ((SequenceNode) t.node).setListType(args[0]);
-                                    }
-                                    else if (Set.class.isAssignableFrom(t.node.getType())) {
-                                        ((MappingNode) t.node).setOnlyKeyType(args[0]);
-                                        t.node.setUseClassConstructor(true);
-                                    }
-                                    else if (Map.class.isAssignableFrom(t.node.getType())) {
-                                        ((MappingNode) t.node).setTypes(args[0], args[1]);
-                                        t.node.setUseClassConstructor(true);
-                                    }
-                                }
-                            }
-                        })
-                        .peek(t -> t.value = constructObject(t.node))
-                        .peek(t -> {
-                            if (t.value instanceof Double && t.typeIs(Float.TYPE, Float.class))
-                                t.value = t.double_().floatValue();
-
-                            else if (t.value instanceof byte[] &&
-                                    Objects.equals(t.node.getTag(), Tag.BINARY) &&
-                                    t.typeIs(String.class))
-                                t.value = new String(t.byteArray());
-                        })
-                        .collect(toList());
-
-                final Map<String, ParamNode> byName = consArgs
-                        .stream()
-                        .collect(Collectors.toMap(ca -> ca.name, Function.identity()));
-
-                final List<String> names = consArgs
-                        .stream()
-                        .map(t -> t.name)
-                        .collect(toList());
-
-                final Class<?>[] types = consArgs
-                        .stream()
-                        .map(t -> t.type)
-                        .toArray(Class<?>[]::new);
-
-                final Object[] values = consArgs
-                        .stream()
-                        .map(t -> t.value)
-                        .toArray();
-
-                java.lang.reflect.Constructor<?> c0;
-                try {
-                    c0 = find(name,
-                            marker,
-                            markerExtractor,
-                            node.getType(),
-                            byName, names);
-                }
-                catch (YAMLException y) {
-                    c0 = null;
-                }
-
-                if (c0 == null)
-                    try {
-                        c0 = node.getType().getDeclaredConstructor(types);
-                    }
-                    catch (NoSuchMethodException e) {
-                        // ignore
-                    }
-
-
-                if (c0 == null)
-                    try {
-                        final Class<?>[] types2 = consArgs
-                                .stream()
-                                .map(t -> t.type)
-                                .map(ExtYamlSource::lower)
-                                .toArray(Class<?>[]::new);
-                        c0 = node.getType().getDeclaredConstructor(types2);
-                    }
-                    catch (NoSuchMethodException ex) {
-                        c0 = null;
-                    }
-
-                requireNonNull(c0, "no constructor found for: " + node);
-
-                try {
-                    c0.setAccessible(true);
-                    return c0.newInstance(values);
-                }
-                catch (Exception e) {
-                    throw new YAMLException(e);
-                }
-            }
-
-        }
-
     }
 
 }

@@ -48,7 +48,7 @@ final class ExtJacksonJsonSource extends UpdatableSourceBase {
     private final Supplier<String> json;
     private final int lastHash;
     private final JsonNode root;
-    
+
     @NonNull
     @NotNull
     @Getter
@@ -155,7 +155,7 @@ final class ExtJacksonJsonSource extends UpdatableSourceBase {
         if (key.isEmpty())
             throw new KfgIllegalArgumentException(this.name(), "empty konfig key");
 
-        final String k = "/" + key.replace('.', '/');
+        final String k = key.replace('.', '/');
         return this.root.findPath(k);
     }
 
@@ -175,7 +175,7 @@ final class ExtJacksonJsonSource extends UpdatableSourceBase {
                                    final JsonNode node,
                                    final String key) {
         if (!condition)
-            throw new KfgTypeException(this.name(), required.withKey(key), node);
+            throw new KfgMissingKeyException(this.name(), required.withKey(key));
         if (node.isNull())
             throw new KfgTypeNullException(this.name(), required.withKey(key));
         return node;
@@ -341,7 +341,7 @@ final class ExtJacksonJsonSource extends UpdatableSourceBase {
 
         final List<?> l = this.list0(Q.unknownList(type.key()));
         if (l.size() != s.size())
-            throw new KfgTypeException(this.name(), type, at, "type mismatch, duplicate values");
+            throw new KfgTypeException(this.name(), type, at, "type mismatch, duplicate values in set");
 
         return s;
     }

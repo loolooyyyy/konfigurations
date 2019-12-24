@@ -5,6 +5,7 @@ import io.koosha.konfiguration.DummyCustom;
 import io.koosha.konfiguration.KonfigValueTestMixin;
 import io.koosha.konfiguration.Source;
 import io.koosha.konfiguration.base.UpdatableSource;
+import io.koosha.konfiguration.error.KfgTypeException;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
@@ -49,5 +50,12 @@ public class JacksonJsonTest extends KonfigValueTestMixin {
         this.json.set(DummyCustom.JSON_SAMPLE_1);
         assertTrue(this.k.hasUpdate());
     }
+
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @Test(expectedExceptions = KfgTypeException.class)
+    public void testBadSet() throws Exception {
+        this.k.set("aBadSet", int.class);
+    }
+
 
 }

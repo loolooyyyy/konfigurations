@@ -408,9 +408,7 @@ public class Q<TYPE> {
     public final Class<?> getCollectionContainedClass() {
         if (!Collection.class.isAssignableFrom(this.klass))
             throw new KfgIllegalStateException(null, "type is not a collection: " + this);
-        if (this.args.size() < 1)
-            throw new KfgIllegalStateException(null, "collection type is not present: " + this);
-        return this.args.get(0).klass;
+        return this.args.size() < 1 ? Object.class : this.args.get(0).klass;
     }
 
     @Contract(pure = true,
@@ -426,9 +424,7 @@ public class Q<TYPE> {
     public final Class<?> getMapKeyClass() {
         if (!Map.class.isAssignableFrom(this.klass))
             throw new KfgIllegalStateException(null, Q.unknownMap(key), null, "type is not a map");
-        if (this.args.size() < 1)
-            throw new KfgIllegalStateException(null, "map key type is not present: " + this);
-        return this.args.get(0).klass;
+        return this.args.size() < 1 ? Object.class : this.args.get(0).klass;
     }
 
     @Contract(pure = true)
@@ -436,9 +432,7 @@ public class Q<TYPE> {
     public final Class<?> getMapValueClass() {
         if (!Map.class.isAssignableFrom(this.klass))
             throw new KfgIllegalStateException(null, Q.unknownMap(key), null, "type is not a map");
-        if (this.args.size() < 2)
-            throw new KfgIllegalStateException(null, "map value type is not present: " + this);
-        return this.args.get(1).klass;
+        return this.args.size() < 2 ? Object.class : this.args.get(1).klass;
     }
 
     @Contract(pure = true,
@@ -474,6 +468,11 @@ public class Q<TYPE> {
     @Contract(pure = true)
     public final boolean isString() {
         return String.class.isAssignableFrom(this.klass);
+    }
+
+    @Contract(pure = true)
+    public boolean isNumber() {
+        return isByte() || isShort() || isInt() || isLong() || isFloat() || isDouble();
     }
 
     @Contract(pure = true)

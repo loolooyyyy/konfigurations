@@ -37,9 +37,9 @@ public interface Faktory {
 
     boolean FAIR_LOCk__DEFAULT = true;
 
-    long LOCK_WAIT_MILLIS__DEFAULT = 300;
+    long LOCK_WAIT_MILLIS__DEFAULT = 300L;
 
-    AtomicBoolean UNSAFE_YAML = new AtomicBoolean(true);
+    AtomicBoolean SAFE_YAML = new AtomicBoolean(false);
 
     @NotNull
     @Contract(pure = true)

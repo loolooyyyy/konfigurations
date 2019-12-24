@@ -17,6 +17,7 @@ import org.yaml.snakeyaml.Yaml;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 import java.util.prefs.Preferences;
 
@@ -33,8 +34,12 @@ public final class FaktoryV8 implements Faktory {
     private static final long START = -1L;
     private static volatile long name_pool = START;
 
-    // ================================================================ KOMBINER
+    public static final AtomicBoolean NESTED_MAP = new AtomicBoolean(true);
+
     private static volatile String str_pool = "H#";
+
+    // ================================================================ KOMBINER
+
     private FaktoryV8() {
     }
 
@@ -111,7 +116,7 @@ public final class FaktoryV8 implements Faktory {
             value = "_, _ -> new")
     public KonfigurationManager map(@NotNull @NonNull final String name,
                                     @NotNull @NonNull final Supplier<Map<String, ?>> storage) {
-        return kombine(name(name), new ExtMapSource(name(name), storage, false));
+        return kombine(name(name), new ExtMapSource(name(name), storage, SAFE_YAML.get()));
     }
 
     /**
@@ -123,7 +128,7 @@ public final class FaktoryV8 implements Faktory {
             pure = true)
     public KonfigurationManager mapWithNested(@NotNull @NonNull final String name,
                                               @NotNull @NonNull final Supplier<Map<String, ?>> storage) {
-        return kombine(name(name), new ExtMapSource(name(name), storage, true));
+        return kombine(name(name), new ExtMapSource(name(name), storage, NESTED_MAP.get()));
     }
 
     // ============================================================ PREFERENCES
@@ -191,7 +196,7 @@ public final class FaktoryV8 implements Faktory {
                                           @NotNull @NonNull final Supplier<String> yaml) {
         ExtYamlSource.ensureDep(name);
         return kombine(name(name),
-                new ExtYamlSource(name(name), yaml, () -> ExtYamlSource.getDefaultYamlSupplier(name(name)), false));
+                new ExtYamlSource(name(name), yaml, ExtYamlSource::getDefaultYamlSupplier, SAFE_YAML.get()));
     }
 
     /**
@@ -205,7 +210,7 @@ public final class FaktoryV8 implements Faktory {
                                           @NotNull @NonNull final Supplier<String> yaml,
                                           @NonNull @NotNull final Supplier<Yaml> objectMapper) {
         ExtYamlSource.ensureDep(name);
-        return kombine(name(name), new ExtYamlSource(name(name), yaml, objectMapper, false));
+        return kombine(name(name), new ExtYamlSource(name(name), yaml, objectMapper, SAFE_YAML.get()));
     }
 
     /**
@@ -218,7 +223,7 @@ public final class FaktoryV8 implements Faktory {
                                                @NotNull @NonNull final Supplier<String> yaml,
                                                @NonNull @NotNull final Supplier<Yaml> objectMapper) {
         ExtYamlSource.ensureDep(name);
-        return kombine(name(name), new ExtYamlSource(name(name), yaml, objectMapper, false));
+        return kombine(name(name), new ExtYamlSource(name(name), yaml, objectMapper, SAFE_YAML.get()));
     }
 
 }

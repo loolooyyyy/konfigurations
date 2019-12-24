@@ -42,6 +42,17 @@ public class KfgException extends RuntimeException {
     public KfgException(@Nullable final String source,
                         @Nullable final Q<?> neededType,
                         @Nullable final Object actualValue,
+                        @Nullable Throwable e) {
+        super(e);
+        this.source = source;
+        this.neededType = neededType;
+        this.actualValue = toStringOf(actualValue);
+        this.say = null;
+    }
+
+    public KfgException(@Nullable final String source,
+                        @Nullable final Q<?> neededType,
+                        @Nullable final Object actualValue,
                         @Nullable String message) {
         super(message);
         this.source = source;

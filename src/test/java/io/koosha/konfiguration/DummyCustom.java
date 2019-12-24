@@ -1,5 +1,6 @@
 package io.koosha.konfiguration;
 
+import java.beans.ConstructorProperties;
 import java.util.*;
 
 import static java.util.Arrays.asList;
@@ -32,13 +33,15 @@ public class DummyCustom {
     public static final String JSON_SAMPLE_0 = "{ \"aInt\": 12, \"aBool\": true, " +
             "\"aIntList\": [1, 0, 2], \"aStringList\": [\"a\", \"B\", \"c\"], " +
             "\"aLong\": 9223372036854775807, \"aDouble\": 3.14, \"aMap\": " +
-            "{ \"a\": 99, \"c\": 22 }, \"aSet\": [1, 2, 1, 2], \"aString\": " +
+            "{ \"a\": 99, \"c\": 22 }, \"aSet\": [1, 2], \"aString\": " +
             "\"hello world\", \"some\": { \"nested\": { \"key\": 99, " +
-            "\"userDefined\" : { \"str\": \"I'm all set\", \"i\": 99 } } } }";
+            "\"userDefined\" : { \"str\": \"I'm all set\", \"i\": 99 } } }, " +
+            " \"aBadSet\": [1, 2, 1, 2]" +
+            "}";
     public static final String JSON_SAMPLE_1 = "{ \"aInt\": 99, \"aBool\": false, " +
             "\"aIntList\": [2, 2], \"aStringList\": [\"a\", \"c\"], \"aLong\": " +
             "-9223372036854775808, \"aDouble\": 4.14, \"aMap\": { \"a\": \"b\", " +
-            "\"c\": \"e\" }, \"aSet\": [3, 2, 1, 2], \"aString\": \"goodbye world\" }";
+            "\"c\": \"e\" }, \"aSet\": [3, 2, 1], \"aString\": \"goodbye world\" }";
     public static final String YAML_SAMPLE_0 = "aInt: 12\n" +
             "aBool: true\n" +
             "aIntList: \n" +
@@ -78,6 +81,7 @@ public class DummyCustom {
     public DummyCustom() {
     }
 
+    @ConstructorProperties({"str", "i"})
     public DummyCustom(final String str, final int i) {
         this.str = str;
         this.i = i;

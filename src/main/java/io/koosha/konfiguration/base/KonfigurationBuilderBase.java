@@ -57,21 +57,21 @@ public abstract class KonfigurationBuilderBase implements KonfigurationBuilder {
      *
      * @see KonfigurationBuilder#fairLock(boolean)
      */
-    private boolean fairLock;
+    private boolean fairLock = Faktory.FAIR_LOCk__DEFAULT;
 
     /**
      * See {@link KonfigurationBuilder#mixedTypes(boolean)}.
      *
      * @see KonfigurationBuilder#mixedTypes(boolean)
      */
-    private boolean mixedTypes;
+    private boolean mixedTypes = Faktory.ALLOW_MIXED_TYPES__DEFAULT;
 
     /**
      * See {@link KonfigurationBuilder#lockWaitTime(long)}.
      *
      * @see KonfigurationBuilder#lockWaitTime(long)
      */
-    private Long lockWaitTime;
+    private Long lockWaitTime = Faktory.LOCK_WAIT_MILLIS__DEFAULT;
 
     @Contract(value = "_, _, _, _, _ -> new",
             pure = true)
