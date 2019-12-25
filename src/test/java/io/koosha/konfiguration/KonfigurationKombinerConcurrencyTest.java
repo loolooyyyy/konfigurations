@@ -8,7 +8,8 @@ import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import static java.util.Arrays.asList;
+import static io.koosha.konfiguration.DummyVTest.of;
+import static java.util.Arrays.*;
 
 @SuppressWarnings({"WeakerAccess", "ResultOfMethodCallIgnored", "FieldCanBeLocal", "DefaultAnnotationParam", "RedundantSuppression"})
 public class KonfigurationKombinerConcurrencyTest {
@@ -17,9 +18,9 @@ public class KonfigurationKombinerConcurrencyTest {
 
     final Faktory fac = Faktory.defaultImplementation();
 
-    private final Map<String, Object> MAP0 = Map.of("aInt", 12, "aBool", false, "aIntList", asList(1, 0, 2), "aLong", 88L);
-    private final Map<String, Object> MAP1 = Map.of("aInt", 99, "bBool", false, "aIntList", asList(2, 2));
-    private final Map<String, Object> MAP2 = Map.of("xx", 44, "yy", true);
+    private final Map<String, Object> MAP0 = of("aInt", 12, "aBool", false, "aIntList", asList(1, 0, 2), "aLong", 88L);
+    private final Map<String, Object> MAP1 = of("aInt", 99, "bBool", false, "aIntList", asList(2, 2));
+    private final Map<String, Object> MAP2 = of("xx", 44, "yy", true);
     private final String JSON0 = DummyCustom.JSON_SAMPLE_0;
     private final String JSON1 = DummyCustom.JSON_SAMPLE_1;
 

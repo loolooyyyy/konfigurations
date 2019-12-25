@@ -3,12 +3,23 @@ package io.koosha.konfiguration;
 import io.koosha.konfiguration.type.Q;
 import org.testng.annotations.Test;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import static org.testng.Assert.*;
 
 @SuppressWarnings({"RedundantThrows", "ConstantConditions"})
 public class DummyVTest {
 
     private final static String key = "sample.key";
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static <K, V> Map<K, V> of(final Object... o) {
+        final Map<? super Object, ? super Object> map = new HashMap<>();
+        for (int i = 0; i < o.length; i += 2)
+            map.put(o[i], o[i + 1]);
+        return (Map) map;
+    }
 
     @Test
     public void testGetKey() throws Exception {

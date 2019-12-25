@@ -2,6 +2,7 @@ package io.koosha.konfiguration.v8;
 
 import io.koosha.konfiguration.DummyCustom;
 import io.koosha.konfiguration.DummyCustom2;
+import io.koosha.konfiguration.DummyVTest;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -10,7 +11,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
-import java.util.Map;
 import java.util.Scanner;
 
 import static org.testng.Assert.assertEquals;
@@ -44,7 +44,7 @@ public class YamlCustomValueTest {
         final String n = getClass().getSimpleName();
         final String y = new Scanner(new File(
                 getClass().getResource("/sample2.yaml").toURI()),
-                StandardCharsets.UTF_8)
+                StandardCharsets.UTF_8.name())
                 .useDelimiter("\\Z").next();
 
         final DummyCustom2 bang = new ExtYamlSource(n, () -> y,
@@ -53,10 +53,11 @@ public class YamlCustomValueTest {
 
         assertEquals(bang.i, 99);
         assertEquals(bang.str, "hello");
-        assertEquals(bang.olf, Map.of(
+        assertEquals(bang.olf, DummyVTest.of(
                 "manga", "panga", "foo", "bar", "baz", "quo"));
         assertEquals(bang.again, "no");
         assertEquals(bang.i, 99);
     }
+
 
 }
