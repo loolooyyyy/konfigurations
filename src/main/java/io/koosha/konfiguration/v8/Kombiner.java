@@ -75,15 +75,15 @@ final class Kombiner implements Konfiguration {
                     join(", ", duplicates));
 
         // Wrap in CheatingMan.
-        final Map<String, CheatingMan> s = new LinkedHashMap<>();
+        final Map<String, CheatingMan> managers = new LinkedHashMap<>();
         sources.stream()
                .flatMap(x ->// Unwrap.
                        x instanceof Kombiner_Manager
                        ? ((Kombiner_Manager) x).origin.sources.vs()
                        : Stream.of(x))
                .map(CheatingMan::cheat)
-               .forEach(x -> s.put(x.name(), x));
-        if (s.isEmpty())
+               .forEach(x -> managers.put(x.name(), x));
+        if (managers.isEmpty())
             throw new KfgIllegalArgumentException(name, "no source given");
 
         this._lock = new Kombiner_Lock(name, lockWaitTimeMillis, fairLock);
@@ -92,7 +92,7 @@ final class Kombiner implements Konfiguration {
         this.values = new Kombiner_Values(this, allowMixedTypes);
         this.sources = new Kombiner_Sources(this);
 
-        this.sources.replace(s);
+        this.sources.replace(managers);
     }
 
     // =========================================================================
@@ -101,7 +101,7 @@ final class Kombiner implements Konfiguration {
         synchronized (HANDLE_LOCK) {
             id_pool++;
             if (id_pool == START)
-                str_pool = str_pool + "F_";
+                str_pool += "F_";
         }
         return str_pool + id_pool;
     }
@@ -121,79 +121,55 @@ final class Kombiner implements Konfiguration {
     }
 
     <T> T r(@NonNull @NotNull final Supplier<T> func) {
-        return lock().doReadLocked(func);
+        return this.lock().doReadLocked(func);
     }
 
     <T> T w(@NonNull @NotNull final Supplier<T> func) {
-        return lock().doWriteLocked(func);
+        return this.lock().doWriteLocked(func);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @NotNull
     public K<Boolean> bool(@NotNull @NonNull final String key) {
         return this.values.k(Q.bool(key));
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @NotNull
     public K<Byte> byte_(@NotNull @NonNull final String key) {
         return this.values.k(Q.byte_(key));
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @NotNull
     public K<Character> char_(@NotNull @NonNull final String key) {
         return this.values.k(Q.char_(key));
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @NotNull
     public K<Short> short_(@NotNull @NonNull final String key) {
         return this.values.k(Q.short_(key));
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @NotNull
     public K<Integer> int_(@NotNull @NonNull final String key) {
         return this.values.k(Q.int_(key));
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @NotNull
     public K<Long> long_(@NotNull @NonNull final String key) {
         return this.values.k(Q.long_(key));
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @NotNull
     public K<Float> float_(@NotNull @NonNull final String key) {
         return this.values.k(Q.float_(key));
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @NotNull
     public K<Double> double_(@NotNull @NonNull final String key) {
@@ -202,18 +178,12 @@ final class Kombiner implements Konfiguration {
 
     // =========================================================================
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @NotNull
     public K<String> string(@NotNull @NonNull final String key) {
         return this.values.k(Q.string(key));
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @NotNull
     public <U> K<List<U>> list(@NotNull @NonNull final Q<List<U>> key) {
@@ -222,50 +192,35 @@ final class Kombiner implements Konfiguration {
         return this.values.k(key);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @NotNull
-    public <U, V> K<Map<U, V>> map(@NotNull @NonNull final Q<Map<U, V>> type) {
-        return this.values.k(type);
+    public <U, V> K<Map<U, V>> map(@NotNull @NonNull final Q<Map<U, V>> key) {
+        return this.values.k(key);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @NotNull
-    public <U> K<Set<U>> set(@NotNull @NonNull final Q<Set<U>> type) {
-        return this.values.k(type);
+    public <U> K<Set<U>> set(@NotNull @NonNull final Q<Set<U>> key) {
+        return this.values.k(key);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @NotNull
-    public <U> K<U> custom(@NotNull @NonNull final Q<U> type) {
-        if (type.key().isEmpty())
+    public <U> K<U> custom(@NotNull @NonNull final Q<U> key) {
+        if (key.key().isEmpty())
             throw new KfgIllegalArgumentException(this.name(), "provided type has no key");
-        return this.values.k(type);
+        return this.values.k(key);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public boolean has(@NotNull @NonNull final Q<?> type) {
-        if (type.key().isEmpty())
+    public boolean has(@NotNull @NonNull final Q<?> key) {
+        if (key.key().isEmpty())
             throw new KfgIllegalArgumentException(this.name(), "provided type has no key");
-        return r(() -> this.values.has(type) ||
+        return this.r(() -> this.values.has(key) ||
                 this.sources.vs().filter(x -> x.source() != this)
-                            .anyMatch(x -> x.source().has(type)));
+                            .anyMatch(x -> x.source().has(key)));
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @NotNull
     @Override
     public Handle register(@NotNull @NonNull final KeyObserver observer,
@@ -275,9 +230,6 @@ final class Kombiner implements Konfiguration {
 
     // =========================================================================
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @NotNull
     public Handle register(@NotNull @NonNull final KeyObserver observer,
@@ -285,27 +237,18 @@ final class Kombiner implements Konfiguration {
         return w(() -> observers.register(observer, key));
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @NotNull
     public Handle register(@NotNull @NonNull final KeyObserver observer) {
         return w(() -> observers.register(observer));
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @NotNull
     public Handle registerSoft(@NotNull @NonNull final KeyObserver observer) {
         return w(() -> observers.registerSoft(observer));
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @NotNull
     @Override
     public Handle registerSoft(@NotNull @NonNull final KeyObserver observer,
@@ -313,9 +256,6 @@ final class Kombiner implements Konfiguration {
         return w(() -> observers.registerSoft(observer, key));
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @NotNull
     @Override
     public Handle registerSoft(@NotNull @NonNull final KeyObserver observer,
@@ -323,9 +263,6 @@ final class Kombiner implements Konfiguration {
         return w(() -> observers.registerSoft(observer, key));
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void deregister(@NotNull @NonNull final Handle observer) {
         w(() -> {

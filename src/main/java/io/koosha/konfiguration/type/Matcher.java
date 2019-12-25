@@ -34,24 +34,24 @@ public final class Matcher {
     }
 
     @Contract(pure = true)
-    static boolean matchValue(@NotNull @NonNull final Q<?> a,
-                              @NotNull @NonNull final Type b,
+    static boolean matchValue(@NotNull @NonNull final Q<?> q0,
+                              @NotNull @NonNull final Type q1,
                               final int nestingLevel) {
         if (nestingLevel >= Q_Helper.MAX_NESTING_LEVEL)
             throw new KfgIllegalArgumentException(null, "max nesting level reached");
 
-        if (b instanceof Class)
-            return a.klass.isAssignableFrom((Class<?>) b);
+        if (q1 instanceof Class)
+            return q0.klass.isAssignableFrom((Class<?>) q1);
 
-        if (!(b instanceof ParameterizedType))
+        if (!(q1 instanceof ParameterizedType))
             throw new KfgIllegalArgumentException(null,
-                    "encountered non concrete type: " + b + " while checking: " + a);
+                    "encountered non concrete type: " + q1 + " while checking: " + q0);
 
-        final Type[] ac = ((ParameterizedType) b).getActualTypeArguments();
-        if (ac.length != a.args.size())
+        final Type[] ac = ((ParameterizedType) q1).getActualTypeArguments();
+        if (ac.length != q0.args.size())
             return false;
         for (int i = 0; i < ac.length; i++)
-            if (!match(a.args.get(i), ac[i], nestingLevel + 1))
+            if (!match(q0.args.get(i), ac[i], nestingLevel + 1))
                 return false;
         return false;
     }
@@ -59,36 +59,36 @@ public final class Matcher {
     // =========================================================================
 
     @Contract(pure = true)
-    public static boolean match(@NotNull @NonNull final Q<?> a,
-                                @NotNull @NonNull final Type b) {
-        return match(a, b, 0);
+    public static boolean match(@NotNull @NonNull final Q<?> q0,
+                                @NotNull @NonNull final Type q1) {
+        return match(q0, q1, 0);
     }
 
     @Contract(pure = true)
-    static boolean match(@NotNull @NonNull final Q<?> a,
-                         @NotNull @NonNull final Type b,
+    static boolean match(@NotNull @NonNull final Q<?> q0,
+                         @NotNull @NonNull final Type q1,
                          final int nestingLevel) {
-        return match(a, of(b, true), nestingLevel);
+        return match(q0, of(q1, true), nestingLevel);
     }
 
     @Contract(pure = true)
-    public static boolean match(@NotNull @NonNull final Q<?> a,
-                                @NotNull @NonNull final Q<?> b) {
-        return match(a, b, 0);
+    public static boolean match(@NotNull @NonNull final Q<?> q0,
+                                @NotNull @NonNull final Q<?> q1) {
+        return match(q0, q1, 0);
     }
 
     @Contract(pure = true)
-    static boolean match(@NotNull @NonNull final Q<?> a,
-                         @NotNull @NonNull final Q<?> b,
+    static boolean match(@NotNull @NonNull final Q<?> q0,
+                         @NotNull @NonNull final Q<?> q1,
                          final int nestingLevel) {
         if (nestingLevel >= Q_Helper.MAX_NESTING_LEVEL)
             throw new KfgIllegalArgumentException(null, "max nesting level reached");
-        if (!a.klass().isAssignableFrom(b.klass()))
+        if (!q0.klass().isAssignableFrom(q1.klass()))
             return false;
-        if (a.args().size() != b.args().size())
+        if (q0.args().size() != q1.args().size())
             return false;
-        for (int i = 0; i < a.args().size(); i++)
-            if (!match(a.args().get(i), b.args().get(i)))
+        for (int i = 0; i < q0.args().size(); i++)
+            if (!match(q0.args().get(i), q1.args().get(i)))
                 return false;
         return true;
     }

@@ -26,14 +26,14 @@ final class Kombiner_Sources {
     @Contract(pure = true)
     @NotNull
     Stream<CheatingMan> vs() {
-        return sources.values().stream();
+        return this.sources.values().stream();
     }
 
     @Contract(mutates = "this")
     @NotNull
-    Kombiner_Sources replace(@NotNull @NonNull final Map<String, CheatingMan> s) {
+    Kombiner_Sources replace(@NotNull @NonNull final Map<String, CheatingMan> newSources) {
         this.sources.clear();
-        this.sources.putAll(s);
+        this.sources.putAll(newSources);
         return this;
     }
 

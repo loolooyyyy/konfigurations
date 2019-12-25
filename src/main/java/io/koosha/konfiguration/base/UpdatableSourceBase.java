@@ -6,9 +6,6 @@ import lombok.RequiredArgsConstructor;
 import net.jcip.annotations.ThreadSafe;
 import org.jetbrains.annotations.ApiStatus;
 
-/**
- * {@inheritDoc}
- */
 @SuppressWarnings("unused")
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 @ThreadSafe

@@ -12,10 +12,11 @@ import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.*;
 
 import static java.lang.String.format;
-import static java.util.Arrays.asList;
+import static java.util.Arrays.*;
 
 @Immutable
 @ThreadSafe
@@ -31,10 +32,11 @@ final class Q_Helper {
     }
 
     @Contract(pure = true)
-    static void checkIsConcrete(@NotNull @NonNull final Q<?> q) {
-        checkIsConcrete(q.klass());
-        for (Q<?> typeArg : q.args())
-            checkIsConcrete(typeArg);
+    static void ensureIsConcrete(@NotNull @NonNull final Q<?> q) {
+        //noinspection ResultOfMethodCallIgnored
+        ensureIsConcrete(q.klass());
+        for (final Q<?> typeArg : q.args())
+            ensureIsConcrete(typeArg);
     }
 
     @SuppressWarnings("unchecked")
@@ -61,7 +63,7 @@ final class Q_Helper {
     }
 
     @Contract(pure = true)
-    static Type checkIsConcrete(@NotNull @NonNull final Type p) {
+    static Type ensureIsConcrete(@NotNull @NonNull final Type p) {
         if (!isConcrete(p, p))
             throw new KfgUnsupportedOperationException(
                     "only Class and ParameterizedType are supported: " + p);
@@ -146,13 +148,13 @@ final class Q_Helper {
     @Contract(pure = true,
             value = "_->new")
     @NotNull
-    static <T> List<T> copy(@NotNull @NonNull final Collection<T> c) {
-        if (c.size() == 0)
+    static <T> List<T> copy(@NotNull @NonNull final Collection<? extends T> from) {
+        if (from.isEmpty())
             return Collections.emptyList();
-        if (c.size() == 1)
-            for (final T t : c)
+        if (from.size() == 1)
+            for (final T t : from)
                 return Collections.singletonList(t);
-        return Collections.unmodifiableList(new ArrayList<>(c));
+        return Collections.unmodifiableList(new ArrayList<>(from));
     }
 
     static String toString_(@NotNull @NonNull final Q<?> q) {

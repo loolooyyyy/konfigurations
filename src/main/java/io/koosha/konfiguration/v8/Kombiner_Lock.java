@@ -29,16 +29,17 @@ final class Kombiner_Lock {
     @NotNull
     private final ReadWriteLock LOCK;
 
-    public Kombiner_Lock(@NotNull @NonNull final String name,
-                         @Nullable final Long lockWaitTimeMillis,
-                         final boolean fair) {
+    Kombiner_Lock(@NotNull @NonNull final String name,
+                  @Nullable final Long lockWaitTimeMillis,
+                  final boolean fair) {
         if (lockWaitTimeMillis != null && lockWaitTimeMillis < 0)
             throw new KfgIllegalStateException(name, "wait time must be gte 0: " + lockWaitTimeMillis);
         this.name = name;
         this.lockWaitTimeMillis = lockWaitTimeMillis;
-        LOCK = new ReentrantReadWriteLock(fair);
+        this.LOCK = new ReentrantReadWriteLock(fair);
     }
 
+    @SuppressWarnings("LockAcquiredButNotSafelyReleased")
     private void acquire(@NonNull @NotNull final Lock lock) {
         if (this.lockWaitTimeMillis == null)
             lock.lock();
@@ -52,7 +53,7 @@ final class Kombiner_Lock {
             }
     }
 
-    private void release(@Nullable final Lock lock) {
+    private static void release(@Nullable final Lock lock) {
         if (lock != null)
             lock.unlock();
     }
@@ -60,8 +61,8 @@ final class Kombiner_Lock {
     <T> T doReadLocked(@NonNull @NotNull final Supplier<T> func) {
         Lock lock = null;
         try {
-            lock = LOCK.readLock();
-            acquire(lock);
+            lock = this.LOCK.readLock();
+            this.acquire(lock);
             return func.get();
         }
         finally {
@@ -72,8 +73,8 @@ final class Kombiner_Lock {
     <T> T doWriteLocked(@NonNull @NotNull final Supplier<T> func) {
         Lock lock = null;
         try {
-            lock = LOCK.readLock();
-            acquire(lock);
+            lock = this.LOCK.readLock();
+            this.acquire(lock);
             return func.get();
         }
         finally {

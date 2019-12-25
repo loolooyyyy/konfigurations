@@ -53,46 +53,40 @@ final class ExtMapSource extends UpdatableSourceBase {
         requireNonNull(this.map.get(), "supplied map is null");
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Contract(pure = true)
     @Override
     public boolean hasUpdate() {
-        final Map<String, ?> newMap = map.get();
+        final Map<String, ?> newMap = this.map.get();
         if (newMap == null)
             return false;
         final int newHash = newMap.hashCode();
-        return newHash != lastHash;
+        return newHash != this.lastHash;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Contract(pure = true,
             value = "-> new")
     @NotNull
     @Override
     public UpdatableSource updatedSelf() {
         return this.hasUpdate()
-               ? new ExtMapSource(name(), map, enableNestedMap)
+               ? new ExtMapSource(this.name(), this.map, this.enableNestedMap)
                : this;
     }
 
     @NotNull
     @Contract(pure = true)
-    private Object node(@NonNull @NotNull String key) {
+    private Object node(@NonNull @NotNull final String key) {
         if (!this.root.containsKey(key)) {
-            if (enableNestedMap) {
+            if (this.enableNestedMap) {
                 final List<String> parts = asList(DOT.split(key));
-                Object m = this.root.get(parts.get(0));
+                Object storedObject = this.root.get(parts.get(0));
                 int i = 0;
-                while (i++ < parts.size() && m instanceof Map) {
+                while (i++ < parts.size() && storedObject instanceof Map) {
                     final String newKey = String.join(".", parts.subList(i, parts.size()));
-                    final Map<?, ?> mm = (Map<?, ?>) m;
+                    final Map<?, ?> mm = (Map<?, ?>) storedObject;
                     if (mm.containsKey(newKey))
                         return mm.get(newKey);
-                    m = mm.get(parts.get(1));
+                    storedObject = mm.get(parts.get(1));
                 }
             }
             throw new KfgIllegalStateException(this.name(), "missing key: " + key);
@@ -104,8 +98,8 @@ final class ExtMapSource extends UpdatableSourceBase {
         return this.root.get(key);
     }
 
-    private <T> T checkStoredType(@NotNull @NonNull final Q<?> required) {
-        final Object value = node(required.key());
+    private <T> T ensureStoredType(@NotNull @NonNull final Q<?> required) {
+        final Object value = this.node(required.key());
         if (!required.matchesValue(value))
             throw new KfgMissingKeyException(this.name(), required);
         @SuppressWarnings("unchecked")
@@ -113,122 +107,89 @@ final class ExtMapSource extends UpdatableSourceBase {
         return t;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     protected boolean isNull(@NonNull @NotNull final Q<?> key) {
         return this.root.get(key.key()) == null;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    public boolean has(@NotNull @NonNull final Q<?> type) {
-        if (!this.root.containsKey(type.key()))
+    public boolean has(@NotNull @NonNull final Q<?> key) {
+        if (!this.root.containsKey(key.key()))
             return false;
-        return super.has(type);
+        return super.has(key);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @NotNull
     protected Boolean bool0(@NotNull @NonNull final String key) {
-        return checkStoredType(Q.bool(key));
+        return this.ensureStoredType(Q.bool(key));
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @NotNull
     protected Character char0(@NotNull @NonNull final String key) {
-        return checkStoredType(Q.char_(key));
+        return this.ensureStoredType(Q.char_(key));
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @NotNull
     protected String string0(@NotNull @NonNull final String key) {
         try {
-            return checkStoredType(Q.string(key));
+            return this.ensureStoredType(Q.string(key));
         }
-        catch (KfgTypeException k0) {
+        catch (final KfgTypeException k0) {
             try {
-                return this.checkStoredType(Q.char_(key)).toString();
+                return this.ensureStoredType(Q.char_(key)).toString();
             }
-            catch (KfgTypeException k1) {
+            catch (final KfgTypeException k1) {
                 throw k0;
             }
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @NotNull
     @Override
     protected Number number0(@NotNull @NonNull final String key) {
-        final Object n = node(key);
-        if (n instanceof Long || n instanceof Integer ||
-                n instanceof Short || n instanceof Byte)
-            return ((Number) n).longValue();
-        return checkStoredType(Q.long_(key));
+        final Object number = this.node(key);
+        if (number instanceof Long || number instanceof Integer ||
+                number instanceof Short || number instanceof Byte)
+            return ((Number) number).longValue();
+        return this.ensureStoredType(Q.long_(key));
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @NotNull
     @Override
     protected Number numberDouble0(@NotNull @NonNull final String key) {
-        final Object n = node(key);
-        if (n instanceof Long || n instanceof Integer ||
-                n instanceof Short || n instanceof Byte ||
-                n instanceof Double || n instanceof Float)
-            return ((Number) n).doubleValue();
-        return checkStoredType(Q.long_(key));
+        final Object number = this.node(key);
+        if (number instanceof Long || number instanceof Integer ||
+                number instanceof Short || number instanceof Byte ||
+                number instanceof Double || number instanceof Float)
+            return ((Number) number).doubleValue();
+        return this.ensureStoredType(Q.long_(key));
     }
 
 
-    /**
-     * {@inheritDoc}
-     */
     @NotNull
     @Override
     protected List<?> list0(@NotNull @NonNull final Q<? extends List<?>> type) {
-        return checkStoredType(type);
+        return this.ensureStoredType(type);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @NotNull
     @Override
-    protected Set<?> set0(@NotNull @NonNull Q<? extends Set<?>> type) {
-        return checkStoredType(type);
+    protected Set<?> set0(@NotNull @NonNull final Q<? extends Set<?>> key) {
+        return this.ensureStoredType(key);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @NotNull
-    protected Map<?, ?> map0(@NotNull @NonNull Q<? extends Map<?, ?>> type) {
-        return checkStoredType(type);
+    protected Map<?, ?> map0(@NotNull @NonNull final Q<? extends Map<?, ?>> key) {
+        return this.ensureStoredType(key);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @NotNull
-    protected Object custom0(@NotNull @NonNull final Q<?> type) {
-        return checkStoredType(type);
+    protected Object custom0(@NotNull @NonNull final Q<?> key) {
+        return this.ensureStoredType(key);
     }
 
 }

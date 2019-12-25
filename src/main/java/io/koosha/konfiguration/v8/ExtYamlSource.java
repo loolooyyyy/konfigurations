@@ -59,7 +59,7 @@ final class ExtYamlSource extends UpdatableSourceBase {
     @Accessors(fluent = true)
     private final String name;
 
-    private int lastHash;
+    private final int lastHash;
 
     /**
      * Creates an instance with the given Yaml parser.
@@ -93,7 +93,7 @@ final class ExtYamlSource extends UpdatableSourceBase {
             throw new KfgSnakeYamlError(this.name(),
                     "org.yaml.snakeyaml library is required to be" +
                             " present in the class path, can not find the" +
-                            "class: org.yaml.snakeyaml.Yaml", e);
+                            " class: org.yaml.snakeyaml.Yaml", e);
         }
 
         final String newYaml = this.yaml.get();
@@ -134,58 +134,47 @@ final class ExtYamlSource extends UpdatableSourceBase {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Contract(pure = true)
     @Override
     public boolean hasUpdate() {
-        final String newYaml = yaml.get();
-        return newYaml != null && newYaml.hashCode() != lastHash;
+        final String newYaml = this.yaml.get();
+        return newYaml != null && newYaml.hashCode() != this.lastHash;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @NotNull
     @Contract(pure = true,
             value = "-> new")
     @Override
     public UpdatableSource updatedSelf() {
         return this.hasUpdate()
-               ? new ExtYamlSource(name(), yaml, mapper, safe)
+               ? new ExtYamlSource(this.name(), this.yaml, this.mapper, this.safe)
                : this;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    protected boolean isNull(@NonNull @NotNull final Q<?> type) {
+    protected boolean isNull(@NonNull @NotNull final Q<?> key) {
         try {
-            return get(type.key()) == null;
+            return this.get(key.key()) == null;
         }
         catch (final KfgSnakeYamlAssertionError e) {
             return false;
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public boolean has(@NotNull @NonNull final Q<?> type) {
+    public boolean has(@NotNull @NonNull final Q<?> key) {
         try {
-            final Object o = get(type.key());
-            if (type.matchesValue(o))
+            final Object o = this.get(key.key());
+            if (key.matchesValue(o))
                 return true;
-            if (type.isSet() && List.class.isAssignableFrom(o.getClass()) && new HashSet<>((List<?>) o).size() == ((List<?>) o).size())
+            if (key.isSet() && List.class.isAssignableFrom(o.getClass()) &&
+                    new HashSet<>((Collection<?>) o).size() == ((Collection<?>) o).size())
                 return true;
-            if (type.isNumber() && Number.class.isAssignableFrom(o.getClass())) {
-                if (type.isFloat())
+            if (key.isNumber() && Number.class.isAssignableFrom(o.getClass())) {
+                if (key.isFloat())
                     return ((Number) o).doubleValue() >= Float.MIN_VALUE
                             && ((Number) o).doubleValue() <= Float.MAX_VALUE;
-                if (type.isDouble())
+                if (key.isDouble())
                     return true;
 
                 // No coercing floating to int/long.
@@ -194,19 +183,19 @@ final class ExtYamlSource extends UpdatableSourceBase {
 
                 final long min;
                 final long max;
-                if (type.isByte()) {
+                if (key.isByte()) {
                     min = Byte.MIN_VALUE;
                     max = Byte.MIN_VALUE;
                 }
-                else if (type.isShort()) {
+                else if (key.isShort()) {
                     min = Short.MIN_VALUE;
                     max = Short.MIN_VALUE;
                 }
-                else if (type.isInt()) {
+                else if (key.isInt()) {
                     min = Integer.MIN_VALUE;
                     max = Integer.MIN_VALUE;
                 }
-                else if (type.isLong()) {
+                else if (key.isLong()) {
                     return true;
                 }
                 else {
@@ -221,76 +210,58 @@ final class ExtYamlSource extends UpdatableSourceBase {
         }
     }
 
-    private Object get(@NotNull @NonNull final String key) {
-        Map<?, ?> node = root;
+    private Object get(@NotNull @NonNull final CharSequence key) {
+        Map<?, ?> node = this.root;
         final String[] split = DOT.split(key);
         for (int i = 0; i < split.length; i++) {
-            final String k = split[i];
-            final Object n = node.get(k);
+            final String keyPart = split[i];
+            final Object nd = node.get(keyPart);
             final boolean isLast = i == split.length - 1;
 
             if (isLast)
-                return n;
-            if (!(n instanceof Map))
+                return nd;
+            if (!(nd instanceof Map))
                 throw new KfgSnakeYamlAssertionError(this.name(), "assertion error");
-            node = (Map<?, ?>) n;
+            node = (Map<?, ?>) nd;
         }
         throw new KfgSnakeYamlAssertionError(this.name(), "assertion error");
     }
 
     private void ensureSafe(@Nullable final Q<?> type) {
-        if (this.safe && type != null && type.args().size() > 0)
+        if (this.safe && type != null && !type.args().isEmpty())
             throw new KfgSnakeYamlError(this.name, "yaml does not support parameterized yet.");
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @NotNull
     protected Object bool0(@NotNull @NonNull final String key) {
-        return get(key);
+        return this.get(key);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @NotNull
     protected Object char0(@NotNull @NonNull final String key) {
-        return get(key);
+        return this.get(key);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @NotNull
     protected Object string0(@NotNull @NonNull final String key) {
-        return get(key);
+        return this.get(key);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @NotNull
     protected Number number0(@NotNull @NonNull final String key) {
-        return (Number) get(key);
+        return (Number) this.get(key);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @NotNull
     protected Number numberDouble0(@NotNull @NonNull final String key) {
-        return (Number) get(key);
+        return (Number) this.get(key);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @NotNull
     protected List<?> list0(@NotNull @NonNull final Q<? extends List<?>> type) {
@@ -302,50 +273,41 @@ final class ExtYamlSource extends UpdatableSourceBase {
         return mapper.loadAs(yamlAgain, type.klass());
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @NotNull
-    protected Set<?> set0(@NotNull @NonNull final Q<? extends Set<?>> type) {
-        this.ensureSafe(type);
+    protected Set<?> set0(@NotNull @NonNull final Q<? extends Set<?>> key) {
+        this.ensureSafe(key);
 
-        final Object g = this.get(type.key());
+        final Object g = this.get(key.key());
         final Yaml mapper = this.mapper.get();
         final String yamlAgain = mapper.dump(g);
-        return mapper.loadAs(yamlAgain, type.klass());
+        return mapper.loadAs(yamlAgain, key.klass());
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @NotNull
-    protected Map<?, ?> map0(@NotNull @NonNull final Q<? extends Map<?, ?>> type) {
-        this.ensureSafe(type);
+    protected Map<?, ?> map0(@NotNull @NonNull final Q<? extends Map<?, ?>> key) {
+        this.ensureSafe(key);
 
-        final Object g = this.get(type.key());
+        final Object g = this.get(key.key());
         final Yaml mapper = this.mapper.get();
         final String yamlAgain = mapper.dump(g);
-        return mapper.loadAs(yamlAgain, type.klass());
+        return mapper.loadAs(yamlAgain, key.klass());
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @NotNull
-    protected Object custom0(@NotNull @NonNull final Q<?> type) {
-        this.ensureSafe(type);
+    protected Object custom0(@NotNull @NonNull final Q<?> key) {
+        this.ensureSafe(key);
 
-        final Object g = this.get(type.key());
+        final Object g = this.get(key.key());
         final Yaml mapper = this.mapper.get();
         final String yamlAgain = mapper.dump(g);
         try {
-            return mapper.loadAs(yamlAgain, type.klass());
+            return mapper.loadAs(yamlAgain, key.klass());
         }
         catch (final YAMLException e) {
-            throw new KfgTypeException(this.name, type, null, e);
+            throw new KfgTypeException(this.name, key, null, e);
         }
     }
 

@@ -136,13 +136,14 @@ public interface Source {
      * Get a list of konfiguration value.
      *
      * @param key unique key of the konfiguration being requested.
+     * @param <T> type of collection generic.
      * @return konfiguration value wrapper for the requested key.
      */
     @NotNull
     @Contract(pure = true)
     default <T> K<List<T>> list(@NotNull @NonNull final String key,
                                 @NotNull @NonNull final Class<T> type) {
-        return list(Q.listOf(key, type));
+        return this.list(Q.listOf(key, type));
     }
 
     /**
@@ -173,18 +174,20 @@ public interface Source {
     /**
      * Get a map of U to V konfiguration value.
      *
-     * @param key generic type of map
-     * @param <U> generic type of map, the key type.
-     * @param <V> generic type of map, the value type.
+     * @param key        generic type of map
+     * @param keyKlass   the class object representing type of key in map.
+     * @param valueKlass the class object representing type of value in map.
+     * @param <U>        generic type of map, the key type.
+     * @param <V>        generic type of map, the value type.
      * @return konfiguration value wrapper for the requested key.
      */
     @NotNull
     @Contract(pure = true)
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     default <U, V> K<Map<U, V>> map(@NotNull @NonNull final String key,
-                                    @NotNull @NonNull Class<U> keyKlass,
-                                    @NotNull @NonNull Class<V> valueKlass) {
-        return map(Q.mapOf(key, keyKlass, valueKlass));
+                                    @NotNull @NonNull final Class<U> keyKlass,
+                                    @NotNull @NonNull final Class<V> valueKlass) {
+        return this.map(Q.mapOf(key, keyKlass, valueKlass));
     }
 
 
@@ -204,7 +207,7 @@ public interface Source {
     @Contract(pure = true)
     default <T> K<Set<T>> set(@NotNull @NonNull final String key,
                               @NotNull @NonNull final Class<T> type) {
-        return set(Q.setOf(key, type));
+        return this.set(Q.setOf(key, type));
     }
 
     // ========================================================================
@@ -238,6 +241,7 @@ public interface Source {
      * maps, lists or sets.
      *
      * @param key unique key of the konfiguration being requested.
+     * @param <U> type of requested object.
      * @return konfiguration value wrapper for the requested key.
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -245,7 +249,7 @@ public interface Source {
     @Contract(pure = true)
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     default <U> K<U> custom(@NotNull @NonNull final String key) {
-        return custom((Q) Q.unknown(key));
+        return this.custom((Q) Q.unknown(key));
     }
 
     /**
@@ -258,8 +262,9 @@ public interface Source {
      * maps, lists or sets. Use the corresponding methods {@link #map(Q)},
      * {@link #list(Q)} and {@link #set(Q)}.
      *
-     * @param key type object of the requested value.
-     * @param <U> generic type of requested value.
+     * @param key  type object of the requested value.
+     * @param type class object representing type of the requested value.
+     * @param <U>  generic type of requested value.
      * @return konfiguration value wrapper for the requested key.
      */
     @NotNull
@@ -267,7 +272,7 @@ public interface Source {
     @ApiStatus.AvailableSince(Faktory.VERSION_8)
     default <U> K<U> custom(@NotNull @NonNull final String key,
                             @NotNull @NonNull final Class<U> type) {
-        return custom(Q.of(key, type));
+        return this.custom(Q.of(key, type));
     }
 
     // ========================================================================
@@ -275,6 +280,7 @@ public interface Source {
     /**
      * Check if {@code key} exists in the configuration.
      *
+     * @param key the key to look for.
      * @return true if the key exists, false otherwise.
      */
     @Contract(pure = true)
@@ -285,7 +291,7 @@ public interface Source {
             this.custom(key);
             return true;
         }
-        catch (KfgTypeException | KfgMissingKeyException e) {
+        catch (final KfgTypeException | KfgMissingKeyException e) {
             return false;
         }
     }
@@ -293,6 +299,8 @@ public interface Source {
     /**
      * Check if {@code key} exists in the configuration.
      *
+     * @param key the konfig key
+     * @param type class object representing the type of requested value.
      * @return true if the key exists, false otherwise.
      */
     @Contract(pure = true)
@@ -318,6 +326,8 @@ public interface Source {
      * Check if map {@code key} exists in the configuration.
      *
      * @param key the config key to check it's existence
+     * @param keyType the map key type.
+     * @param valueType the map value type.
      * @return true if the key exists, false otherwise.
      */
     @Contract(pure = true)
@@ -344,6 +354,7 @@ public interface Source {
      * Check if set {@code key} exists in the configuration.
      *
      * @param key the config key to check it's existence
+     * @param type class object representing type of requested konfig value.
      * @return true if the key exists, false otherwise.
      */
     @Contract(pure = true)

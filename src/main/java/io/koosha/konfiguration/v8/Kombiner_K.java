@@ -35,18 +35,12 @@ final class Kombiner_K<U> implements K<U> {
     private final Q<U> type;
 
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @Nullable
     public U v() {
         return this.origin.values.v(this.type, null, true);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @NotNull
     @Override
     public U vn() {
@@ -58,68 +52,45 @@ final class Kombiner_K<U> implements K<U> {
         return v;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @Contract(pure = true)
     public boolean exists() {
-        return origin.has(this.type);
+        return this.origin.has(this.type);
     }
 
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @NotNull
-    public Handle registerSoft(@NonNull @NotNull KeyObserver observer) {
-        return origin.registerSoft(observer, this.type);
+    public Handle registerSoft(@NonNull @NotNull final KeyObserver observer) {
+        return this.origin.registerSoft(observer, this.type);
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @return
-     */
     @Override
     @NotNull
     public Handle register(@NonNull @NotNull final KeyObserver observer) {
         return this.origin.register(observer, this.type);
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @return
-     */
     @Override
     public void deregister(@NonNull @NotNull final Handle observer) {
         this.origin.deregister(observer);
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @return
-     */
     @Override
     @NotNull
     public String key() {
         return this.type.key();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @NotNull
     @Override
     public String toString() {
         try {
+            //noinspection HardcodedFileSeparator
             return format("K(%s/%s)", this.type, this.type.key());
         }
         catch (final Exception e) {
-            return format("K(%s)::error", this.type.toString());
+            return format("K(%s)::error", this.type);
         }
     }
 

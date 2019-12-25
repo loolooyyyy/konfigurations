@@ -39,13 +39,13 @@ final class CheatingMan implements KonfigurationManager {
     @Getter(AccessLevel.PROTECTED)
     private final Source source;
 
-    private CheatingMan(@NonNull @NotNull KonfigurationManager origin) {
+    private CheatingMan(@NonNull @NotNull final KonfigurationManager origin) {
         this.name = origin.name();
         this.man = origin;
         this.source = requireNonNull(origin.getAndSetToNull());
     }
 
-    private CheatingMan(@NonNull @NotNull Source origin) {
+    private CheatingMan(@NonNull @NotNull final Source origin) {
         this.name = origin.name();
         this.man = null;
         this.source = origin;
@@ -74,7 +74,7 @@ final class CheatingMan implements KonfigurationManager {
 
 
     @Override
-    public final boolean hasUpdate() {
+    public boolean hasUpdate() {
         return this.source instanceof UpdatableSource
                 && ((UpdatableSource) this.source).hasUpdate()
                 || this.man != null && this.man.hasUpdate();

@@ -4,6 +4,7 @@ import net.jcip.annotations.Immutable;
 import net.jcip.annotations.ThreadSafe;
 import org.jetbrains.annotations.ApiStatus;
 
+@FunctionalInterface
 @ThreadSafe
 @Immutable
 @ApiStatus.AvailableSince(Faktory.VERSION_8)

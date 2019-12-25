@@ -19,9 +19,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-/**
- * {@inheritDoc}
- */
 @ThreadSafe
 @RequiredArgsConstructor
 @ApiStatus.AvailableSince(Faktory.VERSION_8)
@@ -83,22 +80,17 @@ public abstract class KonfigurationBuilderBase implements KonfigurationBuilder {
             @Nullable Long lockWaitTime,
             @NotNull Collection<KonfigurationManager> sources);
 
-    /**
-     * {@inheritDoc}
-     */
     @Contract(mutates = "this")
     @NotNull
     @Synchronized
     @Override
-    public final KonfigurationBuilder add(@NotNull @NonNull final Collection<KonfigurationManager> konfig) {
+    public final KonfigurationBuilder add(
+            @NotNull @NonNull final Collection<? extends KonfigurationManager> konfig) {
         this.ensure();
         this.sources.addAll(konfig);
         return this;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Contract(mutates = "this")
     @NotNull
     @Synchronized
@@ -118,9 +110,6 @@ public abstract class KonfigurationBuilderBase implements KonfigurationBuilder {
     }
 
 
-    /**
-     * {@inheritDoc}
-     */
     @Contract(mutates = "this")
     @NotNull
     @Synchronized
@@ -133,9 +122,6 @@ public abstract class KonfigurationBuilderBase implements KonfigurationBuilder {
         return this;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Contract(mutates = "this")
     @NotNull
     @Synchronized
@@ -146,9 +132,6 @@ public abstract class KonfigurationBuilderBase implements KonfigurationBuilder {
         return this;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Contract(mutates = "this")
     @NotNull
     @Synchronized

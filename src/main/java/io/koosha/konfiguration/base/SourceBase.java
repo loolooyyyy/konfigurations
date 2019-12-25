@@ -21,9 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/**
- * {@inheritDoc}
- */
 @SuppressWarnings("unused")
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 @ApiStatus.AvailableSince(Faktory.VERSION_8)

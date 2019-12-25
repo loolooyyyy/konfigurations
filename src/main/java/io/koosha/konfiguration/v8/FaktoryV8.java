@@ -4,8 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.koosha.konfiguration.Faktory;
 import io.koosha.konfiguration.KonfigurationBuilder;
 import io.koosha.konfiguration.KonfigurationManager;
+import io.koosha.konfiguration.Source;
 import io.koosha.konfiguration.base.Deserializer;
-import io.koosha.konfiguration.base.UpdatableSource;
 import lombok.NonNull;
 import net.jcip.annotations.Immutable;
 import net.jcip.annotations.ThreadSafe;
@@ -18,10 +18,12 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import java.util.prefs.Preferences;
 
-import static java.util.Collections.singleton;
+import static java.util.Collections.*;
 
 @ThreadSafe
 @Immutable
@@ -32,11 +34,10 @@ public final class FaktoryV8 implements Faktory {
     private static final String VERSION = "io.koosha.konfiguration:7.0.0";
     private static final Object NAME_LOCK = new Object();
     private static final long START = -1L;
-    private static volatile long name_pool = START;
 
     public static final AtomicBoolean NESTED_MAP = new AtomicBoolean(true);
-
-    private static volatile String str_pool = "H#";
+    private static final AtomicLong namePool = new AtomicLong(START);
+    private static final AtomicReference<String> strPool = new AtomicReference<>("");
 
     // ================================================================ KOMBINER
 
@@ -46,25 +47,21 @@ public final class FaktoryV8 implements Faktory {
     @Contract(pure = true)
     @NotNull
     public static Faktory defaultInstance() {
-        return FaktoryV8.INSTANCE;
+        return INSTANCE;
     }
 
     private static String next() {
         synchronized (NAME_LOCK) {
-            name_pool++;
-            if (name_pool == START)
-                str_pool = str_pool + "F_";
+            if (namePool.incrementAndGet() == START)
+                strPool.set(strPool.get() + "F_");
+            return "H#" + strPool.get() + namePool.get();
         }
-        return str_pool + name_pool;
     }
 
     private static String name(@NotNull @NonNull final String name) {
         return Objects.equals(name, Faktory.DEFAULT_KONFIG_NAME) ? next() : name;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @Contract(pure = true)
     @NotNull
@@ -79,9 +76,6 @@ public final class FaktoryV8 implements Faktory {
         return new Kombiner_Builder(name(name));
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @NotNull
     @Contract("_, _ -> new")
@@ -95,8 +89,8 @@ public final class FaktoryV8 implements Faktory {
 
     @NotNull
     @Contract("_, _ -> new")
-    private KonfigurationManager kombine(@NotNull @NonNull final String name,
-                                         @NotNull @NonNull final UpdatableSource source) {
+    private static KonfigurationManager kombine(@NotNull @NonNull final String name,
+                                                @NotNull @NonNull final Source source) {
         return new Kombiner(
                 name(name),
                 singleton(CheatingMan.cheat(source)),
@@ -107,9 +101,6 @@ public final class FaktoryV8 implements Faktory {
 
     // ==================================================================== MAP
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @NotNull
     @Contract(pure = true,
@@ -119,9 +110,6 @@ public final class FaktoryV8 implements Faktory {
         return kombine(name(name), new ExtMapSource(name(name), storage, SAFE_YAML.get()));
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @NotNull
     @Contract(value = "_, _ -> new",
@@ -133,9 +121,6 @@ public final class FaktoryV8 implements Faktory {
 
     // ============================================================ PREFERENCES
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @NotNull
     @Contract("_, _ -> new")
@@ -144,9 +129,6 @@ public final class FaktoryV8 implements Faktory {
         return kombine(name(name), new ExtPreferencesSource(name(name), storage, null));
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @NotNull
     @Contract("_, _, _ -> new")
@@ -159,21 +141,15 @@ public final class FaktoryV8 implements Faktory {
 
     // ================================================================ JACKSON
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @NotNull
     @Contract("_, _ -> new")
     public KonfigurationManager jacksonJson(@NotNull @NonNull final String name,
                                             @NotNull @NonNull final Supplier<String> json) {
         final ObjectMapper mapper = ExtJacksonJsonSource.defaultJacksonObjectMapper();
-        return jacksonJson(name(name), json, () -> mapper);
+        return this.jacksonJson(name(name), json, () -> mapper);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @NotNull
     @Contract("_, _, _ -> new")
@@ -185,9 +161,6 @@ public final class FaktoryV8 implements Faktory {
 
     // ============================================================= SNAKE YAML
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @NotNull
     @ApiStatus.Experimental
@@ -199,9 +172,6 @@ public final class FaktoryV8 implements Faktory {
                 new ExtYamlSource(name(name), yaml, ExtYamlSource::getDefaultYamlSupplier, SAFE_YAML.get()));
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @NotNull
     @ApiStatus.Experimental
@@ -213,9 +183,6 @@ public final class FaktoryV8 implements Faktory {
         return kombine(name(name), new ExtYamlSource(name(name), yaml, objectMapper, SAFE_YAML.get()));
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @NotNull
     @Contract("_, _, _ -> new")

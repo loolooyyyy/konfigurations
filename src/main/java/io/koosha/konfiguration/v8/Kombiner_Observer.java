@@ -21,10 +21,11 @@ import java.lang.ref.WeakReference;
 @ApiStatus.Internal
 final class Kombiner_Observer {
 
+    @NotNull
     private final Handle handle = Kombiner.newHandle();
 
     @Nullable
-    private final WeakReference<KeyObserver> soft;
+    private final WeakReference<? extends KeyObserver> soft;
 
     @Nullable
     private final KeyObserver hard;
@@ -35,11 +36,12 @@ final class Kombiner_Observer {
     @Nullable
     private final Q<?> type;
 
-    Kombiner_Observer(@NonNull @NotNull final WeakReference<KeyObserver> soft,
+    Kombiner_Observer(final @NonNull @NotNull WeakReference<? extends KeyObserver> soft,
                       @Nullable final String key,
                       @Nullable final Q<?> type) {
         if (key != null && type != null)
-            throw new IllegalStateException();
+            throw new IllegalStateException("both string key and Q type can't be set at the same time: "
+                    + key + " | " + type);
         this.soft = soft;
         this.hard = null;
         this.key = key;
@@ -50,7 +52,8 @@ final class Kombiner_Observer {
                       @Nullable final String key,
                       @Nullable final Q<?> type) {
         if (key != null && type != null)
-            throw new IllegalStateException();
+            throw new IllegalStateException("both string key and Q type can't be set at the same time: "
+                    + key + " | " + type);
         this.soft = null;
         this.hard = hard;
         this.key = key;
@@ -60,10 +63,7 @@ final class Kombiner_Observer {
     @Contract(pure = true)
     @Nullable
     KeyObserver listener() {
-        if (this.soft != null)
-            return this.soft.get();
-        else
-            return this.hard;
+        return this.soft != null ? this.soft.get() : this.hard;
     }
 
     @Nullable

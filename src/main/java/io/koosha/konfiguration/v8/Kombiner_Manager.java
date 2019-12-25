@@ -25,7 +25,7 @@ final class Kombiner_Manager implements KonfigurationManager {
     final Kombiner origin;
     private final AtomicBoolean consumed = new AtomicBoolean(false);
 
-    public Kombiner_Manager(@NotNull @NonNull Kombiner kombiner) {
+    Kombiner_Manager(@NotNull @NonNull final Kombiner kombiner) {
         this.origin = kombiner;
     }
 
@@ -44,9 +44,6 @@ final class Kombiner_Manager implements KonfigurationManager {
         };
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public Kombiner getAndSetToNull() {
         if (this.consumed.getAndSet(true))
@@ -54,40 +51,29 @@ final class Kombiner_Manager implements KonfigurationManager {
         return this.origin;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @NotNull
     public String name() {
         return this.origin.name();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public boolean hasUpdate() {
         if (!this.consumed.get())
             throw new IllegalStateException("getAndSetToNull() not called yet");
-        return origin.r(this::hasUpdate0);
+        return this.origin.r(this::hasUpdate0);
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @return
-     */
     @NotNull
     @Override
     public Collection<Runnable> update() {
         if (!this.consumed.get())
             throw new IllegalStateException("getAndSetToNull() not called yet");
-        return origin.r(this::update0);
+        return this.origin.r(this::update0);
     }
 
     private boolean hasUpdate0() {
-        return origin
+        return this.origin
                 .sources
                 .vs()
                 .anyMatch(KonfigurationManager::hasUpdate);
@@ -97,7 +83,7 @@ final class Kombiner_Manager implements KonfigurationManager {
         if (!this.hasUpdate0())
             return emptyList();
 
-        final Map<String, CheatingMan> newSources = origin.sources.copy();
+        final Map<String, CheatingMan> newSources = this.origin.sources.copy();
         final Collection<Runnable> updateTasks = new ArrayList<>();
 
         newSources.entrySet().forEach(x -> {
@@ -108,9 +94,9 @@ final class Kombiner_Manager implements KonfigurationManager {
             x.setValue(cheat.updated());
         });
 
-        final Set<Q<?>> updated = new HashSet<>();
-        final Map<Q<?>, Object> newCache = origin.values.copy();
-        origin.values.origForEach(q -> {
+        final Collection<Q<?>> updated = new HashSet<>();
+        final Map<Q<?>, Object> newCache = this.origin.values.copy();
+        this.origin.values.origForEach(q -> {
             final Optional<Source> first = newSources
                     .values()
                     .stream()
@@ -119,13 +105,13 @@ final class Kombiner_Manager implements KonfigurationManager {
                     .findFirst();
 
             @SuppressWarnings({"unchecked", "rawtypes"})
-            final Object newV = first.map(k -> k.custom(q))
+            final Object newV = first.map(x -> x.custom(q))
                                      .orElse(K.null_((Q) q)).v();
-            final Object oldV = origin.has(q)
-                                ? origin.values.v_(q, null, true)
+            final Object oldV = this.origin.has(q)
+                                ? this.origin.values.v_(q, null, true)
                                 : null;
 
-            if (origin.values.has(q) != first.isPresent()
+            if (this.origin.values.has(q) != first.isPresent()
                     || !Objects.equals(newV, oldV))
                 updated.add(q);
 
@@ -137,9 +123,9 @@ final class Kombiner_Manager implements KonfigurationManager {
         for (final Q<?> q : updated)
             updateTasks.addAll(this.origin.observers.get(q));
 
-        return origin.w(() -> {
-            origin.sources.replace(newSources);
-            origin.values.replace(newCache);
+        return this.origin.w(() -> {
+            this.origin.sources.replace(newSources);
+            this.origin.values.replace(newCache);
             return updateTasks;
         });
     }

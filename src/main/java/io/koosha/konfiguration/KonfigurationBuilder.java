@@ -7,12 +7,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Range;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 
-import static java.util.Arrays.asList;
-import static java.util.Collections.singleton;
+import static java.util.Arrays.*;
+import static java.util.Collections.*;
 import static java.util.Objects.requireNonNull;
 
 @SuppressWarnings("unused")
@@ -25,19 +23,19 @@ public interface KonfigurationBuilder {
 
 
     @NotNull
-    default KonfigurationBuilder add(@NotNull @NonNull Konfiguration konfig) {
+    default KonfigurationBuilder add(@NotNull @NonNull final Konfiguration konfig) {
         return this.add_(singleton(konfig));
     }
 
     @NotNull
     default KonfigurationBuilder add(@NotNull @NonNull final Konfiguration konfig,
-                                     @NotNull @NonNull final Konfiguration... k) {
-        final List<Konfiguration> l = new ArrayList<>();
-        l.add(konfig);
-        l.addAll(asList(k));
-        for (final Konfiguration each : l)
+                                     @NotNull @NonNull final Konfiguration... rest) {
+        final Collection<Konfiguration> list = new ArrayList<>();
+        list.add(konfig);
+        list.addAll(asList(rest));
+        for (final Konfiguration each : list)
             requireNonNull(each);
-        return this.add_(l);
+        return this.add_(list);
     }
 
     @NotNull
@@ -50,17 +48,17 @@ public interface KonfigurationBuilder {
 
     @NotNull
     default KonfigurationBuilder add(@NotNull final KonfigurationManager konfig,
-                                     @NotNull final KonfigurationManager... k) {
-        final List<KonfigurationManager> l = new ArrayList<>();
-        l.add(konfig);
-        l.addAll(Arrays.asList(k));
-        for (final KonfigurationManager each : l)
+                                     @NotNull final KonfigurationManager... rest) {
+        final Collection<KonfigurationManager> list = new ArrayList<>();
+        list.add(konfig);
+        list.addAll(asList(rest));
+        for (final KonfigurationManager each : list)
             requireNonNull(each);
-        return this.add(l);
+        return this.add(list);
     }
 
     @NotNull
-    KonfigurationBuilder add(@NotNull Collection<KonfigurationManager> konfig);
+    KonfigurationBuilder add(@NotNull Collection<? extends KonfigurationManager> konfig);
 
 
     @NotNull

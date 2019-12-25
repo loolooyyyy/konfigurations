@@ -58,8 +58,8 @@ final class ExtYamlSourceByConstructorConstructor<A extends Annotation> extends 
         if (constructors.size() != 1)
             return null;
 
-        final Constructor<?> c = constructors.get(0);
-        final String[] names = markerExtractor.apply(c.getAnnotation(marker));
+        final Constructor<?> ctor = constructors.get(0);
+        final String[] names = markerExtractor.apply(ctor.getAnnotation(marker));
         final Map<Integer, Integer> nameMapping = new HashMap<>();
         for (int i = 0; i < names.length; i++) {
             final String name = names[i];
@@ -68,7 +68,7 @@ final class ExtYamlSourceByConstructorConstructor<A extends Annotation> extends 
         final Object[] clone = values.clone();
         nameMapping.forEach((cIndex, vIndex) -> values[cIndex] = clone[vIndex]);
 
-        return c;
+        return ctor;
     }
 
     private static Constructor<?> findByParamType(
@@ -101,8 +101,8 @@ final class ExtYamlSourceByConstructorConstructor<A extends Annotation> extends 
         if (constructors.size() != 1)
             return null;
 
-        final Constructor<?> c = constructors.get(0);
-        final Class<?>[] pt = c.getParameterTypes();
+        final Constructor<?> ctor = constructors.get(0);
+        final Class<?>[] pt = ctor.getParameterTypes();
         final Object[] clone = values.clone();
         assert pt.length == clone.length;
 
@@ -116,7 +116,7 @@ final class ExtYamlSourceByConstructorConstructor<A extends Annotation> extends 
             throw new KfgAssertionException("constructor and value mismatch");
         }
 
-        return c;
+        return ctor;
     }
 
 
@@ -138,7 +138,7 @@ final class ExtYamlSourceByConstructorConstructor<A extends Annotation> extends 
             return (byte[]) this.value;
         }
 
-        final boolean typeIs(Object... other) {
+        final boolean typeIs(final Object... other) {
             for (final Object o : other)
                 if (o == this.type)
                     return true;
@@ -150,12 +150,12 @@ final class ExtYamlSourceByConstructorConstructor<A extends Annotation> extends 
     private static final class ParamNode extends Param {
         Node node;
 
-        public ParamNode(String name, Node node) {
+        private ParamNode(final String name, final Node node) {
             super(name);
             this.node = node;
         }
 
-        Class<?>[] getActualTypeArguments() {
+        static Class<?>[] getActualTypeArguments() {
             return null;
         }
     }
@@ -211,7 +211,7 @@ final class ExtYamlSourceByConstructorConstructor<A extends Annotation> extends 
                     .peek(t -> {
                         if (t.node.getNodeId() != NodeId.scalar) {
                             // only if there is no explicit TypeDescription
-                            final Class<?>[] args = t.getActualTypeArguments();
+                            final Class<?>[] args = ParamNode.getActualTypeArguments();
                             if (args != null && args.length > 0) {
                                 // type safe (generic) collection may contain the proper class
                                 if (t.node.getNodeId() == NodeId.sequence) {
@@ -270,7 +270,7 @@ final class ExtYamlSourceByConstructorConstructor<A extends Annotation> extends 
                         names,
                         values);
             }
-            catch (YAMLException y) {
+            catch (final YAMLException y) {
                 c0 = null;
             }
 
@@ -281,7 +281,7 @@ final class ExtYamlSourceByConstructorConstructor<A extends Annotation> extends 
                             byName.values().stream().map(it -> it.type).collect(toList()),
                             values);
                 }
-                catch (YAMLException y) {
+                catch (final YAMLException y) {
                     //noinspection ConstantConditions
                     c0 = null;
                 }
@@ -290,7 +290,7 @@ final class ExtYamlSourceByConstructorConstructor<A extends Annotation> extends 
                 try {
                     c0 = node.getType().getDeclaredConstructor(types);
                 }
-                catch (NoSuchMethodException e) {
+                catch (final NoSuchMethodException e) {
                     // ignore
                 }
 
@@ -304,7 +304,7 @@ final class ExtYamlSourceByConstructorConstructor<A extends Annotation> extends 
                             .toArray(Class<?>[]::new);
                     c0 = node.getType().getDeclaredConstructor(types2);
                 }
-                catch (NoSuchMethodException ex) {
+                catch (final NoSuchMethodException ex) {
                     c0 = null;
                 }
 
@@ -315,13 +315,13 @@ final class ExtYamlSourceByConstructorConstructor<A extends Annotation> extends 
                 c0.setAccessible(true);
                 return c0.newInstance(values);
             }
-            catch (Exception e) {
+            catch (final Exception e) {
                 throw new YAMLException(e);
             }
         }
     }
 
-    private static Class<?> upper(Class<?> c) {
+    private static Class<?> upper(final Class<?> c) {
         if (c == boolean.class)
             return Boolean.class;
         if (c == byte.class)

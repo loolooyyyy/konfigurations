@@ -17,22 +17,22 @@ import java.util.Collection;
 @ApiStatus.Internal
 final class Kombiner_Builder extends KonfigurationBuilderBase implements KonfigurationBuilder {
 
-    Kombiner_Builder(@NonNull @NotNull String name) {
+    Kombiner_Builder(@NonNull @NotNull final String name) {
         super(name);
     }
 
     @Override
-    protected KonfigurationManager build0(@NotNull @NonNull String name,
-                                          boolean fairLock,
-                                          boolean mixedTypes,
-                                          @Nullable Long lockWaitTime,
-                                          @NotNull @NonNull Collection<KonfigurationManager> sources) {
-        final Kombiner k = new Kombiner(name, sources, lockWaitTime, fairLock, mixedTypes);
-        return k.man();
+    protected KonfigurationManager build0(@NotNull @NonNull final String name,
+                                          final boolean fairLock,
+                                          final boolean mixedTypes,
+                                          @Nullable final Long lockWaitTime,
+                                          @NotNull @NonNull final Collection<KonfigurationManager> sources) {
+        final Kombiner kombiner = new Kombiner(name, sources, lockWaitTime, fairLock, mixedTypes);
+        return kombiner.man();
     }
 
     @Override
-    public @NotNull KonfigurationBuilder add_(@NotNull @NonNull Collection<Konfiguration> konfig) {
+    public @NotNull KonfigurationBuilder add_(@NotNull @NonNull final Collection<Konfiguration> konfig) {
         throw new KfgUnsupportedOperationException(this.name(), "TODO");
     }
 }

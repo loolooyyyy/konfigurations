@@ -44,9 +44,9 @@ final class Kombiner_Values {
             @Nullable final U def,
             final boolean mustExist) {
         return this.origin.r(() -> {
-            if (cache.containsKey(type))
-                return ((U) cache.get(type));
-            return this.origin.w(() -> ((U) v_(type, def, mustExist)));
+            if (this.cache.containsKey(type))
+                return ((U) this.cache.get(type));
+            return this.origin.w(() -> ((U) this.v_(type, def, mustExist)));
         });
     }
 
@@ -78,7 +78,7 @@ final class Kombiner_Values {
         if (this.issuedKeys.contains(q))
             return;
 
-        if (!allowMixedTypes) {
+        if (!this.allowMixedTypes) {
             final Optional<Q<?>> duplicate = this.issuedKeys
                     .stream()
                     .filter(x -> Objects.equals(x.key(), q.key()))
@@ -98,13 +98,13 @@ final class Kombiner_Values {
         return new HashMap<>(this.cache);
     }
 
-    Kombiner_Values replace(@NotNull @NonNull final Map<Q<?>, Object> copy) {
+    Kombiner_Values replace(@NotNull @NonNull final Map<? extends Q<?>, Object> copy) {
         this.cache.clear();
         this.cache.putAll(copy);
         return this;
     }
 
-    void origForEach(Consumer<Q<?>> action) {
+    void origForEach(final Consumer<? super Q<?>> action) {
         this.issuedKeys.forEach(action);
     }
 

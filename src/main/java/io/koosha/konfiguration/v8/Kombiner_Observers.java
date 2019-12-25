@@ -60,7 +60,8 @@ final class Kombiner_Observers implements KeyObservable {
                            @Nullable final String key,
                            @Nullable final Q<?> type) {
         if (key != null && type != null)
-            throw new IllegalStateException();
+            throw new IllegalStateException("both string key and Q type can't be set at the same time: "
+                    + key + " | " + type);
         final Kombiner_Observer o = new Kombiner_Observer(new WeakReference<>(observer), key, type);
         this.put(o.handle(), o);
         return o.handle();
@@ -69,20 +70,20 @@ final class Kombiner_Observers implements KeyObservable {
     @NotNull
     @Override
     public Handle register(@NotNull @NonNull final KeyObserver observer) {
-        return add(observer, null, null);
+        return this.add(observer, null, null);
     }
 
     @NotNull
     public Handle register(@NonNull @NotNull final KeyObserver observer,
                            @NotNull @NonNull final String key) {
-        return add(observer, key, null);
+        return this.add(observer, key, null);
     }
 
     @NotNull
     @Override
     public Handle register(@NotNull @NonNull final KeyObserver observer,
-                           @NotNull @NonNull final Q<?> type) {
-        return add(observer, null, type);
+                           @NotNull @NonNull final Q<?> key) {
+        return this.add(observer, null, key);
     }
 
 
@@ -95,8 +96,8 @@ final class Kombiner_Observers implements KeyObservable {
     @NotNull
     @Override
     public Handle registerSoft(@NotNull @NonNull final KeyObserver observer,
-                               @NotNull @NonNull final Q<?> type) {
-        return this.addSoft(observer, null, type);
+                               @NotNull @NonNull final Q<?> key) {
+        return this.addSoft(observer, null, key);
     }
 
     @NotNull

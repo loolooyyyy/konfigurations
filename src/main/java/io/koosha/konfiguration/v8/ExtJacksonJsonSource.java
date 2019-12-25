@@ -66,6 +66,7 @@ final class ExtJacksonJsonSource extends UpdatableSourceBase {
      *                     valid non-null ObjectMapper, and if required, it must
      *                     be able to deserialize custom types, so that
      *                     {@link #custom(Q)} works as well.
+     *
      * @throws NullPointerException if any of its arguments are null.
      * @throws KfgSourceException   if jackson library is not in the classpath.
      *                              it specifically looks for the class:
@@ -126,28 +127,20 @@ final class ExtJacksonJsonSource extends UpdatableSourceBase {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Contract(pure = true)
     @Override
     public boolean hasUpdate() {
-        final String newJson = json.get();
-        return newJson != null && newJson.hashCode() != lastHash;
+        final String newJson = this.json.get();
+        return newJson != null && newJson.hashCode() != this.lastHash;
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @return
-     */
     @Contract(pure = true,
             value = "-> new")
     @NotNull
     @Override
     public UpdatableSource updatedSelf() {
         return this.hasUpdate()
-               ? new ExtJacksonJsonSource(name(), json, mapperSupplier)
+               ? new ExtJacksonJsonSource(this.name(), this.json, this.mapperSupplier)
                : this;
     }
 
@@ -155,8 +148,9 @@ final class ExtJacksonJsonSource extends UpdatableSourceBase {
         if (key.isEmpty())
             throw new KfgIllegalArgumentException(this.name(), "empty konfig key");
 
-        final String k = key.replace('.', '/');
-        return this.root.findPath(k);
+        //noinspection HardcodedFileSeparator
+        final String saneKey = key.replace('.', '/');
+        return this.root.findPath(saneKey);
     }
 
     @Synchronized
@@ -164,16 +158,18 @@ final class ExtJacksonJsonSource extends UpdatableSourceBase {
         if (key.isEmpty())
             throw new KfgIllegalArgumentException(this.name(), "empty konfig key");
 
-        final JsonNode node = node_(key);
+        final JsonNode node = this.node_(key);
         if (node.isMissingNode())
             throw new KfgMissingKeyException(this.name(), Q.unknown(key));
         return node;
     }
 
-    private JsonNode checkJsonType(final boolean condition,
-                                   final Q<?> required,
-                                   final JsonNode node,
-                                   final String key) {
+    @NotNull
+    @Contract("false, _, _, _ -> fail")
+    private JsonNode ensureJsonType(final boolean condition,
+                                    final Q<?> required,
+                                    final JsonNode node,
+                                    final String key) {
         if (!condition)
             throw new KfgMissingKeyException(this.name(), required.withKey(key));
         if (node.isNull())
@@ -181,109 +177,88 @@ final class ExtJacksonJsonSource extends UpdatableSourceBase {
         return node;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @Synchronized
-    protected boolean isNull(@NonNull @NotNull Q<?> type) {
-        return node(type.key()).isNull();
+    protected boolean isNull(@NonNull @NotNull final Q<?> key) {
+        return this.node(key.key()).isNull();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @Synchronized
-    public boolean has(@NotNull @NonNull final Q<?> type) {
+    public boolean has(@NotNull @NonNull final Q<?> key) {
 
-        if (this.node_(type.key()).isMissingNode())
+        if (this.node_(key.key()).isMissingNode())
             return false;
 
-        final JsonNode node = this.node(type.key());
+        final JsonNode node = this.node(key.key());
 
-        if (type.isNull() && node.isNull()
-                || type.isBool() && node.isBoolean()
-                || type.isChar() && node.isTextual() && node.asText().length() == 1
-                || type.isString() && node.isTextual()
-                || type.isByte() && node.isLong() && node.asLong() <= Byte.MAX_VALUE && Byte.MIN_VALUE <= node.asLong()
-                || type.isShort() && node.isLong() && node.asLong() <= Short.MAX_VALUE && Short.MIN_VALUE <= node.asLong()
-                || type.isInt() && node.isLong() && node.asLong() <= Integer.MAX_VALUE && Integer.MIN_VALUE <= node.asLong()
-                || type.isLong() && node.isLong()
-                || type.isFloat() && node.isFloat()
-                || type.isDouble() && node.isDouble()
-                || type.isList() && node.isArray()
-                || type.isSet() && node.isArray() &&
-                this.set0(Q.unknownSet(type.key())).size() !=
-                        this.list0(Q.unknownList(type.key())).size())
+        if (key.isNull() && node.isNull()
+                || key.isBool() && node.isBoolean()
+                || key.isChar() && node.isTextual() && node.asText().length() == 1
+                || key.isString() && node.isTextual()
+                || key.isByte() && node.isLong() && node.asLong() <= Byte.MAX_VALUE && Byte.MIN_VALUE <= node.asLong()
+                || key.isShort() && node.isLong() && node.asLong() <= Short.MAX_VALUE && Short.MIN_VALUE <= node.asLong()
+                || key.isInt() && node.isLong() && node.asLong() <= Integer.MAX_VALUE && Integer.MIN_VALUE <= node.asLong()
+                || key.isLong() && node.isLong()
+                || key.isFloat() && node.isFloat()
+                || key.isDouble() && node.isDouble()
+                || key.isList() && node.isArray()
+                || key.isSet() && node.isArray() &&
+                this.set0(Q.unknownSet(key.key())).size() !=
+                        this.list0(Q.unknownList(key.key())).size())
             return true;
 
         try {
-            this.custom0(type);
+            this.custom0(key);
             return true;
         }
-        catch (Throwable t) {
+        catch (final Throwable t) {
             return false;
         }
     }
 
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @NotNull
     @Synchronized
     protected Boolean bool0(@NotNull @NonNull final String key) {
-        final JsonNode at = node(key);
-        return checkJsonType(at.isBoolean(), Q.bool(key), at, key).asBoolean();
+        final JsonNode at = this.node(key);
+        return this.ensureJsonType(at.isBoolean(), Q.bool(key), at, key).asBoolean();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @NotNull
     @Synchronized
     protected Character char0(@NotNull @NonNull final String key) {
-        final JsonNode at = node(key);
-        return checkJsonType(at.isTextual() && at.textValue().length() == 1, Q.string(key), at, key)
-                .textValue()
-                .charAt(0);
+        final JsonNode at = this.node(key);
+        return this.ensureJsonType(at.isTextual() && at.textValue().length() == 1, Q.string(key), at, key)
+                   .textValue()
+                   .charAt(0);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @NotNull
     @Synchronized
     protected String string0(@NotNull @NonNull final String key) {
-        final JsonNode at = node(key);
-        return checkJsonType(at.isTextual(), Q.string(key), at, key).asText();
+        final JsonNode at = this.node(key);
+        return this.ensureJsonType(at.isTextual(), Q.string(key), at, key).asText();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @NotNull
     @Override
     @Synchronized
     protected Number number0(@NotNull @NonNull final String key) {
-        final JsonNode at = node(key);
-        return checkJsonType(at.isShort() || at.isInt() || at.isLong(),
+        final JsonNode at = this.node(key);
+        return this.ensureJsonType(at.isShort() || at.isInt() || at.isLong(),
                 Q.long_(key), at, key).longValue();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @NotNull
     @Override
     @Synchronized
     protected Number numberDouble0(@NotNull @NonNull final String key) {
-        final JsonNode at = node(key);
-        return checkJsonType(
+        final JsonNode at = this.node(key);
+        return this.ensureJsonType(
                 at.isFloat()
                         || at.isDouble()
                         || at.isShort()
@@ -293,15 +268,12 @@ final class ExtJacksonJsonSource extends UpdatableSourceBase {
     }
 
 
-    /**
-     * {@inheritDoc}
-     */
     @NotNull
     @Override
     @Synchronized
     protected List<?> list0(@NotNull final Q<? extends List<?>> type) {
-        final JsonNode at = node(type.key());
-        checkJsonType(at.isArray(), Q.unknownList(type.key()), at, type.key());
+        final JsonNode at = this.node(type.key());
+        this.ensureJsonType(at.isArray(), Q.unknownList(type.key()), at, type.key());
         final ObjectMapper reader = this.mapperSupplier.get();
         final CollectionType javaType = reader
                 .getTypeFactory()
@@ -315,74 +287,65 @@ final class ExtJacksonJsonSource extends UpdatableSourceBase {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @NotNull
     @Override
     @Synchronized
-    protected Set<?> set0(@NotNull final Q<? extends Set<?>> type) {
-        final JsonNode at = node(type.key());
+    protected Set<?> set0(@NotNull final Q<? extends Set<?>> key) {
+        final JsonNode at = this.node(key.key());
 
-        checkJsonType(at.isArray(), Q.unknownSet(type.key()), at, type.key());
+        this.ensureJsonType(at.isArray(), Q.unknownSet(key.key()), at, key.key());
         final ObjectMapper reader = this.mapperSupplier.get();
         final CollectionType javaType = reader
                 .getTypeFactory()
-                .constructCollectionType(Set.class, type.getCollectionContainedClass());
+                .constructCollectionType(Set.class, key.getCollectionContainedClass());
 
-        final Set<?> s;
+        final Set<?> set;
 
         try {
-            s = reader.readValue(at.traverse(), javaType);
+            set = reader.readValue(at.traverse(), javaType);
         }
         catch (final IOException e) {
-            throw new KfgTypeException(this.name(), Q.unknownList(type.key()), type, "type mismatch", e);
+            throw new KfgTypeException(this.name(), Q.unknownList(key.key()), key, "type mismatch", e);
         }
 
-        final List<?> l = this.list0(Q.unknownList(type.key()));
-        if (l.size() != s.size())
-            throw new KfgTypeException(this.name(), type, at, "type mismatch, duplicate values in set");
+        final List<?> list = this.list0(Q.unknownList(key.key()));
+        if (list.size() != set.size())
+            throw new KfgTypeException(this.name(), key, at, "type mismatch, duplicate values in set");
 
-        return s;
+        return set;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @NotNull
     @Synchronized
-    protected Map<?, ?> map0(@NotNull final Q<? extends Map<?, ?>> type) {
-        final JsonNode at = node(type.key());
-        checkJsonType(at.isObject(), Q.unknownMap(type.key()), at, type.key());
+    protected Map<?, ?> map0(@NotNull final Q<? extends Map<?, ?>> key) {
+        final JsonNode at = this.node(key.key());
+        this.ensureJsonType(at.isObject(), Q.unknownMap(key.key()), at, key.key());
         final ObjectMapper reader = this.mapperSupplier.get();
         final MapType javaType = reader
                 .getTypeFactory()
-                .constructMapType(Map.class, type.getMapKeyClass(), type.getMapValueClass());
+                .constructMapType(Map.class, key.getMapKeyClass(), key.getMapValueClass());
 
         try {
             return reader.readValue(at.traverse(), javaType);
         }
         catch (final IOException e) {
-            throw new KfgTypeException(this.name(), Q.unknownList(type.key()), type, "type mismatch", e);
+            throw new KfgTypeException(this.name(), Q.unknownList(key.key()), key, "type mismatch", e);
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @NotNull
     @Synchronized
-    protected Object custom0(@NotNull @NonNull final Q<?> type) {
+    protected Object custom0(@NotNull @NonNull final Q<?> key) {
         final ObjectMapper reader = this.mapperSupplier.get();
-        final JsonParser traverse = this.node(type.key()).traverse();
+        final JsonParser traverse = this.node(key.key()).traverse();
 
         try {
-            return reader.readValue(traverse, type.klass());
+            return reader.readValue(traverse, key.klass());
         }
         catch (final IOException e) {
-            throw new KfgTypeException(this.name(), type, null, "jackson error", e);
+            throw new KfgTypeException(this.name(), key, null, "jackson error", e);
         }
     }
 

@@ -59,21 +59,15 @@ final class ExtPreferencesSource extends UpdatableSourceBase {
         this.name = name;
         this.source = preferences;
         this.deser = deserializer;
-        this.lastHash = hashOf();
+        this.lastHash = this.hashOf();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Contract(pure = true)
     @Override
     public boolean hasUpdate() {
-        return lastHash != hashOf();
+        return this.lastHash != this.hashOf();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Contract(mutates = "this")
     @Override
     @NotNull
@@ -81,49 +75,43 @@ final class ExtPreferencesSource extends UpdatableSourceBase {
         return this;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     protected boolean isNull(@NonNull @NotNull final Q<?> key) {
-        return this.source.get(sane(key.key()), "") == null;
+        return this.source.get(this.sane(key.key()), "") == null;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public boolean has(@NotNull @NonNull final Q<?> type) {
+    public boolean has(@NotNull @NonNull final Q<?> key) {
         final String sane;
         try {
-            sane = this.sane(type.key());
+            sane = this.sane(key.key());
         }
         catch (final KfgIllegalStateException e) {
             return false;
         }
 
-        if (type.isByte())
+        if (key.isByte())
             return this.source.getInt(sane, 0) == this.source.getInt(sane, 1)
                     && this.source.getInt(sane, 0) <= Byte.MAX_VALUE
                     && this.source.getInt(sane, 0) >= Byte.MIN_VALUE;
-        if (type.isShort())
+        if (key.isShort())
             return this.source.getInt(sane, 0) == this.source.getInt(sane, 1)
                     && this.source.getInt(sane, 0) <= Short.MAX_VALUE
                     && this.source.getInt(sane, 0) >= Short.MIN_VALUE;
-        if (type.isInt())
+        if (key.isInt())
             return this.source.getInt(sane, 0) == this.source.getInt(sane, 1);
-        if (type.isLong())
+        if (key.isLong())
             return this.source.getLong(sane, 0) == this.source.getLong(sane, 1);
-        if (type.isFloat())
+        if (key.isFloat())
             return this.source.getFloat(sane, 0) == this.source.getFloat(sane, 1);
-        if (type.isDouble())
+        if (key.isDouble())
             return this.source.getDouble(sane, 0) == this.source.getDouble(sane, 1);
 
-        if (type.isBool())
+        if (key.isBool())
             return this.source.getBoolean(sane, false) == this.source.getBoolean(sane, true);
-        if (type.isChar())
+        if (key.isChar())
             return this.source.get(sane, "").length() == 1;
-        if (type.isString())
+        if (key.isString())
             return Objects.equals(this.source.get(sane, ""), this.source.get(sane, " "));
 
 
@@ -131,10 +119,10 @@ final class ExtPreferencesSource extends UpdatableSourceBase {
         if (Objects.equals(this.source.getByteArray(sane, null),
                 this.source.getByteArray(sane, new byte[]{1})))
             try {
-                this.deser.apply(this.source.getByteArray(sane(type.key()), new byte[0]), type);
+                this.deser.apply(this.source.getByteArray(this.sane(key.key()), new byte[0]), key);
                 return true;
             }
-            catch (UnsupportedOperationException u) {
+            catch (final UnsupportedOperationException u) {
                 return false;
             }
 
@@ -145,12 +133,13 @@ final class ExtPreferencesSource extends UpdatableSourceBase {
     @Contract(pure = true,
             value = "_->new")
     private String sane(@NotNull @NonNull final String key) {
+        //noinspection HardcodedFileSeparator
         final String sane = key.replace('.', '/');
         try {
             if (!this.source.nodeExists(sane))
                 throw new KfgIllegalStateException(this.name(), "missing key; " + key);
         }
-        catch (Throwable e) {
+        catch (final Throwable e) {
             throw new KfgSourceException(this.name(), "error checking existence of key: " + key, e);
         }
         return sane;
@@ -161,103 +150,76 @@ final class ExtPreferencesSource extends UpdatableSourceBase {
         try {
             this.source.exportSubtree(buffer);
         }
-        catch (IOException | BackingStoreException e) {
+        catch (final IOException | BackingStoreException e) {
             throw new KfgSourceException(this.name(), "could not calculate hash of the java.util.prefs.Preferences source", e);
         }
         return Arrays.hashCode(buffer.toByteArray());
     }
 
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @NotNull
     protected Object bool0(@NotNull @NonNull final String key) {
-        return this.source.getBoolean(sane(key), false);
+        return this.source.getBoolean(this.sane(key), false);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @NotNull
     protected Object char0(@NotNull @NonNull final String key) {
-        final String s = ((String) this.string0(sane(key)));
+        final String s = ((String) this.string0(this.sane(key)));
         if (s.length() != 1)
             throw new KfgTypeException(this.name(), Q.char_(key), s);
-        return ((String) this.string0(sane(key))).charAt(0);
+        return ((CharSequence) this.string0(this.sane(key))).charAt(0);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @NotNull
     protected Object string0(@NotNull @NonNull final String key) {
-        return this.source.get(sane(key), null);
+        return this.source.get(this.sane(key), null);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @NotNull
     protected Number number0(@NotNull @NonNull final String key) {
-        return this.source.getLong(sane(key), 0);
+        return this.source.getLong(this.sane(key), 0);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @NotNull
     protected Number numberDouble0(@NotNull @NonNull final String key) {
-        return this.source.getDouble(sane(key), 0);
+        return this.source.getDouble(this.sane(key), 0);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @NotNull
     protected List<?> list0(@NotNull @NonNull final Q<? extends List<?>> type) {
         if (this.deser == null)
             throw new KfgPreferencesError(this.name(), "deserializer not set");
-        return this.deser.apply(this.source.getByteArray(sane(type.key()), new byte[0]), type);
+        return this.deser.apply(this.source.getByteArray(this.sane(type.key()), new byte[0]), type);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @NotNull
-    protected Set<?> set0(@NotNull @NonNull final Q<? extends Set<?>> type) {
+    protected Set<?> set0(@NotNull @NonNull final Q<? extends Set<?>> key) {
         if (this.deser == null)
             throw new KfgPreferencesError(this.name(), "deserializer not set");
-        return this.deser.apply(this.source.getByteArray(sane(type.key()), new byte[0]), type);
+        return this.deser.apply(this.source.getByteArray(this.sane(key.key()), new byte[0]), key);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @NotNull
-    protected Map<?, ?> map0(@NotNull @NonNull final Q<? extends Map<?, ?>> type) {
+    protected Map<?, ?> map0(@NotNull @NonNull final Q<? extends Map<?, ?>> key) {
         if (this.deser == null)
             throw new KfgPreferencesError(this.name(), "deserializer not set");
-        return this.deser.apply(this.source.getByteArray(sane(type.key()), new byte[0]), type);
+        return this.deser.apply(this.source.getByteArray(this.sane(key.key()), new byte[0]), key);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     @NotNull
-    protected Object custom0(@NotNull @NonNull final Q<?> type) {
+    protected Object custom0(@NotNull @NonNull final Q<?> key) {
         if (this.deser == null)
             throw new KfgPreferencesError(this.name(), "deserializer not set");
-        return this.deser.apply(this.source.getByteArray(sane(type.key()), new byte[0]), type);
+        return this.deser.apply(this.source.getByteArray(this.sane(key.key()), new byte[0]), key);
     }
 
 }
