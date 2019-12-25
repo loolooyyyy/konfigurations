@@ -39,10 +39,6 @@ repositories {
 test {
     useTestNG()
 }
-compileTestJava {
-  sourceCompatibility = "13"
-  targetCompatibility = "13"
-}
 
 idea {
     module {
