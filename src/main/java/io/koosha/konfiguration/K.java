@@ -460,7 +460,9 @@ public interface K<U> {
      * effect (it's only registered once).
      *
      * @param observer listener being registered for key {@link #key()}
+     *
      * @return this
+     *
      * @see #deregister(Handle)
      */
     @NotNull
@@ -477,7 +479,9 @@ public interface K<U> {
      * effect (it's only registered once).
      *
      * @param observer listener being registered for key {@link #key()}
+     *
      * @return this
+     *
      * @see #deregister(Handle)
      */
     @NotNull
@@ -499,6 +503,7 @@ public interface K<U> {
      * reference to the observer yourself.
      *
      * @param observer listener being registered for key {@link #key()}
+     *
      * @see #register(KeyObserver)
      */
     @Contract(mutates = "this")
@@ -533,7 +538,7 @@ public interface K<U> {
      * <p>Thread-safe.
      *
      * @return If the value denoted by {@link #key()} in the original source
-     * exists.
+     *         exists.
      */
     @Contract(pure = true)
     @ApiStatus.AvailableSince(Faktory.VERSION_1)
@@ -556,6 +561,7 @@ public interface K<U> {
      * <p>Thread-safe.
      *
      * @return Actual value of this konfiguration.
+     *
      * @throws KfgMissingKeyException if the value has been removed from
      *                                original konfiguration source.
      * @see #v(Object)
@@ -566,6 +572,8 @@ public interface K<U> {
 
     /**
      * Same as {@link #v()} but in case of null throws {@link KfgMissingKeyException}.
+     *
+     * @return the konfiguration value of this konfiguration.
      *
      * @see #v(Object)
      */
@@ -582,15 +590,17 @@ public interface K<U> {
      *
      * @param defaultValue default value to use if key of this konfiguration
      *                     has been removed from the original source.
+     *
      * @return actual value of this konfiguration, or defaultValue if the key
-     * of this konfiguration has been removed from the original source.
+     *         of this konfiguration has been removed from the original source.
+     *
      * @see #v()
      */
     @SuppressWarnings("unused")
     @Nullable
     @Contract(pure = true)
     @ApiStatus.AvailableSince(Faktory.VERSION_1)
-    default U v(@Nullable U defaultValue) {
+    default U v(@Nullable final U defaultValue) {
         // Operation is not atomic.
         try {
             return this.exists() ? this.v() : defaultValue;

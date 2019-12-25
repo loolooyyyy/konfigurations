@@ -12,14 +12,16 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.yaml.snakeyaml.Yaml;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 import java.util.prefs.Preferences;
 
-import static java.util.Arrays.asList;
-import static java.util.Collections.singleton;
-import static java.util.Collections.unmodifiableMap;
+import static java.util.Arrays.*;
+import static java.util.Collections.*;
 
 @SuppressWarnings("unused")
 @ApiStatus.AvailableSince(Faktory.VERSION_8)
@@ -78,7 +80,9 @@ public interface Faktory {
     /**
      * Create a new konfiguration object from given sources.
      *
-     * @param k0 first source
+     * @param name name of konfiguration source.
+     * @param k0   first source
+     *
      * @return kombined sources.
      */
     @Contract("_, _ -> new")
@@ -93,17 +97,20 @@ public interface Faktory {
     default KonfigurationManager kombine(@NonNull @NotNull final String name,
                                          @NonNull @NotNull final KonfigurationManager k0,
                                          @NonNull @NotNull final KonfigurationManager... sources) {
-        final List<KonfigurationManager> l = new ArrayList<>();
-        l.add(k0);
-        l.addAll(asList(sources));
-        return this.kombine(name, l);
+        final Collection<KonfigurationManager> list = new ArrayList<>();
+        list.add(k0);
+        list.addAll(asList(sources));
+        return this.kombine(name, list);
     }
 
     /**
      * Create a new konfiguration object from given sources.
      *
+     * @param name    name of konfiguration source.
      * @param sources sources to combine.
+     *
      * @return kombined sources.
+     *
      * @throws NullPointerException     if sources is null.
      * @throws KfgIllegalStateException is sources is empty.
      */
@@ -116,6 +123,7 @@ public interface Faktory {
      * Create a new konfiguration object from given sources.
      *
      * @param k0 first source
+     *
      * @return kombined sources.
      */
     @Contract("_ -> new")
@@ -128,6 +136,7 @@ public interface Faktory {
      *
      * @param k0      first source
      * @param sources rest of sources
+     *
      * @return kombined sources.
      */
     @Contract("_, _ -> new")
@@ -140,7 +149,9 @@ public interface Faktory {
      * Create a new konfiguration object from given sources.
      *
      * @param sources sources to combine.
+     *
      * @return kombined sources.
+     *
      * @throws NullPointerException     if sources is null.
      * @throws KfgIllegalStateException is sources is empty.
      */
@@ -160,7 +171,9 @@ public interface Faktory {
      *
      * @param name    name of the created source.
      * @param storage konfig source.
+     *
      * @return a konfig source.
+     *
      * @throws NullPointerException if provided storage provider is null
      * @throws KfgSourceException   if the provided storage by provider is null
      */
@@ -177,16 +190,18 @@ public interface Faktory {
      *
      * @param name    name of the created source.
      * @param storage konfig source.
+     *
      * @return a konfig source.
+     *
      * @throws NullPointerException if storage is null.
      */
     @NotNull
     @Contract(pure = true,
             value = "_, _ -> new")
-    default KonfigurationManager map(@NotNull String name,
+    default KonfigurationManager map(@NotNull final String name,
                                      @NotNull final Map<String, ?> storage) {
         final Map<String, ?> copy = unmodifiableMap(new HashMap<>(storage));
-        return map(name, () -> copy);
+        return this.map(name, () -> copy);
     }
 
     /**
@@ -195,7 +210,9 @@ public interface Faktory {
      * <b>Important: the source will NEVER update. It's a const source.</b>
      *
      * @param storage konfig source.
+     *
      * @return a konfig source.
+     *
      * @throws NullPointerException if storage is null.
      */
     @NotNull
@@ -213,7 +230,9 @@ public interface Faktory {
      * to get the new values afterward.
      *
      * @param storage konfig source.
+     *
      * @return a konfig source.
+     *
      * @throws NullPointerException if provided storage provider is null
      * @throws KfgSourceException   if the provided storage by provider is null
      */
@@ -233,7 +252,9 @@ public interface Faktory {
      *
      * @param name    name of the created source.
      * @param storage konfig source.
+     *
      * @return a konfig source.
+     *
      * @throws NullPointerException if provided storage provider is null
      * @throws KfgSourceException   if the provided storage by provider is null
      */
@@ -250,7 +271,9 @@ public interface Faktory {
      *
      * @param name    name of the created source.
      * @param storage konfig source.
+     *
      * @return a konfig source.
+     *
      * @throws NullPointerException if storage is null.
      */
     @NotNull
@@ -259,7 +282,7 @@ public interface Faktory {
     default KonfigurationManager mapWithNested(@NotNull final String name,
                                                @NotNull final Map<String, ?> storage) {
         final Map<String, ?> copy = unmodifiableMap(new HashMap<>(storage));
-        return mapWithNested(name, () -> copy);
+        return this.mapWithNested(name, () -> copy);
     }
 
     /**
@@ -268,7 +291,9 @@ public interface Faktory {
      * <b>Important: the source will NEVER update. It's a const source.</b>
      *
      * @param storage konfig source.
+     *
      * @return a konfig source.
+     *
      * @throws NullPointerException if storage is null.
      */
     @NotNull
@@ -286,7 +311,9 @@ public interface Faktory {
      * to get the new values afterward.
      *
      * @param storage konfig source.
+     *
      * @return a konfig source.
+     *
      * @throws NullPointerException if provided storage provider is null
      * @throws KfgSourceException   if the provided storage by provider is null
      */
@@ -303,7 +330,9 @@ public interface Faktory {
      * Creates a {@link KonfigurationManager} with the given backing store.
      *
      * @param storage konfig source.
+     *
      * @return a konfig source.
+     *
      * @throws NullPointerException if provided storage provider is null
      * @throws KfgSourceException   if the provided storage by provider is null
      */
@@ -322,7 +351,10 @@ public interface Faktory {
      * Creates a {@link KonfigurationManager} with the given backing store.
      *
      * @param storage konfig source.
+     * @param deser   deserializer for custom values.
+     *
      * @return a konfig source.
+     *
      * @throws NullPointerException if provided storage provider is null
      * @throws KfgSourceException   if the provided storage by provider is null
      */
@@ -349,9 +381,12 @@ public interface Faktory {
      * type (instance of {@link Q}) the source will act as if it does not
      * contain that key.
      *
+     * @param name name of konfiguration source.
      * @param json backing store provider. Must always return a
      *             non-null valid json string.
+     *
      * @return a konfig source.
+     *
      * @throws NullPointerException if any of its arguments are null.
      * @throws KfgSourceException   if jackson library is not in the classpath. it specifically looks
      *                              for the class: "com.fasterxml.jackson.databind.JsonNode"
@@ -374,7 +409,9 @@ public interface Faktory {
      * <b>Important: the source will NEVER update. It's a const source.</b>
      *
      * @param json backing store.
+     *
      * @return a konfig source.
+     *
      * @throws NullPointerException if any of its arguments are null.
      * @throws KfgSourceException   if jackson library is not in the classpath. it specifically looks
      *                              for the class: "com.fasterxml.jackson.databind.JsonNode"
@@ -403,7 +440,9 @@ public interface Faktory {
      *                     a valid non-null ObjectMapper, and if required, it
      *                     ust be able to deserialize custom types, so that
      *                     {@link Konfiguration#custom(Q)} works as well.
+     *
      * @return a konfig source.
+     *
      * @throws NullPointerException if any of its arguments are null.
      * @throws KfgSourceException   if jackson library is not in the classpath. it specifically looks
      *                              for the class: "com.fasterxml.jackson.databind.JsonNode"
@@ -428,7 +467,9 @@ public interface Faktory {
      *
      * @param json backing store provider. Must always return a
      *             non-null valid json string.
+     *
      * @return a konfig source.
+     *
      * @throws NullPointerException if any of its arguments are null.
      * @throws KfgSourceException   if jackson library is not in the classpath. it specifically looks
      *                              for the class: "com.fasterxml.jackson.databind.JsonNode"
@@ -455,7 +496,9 @@ public interface Faktory {
      *                     a valid non-null ObjectMapper, and if required, it
      *                     ust be able to deserialize custom types, so that
      *                     {@link Konfiguration#custom(Q)} works as well.
+     *
      * @return a konfig source.
+     *
      * @throws NullPointerException if any of its arguments are null.
      * @throws KfgSourceException   if jackson library is not in the classpath. it specifically looks
      *                              for the class: "com.fasterxml.jackson.databind.JsonNode"
@@ -479,8 +522,11 @@ public interface Faktory {
      *
      * <b>Important: the source will NEVER update. It's a const source.</b>
      *
+     * @param name name of konfiguration source.
      * @param json backing store.
+     *
      * @return a konfig source.
+     *
      * @throws NullPointerException if any of its arguments are null.
      * @throws KfgSourceException   if jackson library is not in the classpath. it specifically looks
      *                              for the class: "com.fasterxml.jackson.databind.JsonNode"
@@ -492,7 +538,7 @@ public interface Faktory {
     @Contract("_, _ -> new")
     default KonfigurationManager jacksonJson(@NotNull final String name,
                                              @NotNull final String json) {
-        return jacksonJson(name, () -> json);
+        return this.jacksonJson(name, () -> json);
     }
 
     /**
@@ -505,12 +551,15 @@ public interface Faktory {
      *
      * <b>Important: the source will NEVER update. It's a const source.</b>
      *
+     * @param name         name of konfiguration source.
      * @param json         backing store.
      * @param objectMapper A {@link ObjectMapper} provider. Must always return
      *                     a valid non-null ObjectMapper, and if required, it
      *                     ust be able to deserialize custom types, so that
      *                     {@link Konfiguration#custom(Q)} works as well.
+     *
      * @return a konfig source.
+     *
      * @throws NullPointerException if any of its arguments are null.
      * @throws KfgSourceException   if jackson library is not in the classpath. it specifically looks
      *                              for the class: "com.fasterxml.jackson.databind.JsonNode"
@@ -523,7 +572,7 @@ public interface Faktory {
     default KonfigurationManager jacksonJson(@NotNull final String name,
                                              @NotNull final String json,
                                              @NotNull final Supplier<ObjectMapper> objectMapper) {
-        return jacksonJson(name, () -> json, objectMapper);
+        return this.jacksonJson(name, () -> json, objectMapper);
     }
 
     /**
@@ -534,13 +583,16 @@ public interface Faktory {
      * type (instance of {@link Q}) the source will act as if it does not
      * contain that key.
      *
+     * @param name         name of konfiguration source.
      * @param json         backing store provider. Must always return a
      *                     non-null valid json string.
      * @param objectMapper A {@link ObjectMapper} provider. Must always return
      *                     a valid non-null ObjectMapper, and if required, it
      *                     ust be able to deserialize custom types, so that
      *                     {@link Konfiguration#custom(Q)} works as well.
+     *
      * @return a konfig source.
+     *
      * @throws NullPointerException if any of its arguments are null.
      * @throws KfgSourceException   if jackson library is not in the classpath. it specifically looks
      *                              for the class: "com.fasterxml.jackson.databind.JsonNode"
@@ -566,7 +618,9 @@ public interface Faktory {
      * contain that key.
      *
      * @param yaml backing store.
+     *
      * @return a konfig source.
+     *
      * @throws NullPointerException if any of its arguments are null.
      * @throws KfgSourceException   if snake yaml library is not in the classpath. it specifically looks
      *                              for the class: "com.fasterxml.jackson.databind.JsonNode"
@@ -595,7 +649,9 @@ public interface Faktory {
      *                     a valid non-null ObjectMapper, and if required, it
      *                     ust be able to deserialize custom types, so that
      *                     {@link Konfiguration#custom(Q)} works as well.
+     *
      * @return a konfig source.
+     *
      * @throws NullPointerException if any of its arguments are null.
      * @throws KfgSourceException   if jackson library is not in the classpath. it specifically looks
      *                              for the class: "org.yaml.snakeyaml.Yaml".
@@ -622,7 +678,9 @@ public interface Faktory {
      *
      * @param yaml backing store provider. Must always return a
      *             non-null valid json string.
+     *
      * @return a konfig source.
+     *
      * @throws NullPointerException if any of its arguments are null.
      * @throws KfgSourceException   if jackson library is not in the classpath. it specifically looks
      *                              for the class: "com.fasterxml.jackson.databind.JsonNode"
@@ -652,7 +710,9 @@ public interface Faktory {
      *                     a valid non-null ObjectMapper, and if required, it
      *                     ust be able to deserialize custom types, so that
      *                     {@link Konfiguration#custom(Q)} works as well.
+     *
      * @return a konfig source.
+     *
      * @throws NullPointerException if any of its arguments are null.
      * @throws KfgSourceException   if jackson library is not in the classpath. it specifically looks
      *                              for the class: "org.yaml.snakeyaml.Yaml".
@@ -676,8 +736,11 @@ public interface Faktory {
      *
      * <b>Important: the source will NEVER update. It's a const source.</b>
      *
+     * @param name name of konfiguration source.
      * @param yaml backing store.
+     *
      * @return a konfig source.
+     *
      * @throws NullPointerException if any of its arguments are null.
      * @throws KfgSourceException   if snake yaml library is not in the classpath. it specifically looks
      *                              for the class: "com.fasterxml.jackson.databind.JsonNode"
@@ -689,7 +752,7 @@ public interface Faktory {
     @Contract("_, _ -> new")
     default KonfigurationManager snakeYaml(@NotNull final String name,
                                            @NotNull final String yaml) {
-        return snakeYaml(name, () -> yaml);
+        return this.snakeYaml(name, () -> yaml);
     }
 
     /**
@@ -702,12 +765,15 @@ public interface Faktory {
      *
      * <b>Important: the source will NEVER update. It's a const source.</b>
      *
+     * @param name         name of konfiguration source.
      * @param yaml         backing store.
      * @param objectMapper A {@link Yaml} provider. Must always return
      *                     a valid non-null ObjectMapper, and if required, it
      *                     ust be able to deserialize custom types, so that
      *                     {@link Konfiguration#custom(Q)} works as well.
+     *
      * @return a konfig source.
+     *
      * @throws NullPointerException if any of its arguments are null.
      * @throws KfgSourceException   if jackson library is not in the classpath. it specifically looks
      *                              for the class: "org.yaml.snakeyaml.Yaml".
@@ -720,7 +786,7 @@ public interface Faktory {
     default KonfigurationManager snakeYaml(@NotNull final String name,
                                            @NotNull final String yaml,
                                            @NotNull final Supplier<Yaml> objectMapper) {
-        return snakeYaml(name, () -> yaml, objectMapper);
+        return this.snakeYaml(name, () -> yaml, objectMapper);
     }
 
     /**
@@ -733,9 +799,12 @@ public interface Faktory {
      *
      * <b>Important: the source will NEVER update. It's a const source.</b>
      *
+     * @param name name of konfiguration source.
      * @param yaml backing store provider. Must always return a
      *             non-null valid json string.
+     *
      * @return a konfig source.
+     *
      * @throws NullPointerException if any of its arguments are null.
      * @throws KfgSourceException   if jackson library is not in the classpath. it specifically looks
      *                              for the class: "com.fasterxml.jackson.databind.JsonNode"
@@ -758,13 +827,16 @@ public interface Faktory {
      *
      * <b>Important: the source will NEVER update. It's a const source.</b>
      *
+     * @param name         name of konfiguration source.
      * @param yaml         backing store provider. Must always return a
      *                     non-null valid json string.
      * @param objectMapper A {@link Yaml} provider. Must always return
      *                     a valid non-null ObjectMapper, and if required, it
      *                     ust be able to deserialize custom types, so that
      *                     {@link Konfiguration#custom(Q)} works as well.
+     *
      * @return a konfig source.
+     *
      * @throws NullPointerException if any of its arguments are null.
      * @throws KfgSourceException   if jackson library is not in the classpath. it specifically looks
      *                              for the class: "org.yaml.snakeyaml.Yaml".
@@ -781,6 +853,12 @@ public interface Faktory {
     /**
      * Same as {@link #snakeYaml(String, String, Supplier)} but explicitly rejects
      * parameterized types.
+     *
+     * @param name         name of konfiguration source.
+     * @param yaml         the source yaml string to get konfig values out of.
+     * @param objectMapper the object mapper used by underlying yaml source.
+     *
+     * @return snake yaml based konfiguration.
      */
     @NotNull
     @Contract("_, _, _ -> new")

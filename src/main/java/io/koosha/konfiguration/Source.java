@@ -20,7 +20,6 @@ import java.util.Set;
  * 1. Provides a konfiguration value, given a key and type
  * 2. Checks if it contains value for a given key and type.
  * <p>
- * <p>
  * Methods need not to cache their result, as
  * io.koosha.konfiguration.v8.Kombiner will take care of that.
  */
@@ -44,6 +43,7 @@ public interface Source {
      * Get a boolean konfiguration value.
      *
      * @param key unique key of the konfiguration being requested.
+     *
      * @return konfiguration value wrapper for the requested key.
      */
     @NotNull
@@ -54,6 +54,7 @@ public interface Source {
      * Get a byte konfiguration value.
      *
      * @param key unique key of the konfiguration being requested.
+     *
      * @return konfiguration value wrapper for the requested key.
      */
     @NotNull
@@ -64,6 +65,7 @@ public interface Source {
      * Get a char konfiguration value.
      *
      * @param key unique key of the konfiguration being requested.
+     *
      * @return konfiguration value wrapper for the requested key.
      */
     @NotNull
@@ -74,6 +76,7 @@ public interface Source {
      * Get a short konfiguration value.
      *
      * @param key unique key of the konfiguration being requested.
+     *
      * @return konfiguration value wrapper for the requested key.
      */
     @NotNull
@@ -84,6 +87,7 @@ public interface Source {
      * Get an int konfiguration value.
      *
      * @param key unique key of the konfiguration being requested.
+     *
      * @return konfiguration value wrapper for the requested key.
      */
     @NotNull
@@ -94,6 +98,7 @@ public interface Source {
      * Get a long konfiguration value.
      *
      * @param key unique key of the konfiguration being requested.
+     *
      * @return konfiguration value wrapper for the requested key.
      */
     @NotNull
@@ -104,6 +109,7 @@ public interface Source {
      * Get a float konfiguration value.
      *
      * @param key unique key of the konfiguration being requested.
+     *
      * @return konfiguration value wrapper for the requested key.
      */
     @NotNull
@@ -114,6 +120,7 @@ public interface Source {
      * Get a double konfiguration value.
      *
      * @param key unique key of the konfiguration being requested.
+     *
      * @return konfiguration value wrapper for the requested key.
      */
     @NotNull
@@ -124,6 +131,7 @@ public interface Source {
      * Get a string konfiguration value.
      *
      * @param key unique key of the konfiguration being requested.
+     *
      * @return konfiguration value wrapper for the requested key.
      */
     @NotNull
@@ -135,8 +143,10 @@ public interface Source {
     /**
      * Get a list of konfiguration value.
      *
-     * @param key unique key of the konfiguration being requested.
-     * @param <T> type of collection generic.
+     * @param key  unique key of the konfiguration being requested.
+     * @param type type of objects in the resulting list.
+     * @param <T>  type of collection generic.
+     *
      * @return konfiguration value wrapper for the requested key.
      */
     @NotNull
@@ -151,6 +161,7 @@ public interface Source {
      *
      * @param key type object of values in the list.
      * @param <U> generic type of elements in the list.
+     *
      * @return konfiguration value wrapper for the requested key.
      */
     @NotNull
@@ -164,6 +175,7 @@ public interface Source {
      * @param key generic type of map
      * @param <U> generic type of map, the key type.
      * @param <V> generic type of map, the value type.
+     *
      * @return konfiguration value wrapper for the requested key.
      */
     @NotNull
@@ -179,6 +191,7 @@ public interface Source {
      * @param valueKlass the class object representing type of value in map.
      * @param <U>        generic type of map, the key type.
      * @param <V>        generic type of map, the value type.
+     *
      * @return konfiguration value wrapper for the requested key.
      */
     @NotNull
@@ -196,6 +209,7 @@ public interface Source {
      *
      * @param key type object of values in the set.
      * @param <U> generic type of elements in the set.
+     *
      * @return konfiguration value wrapper for the requested key.
      */
     @NotNull
@@ -224,6 +238,7 @@ public interface Source {
      *
      * @param key type object of the requested value.
      * @param <U> generic type of requested value.
+     *
      * @return konfiguration value wrapper for the requested key.
      */
     @NotNull
@@ -242,6 +257,7 @@ public interface Source {
      *
      * @param key unique key of the konfiguration being requested.
      * @param <U> type of requested object.
+     *
      * @return konfiguration value wrapper for the requested key.
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -265,6 +281,7 @@ public interface Source {
      * @param key  type object of the requested value.
      * @param type class object representing type of the requested value.
      * @param <U>  generic type of requested value.
+     *
      * @return konfiguration value wrapper for the requested key.
      */
     @NotNull
@@ -281,6 +298,7 @@ public interface Source {
      * Check if {@code key} exists in the configuration.
      *
      * @param key the key to look for.
+     *
      * @return true if the key exists, false otherwise.
      */
     @Contract(pure = true)
@@ -299,8 +317,9 @@ public interface Source {
     /**
      * Check if {@code key} exists in the configuration.
      *
-     * @param key the konfig key
+     * @param key  the konfig key
      * @param type class object representing the type of requested value.
+     *
      * @return true if the key exists, false otherwise.
      */
     @Contract(pure = true)
@@ -314,6 +333,7 @@ public interface Source {
      * Check if map {@code key} exists in the configuration.
      *
      * @param key the config key to check it's existence
+     *
      * @return true if the key exists, false otherwise.
      */
     @Contract(pure = true)
@@ -325,9 +345,10 @@ public interface Source {
     /**
      * Check if map {@code key} exists in the configuration.
      *
-     * @param key the config key to check it's existence
-     * @param keyType the map key type.
+     * @param key       the config key to check it's existence
+     * @param keyType   the map key type.
      * @param valueType the map value type.
+     *
      * @return true if the key exists, false otherwise.
      */
     @Contract(pure = true)
@@ -342,6 +363,7 @@ public interface Source {
      * Check if set {@code key} exists in the configuration.
      *
      * @param key the config key to check it's existence
+     *
      * @return true if the key exists, false otherwise.
      */
     @Contract(pure = true)
@@ -353,8 +375,9 @@ public interface Source {
     /**
      * Check if set {@code key} exists in the configuration.
      *
-     * @param key the config key to check it's existence
+     * @param key  the config key to check it's existence
      * @param type class object representing type of requested konfig value.
+     *
      * @return true if the key exists, false otherwise.
      */
     @Contract(pure = true)
@@ -368,6 +391,7 @@ public interface Source {
      * Check if list {@code key} exists in the configuration.
      *
      * @param key the config key to check it's existence
+     *
      * @return true if the key exists, false otherwise.
      */
     @Contract(pure = true)
@@ -379,7 +403,9 @@ public interface Source {
     /**
      * Check if list {@code key} exists in the configuration.
      *
-     * @param key the config key to check it's existence
+     * @param key  the config key to check it's existence
+     * @param type type of values in the resulting list.
+     *
      * @return true if the key exists, false otherwise.
      */
     @Contract(pure = true)
@@ -393,6 +419,7 @@ public interface Source {
      * Check if boolean {@code key} exists in the configuration.
      *
      * @param key the config key to check it's existence
+     *
      * @return true if the key exists, false otherwise.
      */
     @Contract(pure = true)
@@ -405,6 +432,7 @@ public interface Source {
      * Check if char {@code key} exists in the configuration.
      *
      * @param key the config key to check it's existence
+     *
      * @return true if the key exists, false otherwise.
      */
     @Contract(pure = true)
@@ -417,6 +445,7 @@ public interface Source {
      * Check if string {@code key} exists in the configuration.
      *
      * @param key the config key to check it's existence
+     *
      * @return true if the key exists, false otherwise.
      */
     @Contract(pure = true)
@@ -429,6 +458,7 @@ public interface Source {
      * Check if byte {@code key} exists in the configuration.
      *
      * @param key the config key to check it's existence
+     *
      * @return true if the key exists, false otherwise.
      */
     @Contract(pure = true)
@@ -441,6 +471,7 @@ public interface Source {
      * Check if short {@code key} exists in the configuration.
      *
      * @param key the config key to check it's existence
+     *
      * @return true if the key exists, false otherwise.
      */
     @Contract(pure = true)
@@ -453,6 +484,7 @@ public interface Source {
      * Check if int {@code key} exists in the configuration.
      *
      * @param key the config key to check it's existence
+     *
      * @return true if the key exists, false otherwise.
      */
     @Contract(pure = true)
@@ -465,6 +497,7 @@ public interface Source {
      * Check if long {@code key} exists in the configuration.
      *
      * @param key the config key to check it's existence
+     *
      * @return true if the key exists, false otherwise.
      */
     @Contract(pure = true)
@@ -477,6 +510,7 @@ public interface Source {
      * Check if float {@code key} exists in the configuration.
      *
      * @param key the config key to check it's existence
+     *
      * @return true if the key exists, false otherwise.
      */
     @Contract(pure = true)
@@ -489,6 +523,7 @@ public interface Source {
      * Check if double {@code key} exists in the configuration.
      *
      * @param key the config key to check it's existence
+     *
      * @return true if the key exists, false otherwise.
      */
     @Contract(pure = true)
